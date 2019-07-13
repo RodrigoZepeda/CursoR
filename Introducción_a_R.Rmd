@@ -27,6 +27,8 @@ editor_options:
 escritorio <- "~/Desktop/"
 subDir  <- "Mi_curso_de_R"
 subcarpeta <- "~/Desktop/Mi_curso_de_R"
+filedir <- "~/Dropbox/CURSO_INSP_2019/course_files/"
+
 
 #Instala todas estas de una en una con install.packages("nombre")
 #por ejemplo install.packages("tufte")
@@ -305,8 +307,8 @@ knitr::include_graphics('images/RStudio5.png')
 
 ```{r, echo = FALSE}
 set.seed(371)
-Example1 <- data.frame(Alturas = rnorm(100, 1.65, 0.3), Peso = rnorm(100, 80, 0.2))
-write.csv(Example1, "files/Example1.csv", row.names=FALSE)
+Example1 <- data.frame(Alturas = rnorm(100, 1.65, 0.3), Peso = rnorm(100, 80, 1))
+write.csv(Example1, paste0(filedir,"Example1.csv"), row.names=FALSE)
 ```
 
 ```{r, fig.cap = "El `Ambiente` muestra las variables (incluyendo bases de datos) que estás utilizando en este momento. A diferencia de otros programas estadísticos (o sea `Stata`) en `R` es posible tener múltiples bases de datos abiertas a la vez.",  cache=TRUE, echo = FALSE,  message=FALSE}
