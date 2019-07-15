@@ -91,7 +91,7 @@ ggplot(Example1) +
   geom_point(aes(x = Alturas, y = Peso), color = "tomato3")
 ```
 
-Una lista completa de los colores posibles [está aquí.](http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf)
+Una lista completa de los colores posibles [está aquí.](http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf). También puedes usar colores RGB o en formato HEX. 
 
 Podemos cambiar los títulos de los ejes mediante `ggtitle`, `xlab` y `ylab`:
 
@@ -135,6 +135,10 @@ Imita la siguiente gráfica de altura contra peso de la base de datos `Example1.
 ggplot(Example1) + geom_point(aes(x = Peso, y = Alturas), color = "orange", size = 0.5) + xlab("Peso (kg)") + ylab("Altura (m)") + ggtitle("Gráfica de peso contra altura") + theme_classic()
 ```
 
+Para guardar tu gráfica utiliza `ggsave`:
+```{r, eval = FALSE}
+ggsave("Grafica_de_puntos.pdf", width = 6, height = 10)
+```
 
 ## Histogramas, densidades y múltiples gráficas a la vez
 
@@ -310,6 +314,85 @@ ggplot(Example1) +
   annotate("text", x = qpeso + 0.75, y = 0.55, label = paste0("75% en ", round(qpeso,2)), 
            color = "dimgrey")
 ```
+
+## Ejercicio 
+
+Considera la siguiente base de datos:
+```{r}
+mis.datos <- data.frame(
+  x = c(1.03, 1.24, 1.47, 1.52, 1.92, 1.93, 1.94, 1.95, 1.96, 1.97,
+       1.98, 1.99, 2.72, 2.75, 2.78, 2.81, 2.84, 2.87, 2.90, 2.93,
+       2.96, 2.99, 3.60, 3.64, 3.66, 3.72, 3.77, 3.88, 3.91, 4.14,
+       4.54, 4.77, 4.81, 5.62)
+)
+```
+
+Realiza un histograma de la variable `x` dentro de  `mis.datos` con `binwidth` a `0.75`:
+```{r, eval = TRUE, echo = FALSE}
+ggplot(mis.datos) + geom_histogram(aes(x = x, y = ..density..), fill = "tomato3", color = "black", binwidth = 0.75) 
+```
+
+¿Podemos concluir la forma de la distribución a partir del histograma? Es decir ¿está centrada?
+
+Realiza el mismo histograma pero ahora con un ancho de banda de `1.2`. ¿Y ahora?
+
+```{r, echo = FALSE, eval = FALSE}
+ggplot(mis.datos) + geom_histogram(aes(x = x, y = ..density..), fill = "tomato3", color = "black", binwidth = 1.2) 
+```
+
+
+## Ejercicio
+Considera la siguiente [base de datos](https://stats.stackexchange.com/questions/51718/assessing-approximate-distribution-of-data-based-on-a-histogram):
+```{r}
+mis.datos <- data.frame(
+  A =  c(3.15, 5.46, 3.28, 4.20, 1.98, 2.28, 3.12, 4.10, 3.42, 3.91, 
+         2.06, 5.53, 5.19, 2.39, 1.88, 3.43, 5.51, 2.54, 3.64, 4.33, 
+         4.85, 5.56, 1.89, 4.84, 5.74, 3.22, 5.52, 1.84, 4.31, 2.01, 
+         4.01, 5.31, 2.56, 5.11, 2.58, 4.43, 4.96, 1.90, 5.60, 1.92),
+  B =  c(2.90, 5.21, 3.03, 3.95, 1.73, 2.03, 2.87, 3.85, 3.17, 3.66,
+         1.81, 5.28, 4.94, 2.14, 1.63, 3.18, 5.26, 2.29, 3.39, 4.08,
+         4.60, 5.31, 1.64, 4.59, 5.49, 2.97, 5.27, 1.59, 4.06, 1.76, 
+         3.76, 5.06, 2.31, 4.86, 2.33, 4.18, 4.71, 1.65, 5.35, 1.67),
+  C =  c(2.65, 4.96, 2.78, 3.70, 1.48, 1.78, 2.62, 3.60, 2.92, 3.41,
+         1.56, 5.03, 4.69, 1.89, 1.38, 2.93, 5.01, 2.04, 3.14, 3.83,
+         4.35, 5.06, 1.39, 4.34, 5.24, 2.72, 5.02, 1.34, 3.81, 1.51, 
+         3.51, 4.81, 2.06, 4.61, 2.08, 3.93, 4.46, 1.4, 5.1, 1.42),
+  D =  c(2.40, 4.71, 2.53, 3.45, 1.23, 1.53, 2.37, 3.35, 2.67, 3.16,
+         1.31, 4.78, 4.44, 1.64, 1.13, 2.68, 4.76, 1.79, 2.89, 3.58,
+         4.10, 4.81, 1.14, 4.09, 4.99, 2.47, 4.77, 1.09, 3.56, 1.26, 
+         3.26, 4.56, 1.81, 4.36, 1.83, 3.68, 4.21, 1.15, 4.85, 1.17)
+)
+```
+
+Grafica un histograma de las variables `A`, `B`, `C` y `D` de dicha base con un ancho de banda (`binwidth`) igual a `1`:
+```{r, echo = FALSE}
+bw <- 1
+
+plotA <- ggplot(mis.datos) + geom_histogram(aes(x = A, y = ..density..), fill = "tomato3", color = "black", binwidth = bw) +
+  ylab("Proporción")
+
+plotB <- ggplot(mis.datos) + geom_histogram(aes(x = B, y = ..density..), fill = "forestgreen", color = "black", binwidth = bw) +
+  ylab("Proporción")
+
+plotC <- ggplot(mis.datos) + geom_histogram(aes(x = C, y = ..density..), fill = "purple", color = "black", binwidth = bw) +
+  ylab("Proporción")
+
+plotD <- ggplot(mis.datos) + geom_histogram(aes(x = D, y = ..density..), fill = "deepskyblue3", color = "black", binwidth = bw) +
+  ylab("Proporción")
+
+```
+
+Utiliza el siguiente comando para restar los valores de la columna de `A` a la base de datos:
+
+```{r, echo = FALSE}
+grid.arrange(plotA, plotB, plotC, plotD, top = "Todos los histogramas que requieres")
+```
+
+¿Podemos concluir la forma de la distribución a partir del histograma? Es decir ¿hay distribuciones sesgadas a la izquierda, a la derecha, uniformes, centradas o con colas pesadas?
+
+Realiza el mismo histograma pero ahora con un ancho de banda de `0.25` ¿por qué hubo cambios? Analiza la base de datos (los valores en función de la columna `A`) y concluye. 
+
+
 
 ## Gráficas de barras
 
