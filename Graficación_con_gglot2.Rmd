@@ -33,7 +33,11 @@ options(htmltools.dir.version = FALSE)
 ```
 
 # ggplot2 
-`R` cuenta con su propia forma de hacer gráficas mediante el comando `plot`. Sin embargo, las gráficas que puedes hacer con plot son, salvo en el caso de regresiones, mucho más sencillas que las producidas por el paquete `ggplot`. Dicho paquete fue desarrollado inicialmente por [Hadley Wickham](http://hadley.nz) y actualmente [continúa en desarrollo](https://github.com/tidyverse/ggplot2) por más de 198 colaboradores distintos. Por su belleza y facilidad, nosotros nos enfocaremos en gráficas con `ggplot2`. 
+`R` cuenta con su propia forma de hacer gráficas mediante el comando `plot`. Sin embargo, las gráficas que puedes hacer con plot son, salvo en el caso de regresiones, mucho más sencillas que las producidas por el paquete `ggplot`. Dicho paquete fue desarrollado inicialmente por [Hadley Wickham](http://hadley.nz) y actualmente [continúa en desarrollo](https://github.com/tidyverse/ggplot2) por más de 198 colaboradores distintos. Por su belleza y facilidad, nosotros nos enfocaremos en gráficas con `ggplot2`. Otros excelentes tutoriales los puedes hallar en el [libro de ggplot2 aún en construcción](https://ggplot2-book.org) o en [r-statistics.co](http://r-statistics.co/ggplot2-Tutorial-With-R.html). 
+
+```{r, fig.margin = TRUE, fig.cap = "ggplot2 es el mejor paquete para graficar.", fig.width=3.5, fig.height=3.5, cache=TRUE, echo = FALSE,  message=FALSE}
+knitr::include_graphics('images/ggplot2.jpg')
+```
 
 Empecemos por instalar el paquete. Recuerda que la instalación es un proceso que sólo se requiere una vez:
 ```{r, eval = FALSE}
@@ -49,6 +53,10 @@ library(ggplot2)
 ```
 
 `ggplot` trabaja con `dataframes`; los `dataframes` son el formato preferido para tener tablas de datos. Probemos leer los datos de `Ejemplo1.csv`. Para ello recuerda que el comando es `read.csv` seguido del directorio del archivo: 
+
+```{r, fig.margin = TRUE, fig.cap = "Hadley Wickham, el creador de ggplot2.", fig.width=3.5, fig.height=3.5, cache=TRUE, echo = FALSE,  message=FALSE}
+knitr::include_graphics('images/hadleywickham.jpg')
+```
 
 ```{r, echo = FALSE}
 setwd(filedir)
@@ -104,7 +112,7 @@ ggplot(Example1) +
   ggtitle("Peso y altura simulados para el modelo")
 ```
 
-Las gráficas cuentan con varios temas (`themes`) con diseños predefinidos para cambiar su imagen. Prueba los distintos: `theme_classic`, `theme_bw`, `theme_gray`, `theme_linedraw`, `theme_light`, `theme_minimal`, `theme_dark` y `theme_void`.  
+Las gráficas cuentan con varios temas (`themes`) con diseños predefinidos para cambiar su imagen. Prueba los distintos: `theme_classic`, `theme_bw`, `theme_gray`, `theme_linedraw`, `theme_light`, `theme_minimal`, `theme_dark` y `theme_void`.^[Puedes tener aún más temas si descargas el paquete (`ggthemes`)[https://yutannihilation.github.io/allYourFigureAreBelongToUs/ggthemes/]. ]  
 
 ```{r}
 #Agregamos etiquetas
@@ -147,6 +155,10 @@ El comando `geom_histogram` sirve para crear histogramas. Para ello es sólo nec
 ```{r}
 #Graficación de un histograma
 ggplot(Example1) + geom_histogram(aes(x = Peso))
+```
+
+```{marginfigure}
+Según [Ioannidis](http://www.madgik.di.uoa.gr/sites/default/files/vldb03_pp19-30.pdf) histograma viene del griego _histos_ (mástil) y _gram-ma_ (algo escrito). Por lo que literalmente sería algo escrito en mástiles. A pesar de que éstos se atribuyen a Karl Pearson, los histogramas fueron inventados desde antes. Él fue quien les puso nombre. 
 ```
 
 Para especificar el número de barras hay dos formas: utilizando el comando `bins`:
@@ -284,7 +296,9 @@ ggplot(Example1) +
                fill = "deepskyblue3") +
   xlab("Altura (m)") + ylab("Densidad") +
   ggtitle("Histograma y densidad ajustada de altura") +
-  theme_linedraw() 
+  theme_linedraw() + 
+  theme(plot.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8"))
 ```
 
 ## Ejercicio 
@@ -312,7 +326,9 @@ ggplot(Example1) +
   geom_vline(aes(xintercept = qpeso), 
              color = "dimgrey", linetype = "dotted", size = 1) + 
   annotate("text", x = qpeso + 0.75, y = 0.55, label = paste0("75% en ", round(qpeso,2)), 
-           color = "dimgrey")
+           color = "dimgrey") +
+  theme(plot.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8"))
 ```
 
 ## Ejercicio 
@@ -329,15 +345,21 @@ mis.datos <- data.frame(
 
 Realiza un histograma de la variable `x` dentro de  `mis.datos` con `binwidth` a `0.75`:
 ```{r, eval = TRUE, echo = FALSE}
-ggplot(mis.datos) + geom_histogram(aes(x = x, y = ..density..), fill = "tomato3", color = "black", binwidth = 0.75) 
+ggplot(mis.datos) + geom_histogram(aes(x = x, y = ..density..), fill = "tomato3", color = "black", binwidth = 0.75) +   theme(plot.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8"))
 ```
 
 ¿Podemos concluir la forma de la distribución a partir del histograma? Es decir ¿está centrada?
 
+```{marginfigure}
+Minitab tiene un [blog](https://blog.minitab.com/blog/3-things-a-histogram-can-tell-you) sobre cuándo usar histogramas. ¿Puedes descubrir todos sus errores?
+```
+
 Realiza el mismo histograma pero ahora con un ancho de banda de `1.2`. ¿Y ahora?
 
 ```{r, echo = FALSE, eval = FALSE}
-ggplot(mis.datos) + geom_histogram(aes(x = x, y = ..density..), fill = "tomato3", color = "black", binwidth = 1.2) 
+ggplot(mis.datos) + geom_histogram(aes(x = x, y = ..density..), fill = "tomato3", color = "black", binwidth = 1.2) +   theme(plot.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8"))
 ```
 
 
@@ -369,23 +391,30 @@ Grafica un histograma de las variables `A`, `B`, `C` y `D` de dicha base con un 
 bw <- 1
 
 plotA <- ggplot(mis.datos) + geom_histogram(aes(x = A, y = ..density..), fill = "tomato3", color = "black", binwidth = bw) +
-  ylab("Proporción")
+  ylab("Proporción") +   theme(plot.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8"))
 
-plotB <- ggplot(mis.datos) + geom_histogram(aes(x = B, y = ..density..), fill = "forestgreen", color = "black", binwidth = bw) +
+plotB <- ggplot(mis.datos) + geom_histogram(aes(x = B, y = ..density..), fill = "forestgreen", color = "black", binwidth = bw) +   theme(plot.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8")) +
   ylab("Proporción")
 
 plotC <- ggplot(mis.datos) + geom_histogram(aes(x = C, y = ..density..), fill = "purple", color = "black", binwidth = bw) +
-  ylab("Proporción")
+  ylab("Proporción") +   theme(plot.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8"))
 
 plotD <- ggplot(mis.datos) + geom_histogram(aes(x = D, y = ..density..), fill = "deepskyblue3", color = "black", binwidth = bw) +
-  ylab("Proporción")
+  ylab("Proporción") +   theme(plot.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8"))
 
 ```
 
 Utiliza el siguiente comando para restar los valores de la columna de `A` a la base de datos:
 
 ```{r, echo = FALSE}
-grid.arrange(plotA, plotB, plotC, plotD, top = "Todos los histogramas que requieres")
+#SI no lo haces así imprime a lo tonto
+ggdraw(grid.arrange(plotA, plotB, plotC, plotD, top = "Todos los histogramas que requieres")) +
+  theme(plot.background = 
+          element_rect(fill="#fffff8", color = NA))
 ```
 
 ¿Podemos concluir la forma de la distribución a partir del histograma? Es decir ¿hay distribuciones sesgadas a la izquierda, a la derecha, uniformes, centradas o con colas pesadas?
@@ -521,7 +550,7 @@ ggplot(seguro.pop) +
   theme_bw()
 ```
 
-#Gráficas de trayectorias
+# Gráficas de trayectorias
 La base de datos `Zika.csv` contiene datos sobre la cantidad de casos sospechados y confirmados de Zika en Latinoamérica del 15 de febrero al 20 de septiembre de 2016. Leamos la base:
 
 ```{r, echo = FALSE}
@@ -700,7 +729,7 @@ ggplot() +
   theme_classic() 
 ```
 
-##Ajuste de líneas de predicción
+# Ajuste de líneas de predicción
 Continuaremos con los datos de `Zika` pero esta vez utilizaremos los datos de México y sólo utilizaremos casos confirmados:
 
 ```{r}
