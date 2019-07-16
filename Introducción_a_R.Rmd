@@ -233,7 +233,12 @@ Da enter, cierra la `Terminal` y reinicia `R`.
 - En el caso de Windows da clic en `Download R for Windows` y luego en `install R for the first time`. Finalmente, ejecuta el instalable que aparece al dar click en  ``r paste0("Download R ", R.Version()$major,".",R.Version()$minor," for Windows")`` . 
 <!-- Para este curso haremos uso de las herramientas de desarrollador [Rtools](https://cran.r-project.org/bin/windows/Rtools/) -->
 
-- En el caso de Mac selecciona `Download R for (Mac) OS X` y luego elige   ``r paste0("R-", R.Version()$major,".",R.Version()$minor,".pkg")``. En Mac puede que necesites instalar adicionalmente [XQuartz](https://www.xquartz.org) (según tu versión de Mac). <!-- Para lo que haremos en este curso, necesitarás instalar también [XQuartz](https://www.xquartz.org) y [Xcode](https://developer.apple.com/xcode/). El segundo de estos se descarga gratis de la AppStore; hazlo con tiempo porque es una descarga _lentísima_. -->
+- En el caso de Mac selecciona `Download R for (Mac) OS X` y luego elige   ``r paste0("R-", R.Version()$major,".",R.Version()$minor,".pkg")``. En Mac puede que necesites instalar adicionalmente [XQuartz](https://www.xquartz.org) (según tu versión de Mac). Si tu Mac es una versión suficientemente antigua, sigue las instrucciones específicas de `CRAN`.  
+
+
+```{marginfigure}
+Si tienes problemas para instalar puedes usar [RStudio Cloud](https://rstudio.cloud).
+```
 
 - En el caso de Linux al elegir `Download R for Linux` tendrás la opción de buscar tu distribución específica. Al elegirla, aparecerán instrucciones para tu terminal de comandos; síguelas. En el caso de Linux, según los paquetes de `R` que elijamos instalar en la computadora requerirás instalar paquetería adicional para tu distribución de Linux. `R` te informará de la paquetería necesaria conforme la requiera.    
 
@@ -242,6 +247,7 @@ Da enter, cierra la `Terminal` y reinicia `R`.
 ```{r, fig.margin = TRUE, fig.cap = "RStudio es una empresa que se dedica a hacer cosas para R.", fig.width=3.5, fig.height=3.5, cache=TRUE, echo = FALSE,  message=FALSE}
 knitr::include_graphics('images/rstudio.png')
 ```
+
 
 `RStudio` es una interfaz gráfica (IDE) para `R`. Puedes pensar a `R` como el _Bloc de Notas_ y a `RStudio` como _Word_. El _Bloc_ tiene todas las capacidades que necesitas para poder escribir; empero, es muchísimo mejor trabajar tus _papers_ en _Word_. De la misma manera, `R` tiene todas las capacidades para hacer estadística _pero un formato horrible_ y `RStudio` se ha convertido en la más popular forma de usar `R`. Por supuesto que no es la única; algunas alternativas son [Atom con ide-r](https://atom.io/packages/ide-r), [Eclipse con StatET](https://marketplace.eclipse.org/content/statet-r) y [RKWard](https://rkward.kde.org). En general es posible seguir estas notas sin que tengas `RStudio` pero, si es tu primera vez programando, no lo recomiendo.
 
@@ -631,11 +637,21 @@ variable3
 (0.1 + 0.1 + 0.1) == 0.3
 ```
 
+### NIVEL 3
+
+Determina, sin correr el programa, qué regresa la consola en este caso
+```{r}
+x <- 2 
+x <- 5 + x -> y -> x
+x <- x^2
+x
+```
+
 Comprueba con la consola tus resultados; puede que encuentres respuestas poco intuitivas. 
 
 ## Observaciones sobre la aritmética de punto flotante
 
-Si hiciste el último ejercicio (el cual, obviamente hiciste y comprobaste con la consola) podrás haber notado una trampa. Analicemos qué ocurre; quizá hicimos mal la suma
+Si hiciste el penúltimo ejercicio (el cual, obviamente hiciste y comprobaste con la consola) podrás haber notado una trampa. Analicemos qué ocurre; quizá hicimos mal la suma
 ```{r}
 #Veamos si este lado está mal
 (0.1 + 0.1 + 0.1)
@@ -677,7 +693,7 @@ x
 ```
 
 ```{marginfigure}
-Un error de punto flotante en la vida real ocasionó en los años noventa, [la explosión del cohete `Ariane 5`](https://www.esa.int/Newsroom/Press_Releases/Ariane_501_-_Presentation_of_Inquiry_Board_report). Moraleja: hay que tener cuidado y respecto al punto flotante.  
+Un error de punto flotante en la vida real ocasionó en los años noventa, [la explosión del cohete `Ariane 5`](https://www.esa.int/Newsroom/Press_Releases/Ariane_501_-_Presentation_of_Inquiry_Board_report). Moraleja: hay que tener cuidado y respeto al punto flotante.  
 ```
 
 No olvides cambiar la cantidad de dígitos que deseas que imprima `R` en su consola de vuelta:
@@ -694,7 +710,7 @@ $$
 |4| = 4 \qquad \textrm{y} \qquad |-8| = 8
 $$
 
-Para verificar que algo es más o menos $0.3$ suele usarse el valor absoluto^[Recuerda que en `R` `abs` es el comando para valor absoluto.] de la siguiente manera:
+Para verificar que algo es más o menos $0.3$ suele usarse el valor absoluto^[En `R` el comando `abs` toma el valor absoluto.] de la siguiente manera:
 ```{r}
 abs( (0.1 + 0.1 + 0.1) - 0.3 ) < 1.e-6
 ```
@@ -708,9 +724,9 @@ $$
 
 # Leer y almacenar variables en `R`
 
-Para terminar esta sección, aprenderemos cómo guardar variables en `R`. Para eso, el concepto de directorio es uno de los más relevantes. En general, en computación, el directorio se refiere a la dirección en tu computadora donde estás trabajando. Por ejemplo, si estás en una carpeta en tu escritorio de nombre "Ejercicios_R" probablemente tu directorio sea '~/Desktop/Ejercicios_R/' (en Mac) o bien '~\\Desktop\\Ejercicios_R\\'  en Windows. La forma de saber tu directorio (en general) es ir a la carpeta que te interesa y con clic derecho ver propiedades (o escribir `ls` en la terminal `Unix`).
+Para terminar esta sección, aprenderemos cómo guardar variables en `R`. Para eso, el concepto de directorio es uno de los más relevantes. En general, en computación, [el directorio](https://en.wikipedia.org/wiki/Working_directory) se refiere a la dirección en tu computadora donde estás trabajando. Por ejemplo, si estás en una carpeta en tu escritorio de nombre "Ejercicios_R" probablemente tu directorio sea '~/Desktop/Ejercicios_R/' (en Mac) o bien '~\\Desktop\\Ejercicios_R\\'  en Windows^[Windows usa backslash. Y hay [toda una historia detrás de ello](https://www.howtogeek.com/181774/why-windows-uses-backslashes-and-everything-else-uses-forward-slashes/)]. La forma de saber tu directorio (en general) es ir a la carpeta que te interesa y con clic derecho ver propiedades (o escribir `ls` en la terminal `Unix`).
 
-`R` tiene un escritorio `default`. Usualmente lo mejor es elegir un directorio para cada uno de los proyectos que hagas. Para ello si estás en `RStudio` puedes utilizar `Shift+Ctrl+H` (`Shift+Cmd+H` en Mac) o bien ir a `Session > Set Working Directory > Choose Directory` y elegir el directorio donde deseas trabajar tu proyecto. Pensando que elegiste el escritorio (`Desktop` en mi computadora) notarás que en la consola aparece el comando  `setwd("~/Desktop")` (o bien con '\\' si eres Windows). Mi sugerencia es que copies ese comando en tu `Script` para que, la próxima vez que lo corras ya tengas preestablecido el directorio. 
+`R` tiene un directorio `default` que quién sabe dónde está (depende de tu instalación, generalmente está donde tu `Usuario`). Usualmente lo mejor es elegir un directorio para cada uno de los proyectos que hagas. Para ello si estás en `RStudio` puedes utilizar `Shift+Ctrl+H` (`Shift+Cmd+H` en Mac) o bien ir a `Session > Set Working Directory > Choose Directory` y elegir el directorio donde deseas trabajar tu proyecto. Pensando que elegiste el escritorio (`Desktop` en mi computadora) notarás que en la consola aparece el comando  `setwd("~/Desktop")` (o bien con '\\' si eres Windows). Mi sugerencia es que copies ese comando en tu `Script` para que, la próxima vez que lo corras ya tengas preestablecido el directorio. 
 
 ```{r, eval = FALSE}
 #Si eres Mac/Linux
@@ -757,7 +773,12 @@ Si vas a tu directorio, notarás que el archivo `MisVariables.rda` acaba de ser 
 ```{r, echo = FALSE}
 rm(rojos, empty, pdata, scatter, xmin, ymin, hist_right, hist_top,
    verdes, bg, g, r, xhist, yhist)
-names(.GlobalEnv)[-which(names(.GlobalEnv) %in% c(".Random.seed", "escritorio","subDir","subcarpeta"))]
+names(.GlobalEnv)[-which(names(.GlobalEnv) %in% c(".Random.seed", "escritorio","subDir","subcarpeta", "filedir"))]
+```
+
+Podemos probar sumar nuestras variables y todo funciona súper:
+```{r}
+x + y #Funciona magnífico
 ```
 
 Limpiemos el ambiente. El comando equivalente al `clear all` en `R` es un poco más complicado de memorizar: 
@@ -770,7 +791,7 @@ rm(list = ls())
 rm(x,y)
 ```
 
-Ahora, si vuelves a ver el ambiente, éste estará vacío: ¡hemos limpiado la consola! Nota que si intentamos operar con las variables, `R` ya no las recuerda:
+Ahora, si vuelves a ver el ambiente, éste estará vacío: ¡hemos limpiado el historial! Nota que si intentamos operar con las variables, `R` ya no las recuerda:
 
 ```{r}
 x + y #Error
@@ -835,8 +856,12 @@ Responde a las siguientes preguntas:
 
 2. Si `R` me da el error `'No such file or directory'` ¿qué hice mal?
 
+3. En `RStudio`, ¿qué hace `Session > Restart R`? ¿cuál es la diferencia con `rm(list = ls())`?
+
+4. ¿Qué hace el comando `cat("\014")`? (_Ojo_ puede que no haga nada). Si funciona, ¿cuál es la diferencia con `rm(list = ls())` y con `Restart R`?
+
 # Instalación de paquetes
-Un paquete de `R` es un conjunto de funciones adicionales elaboradas por los usuarios, (si las descargas de un repositorio oficial, verificadas) y que permiten hacer cosas adicionales en `R`. Para instalarlos requieres de una conexión a Internet (o bien puedes instalarlos a partir de un archivo (por ejemplo en una `USB`) pero alguien más tuvo que descargarlos). El comando de instalación es `install.packages` seguido del nombre del paquete. Por ejemplo (y por ocio) descarguemos el paquete `beepr` para hacer reproducir sonidos en la computadora^[En los siguientes capítulos descargaremos paquetes más interesantes; pero no desprecies la utilidad de `beepr` yo lo he usado en múltiples ocasiones para que la computadora me avise que ya terminó de correr un código.]. Para ello:  
+Un paquete de `R` es un conjunto de funciones adicionales elaboradas por los usuarios, las cuales permiten hacer cosas adicionales en `R`. Para instalarlos requieres de una conexión a Internet (o bien puedes instalarlos a partir de un archivo, por ejemplo, mediante una `USB`). El comando de instalación es `install.packages` seguido del nombre del paquete. Por ejemplo (y por ocio) descarguemos el paquete `beepr` para hacer reproducir sonidos en la computadora^[En los siguientes capítulos descargaremos paquetes más interesantes; pero no desprecies la utilidad de `beepr` yo lo he usado en múltiples ocasiones para que la computadora me avise que ya terminó de correr un código.]. Para ello:  
 
 ```{r, eval = FALSE}
 install.packages("beepr")
@@ -954,9 +979,26 @@ altura.Rodrigo  <- 1.8  #Mi altura
 altura.CDMX     <- 2000 #La altitud de la CDMX
 ```
 
+6. Comenta:
+```{r, eval = FALSE}
+#¿Qué hace esto?
+x <- 168
+x <- x/100
+y <- 71.2
+print(y/x^2) 
+  
+#Es mejor así
+altura <- 168        #en centímetros
+altura <- altura/100 #en metros
+peso   <- 71.2       #peso en kg
+print(peso/altura^2) #índice masa corporal
+```
 
+```{r, fig.margin = TRUE, fig.cap = "Trad: Un periodista se acerca a un programador a preguntarle ¿qué hace que un código sea malo? -Sin comentarios.", fig.width=3.5, fig.height=3.5, cache=TRUE, echo = FALSE,  message=FALSE}
+knitr::include_graphics('images/tweet1.jpg')
+```
 
-6. Siempre pon las llamadas a los paquetes y el directorio al inicio de tu archivo para que otro usuario sepa qué necesita.
+7. Siempre pon las llamadas a los paquetes y el directorio al inicio de tu archivo para que otro usuario sepa qué necesita.
 
 Código limpio y legible:
 ```{r, eval = FALSE}
