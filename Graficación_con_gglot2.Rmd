@@ -52,7 +52,7 @@ Para ello, llama al paquete utilizando el comando `library`:
 library(ggplot2)
 ```
 
-`ggplot` trabaja con `dataframes`; los `dataframes` son el formato preferido para tener tablas de datos. Probemos leer los datos de `Ejemplo1.csv`. Para ello recuerda que el comando es `read.csv` seguido del directorio del archivo: 
+`ggplot` trabaja con `dataframes`; los `dataframes` son el formato preferido para tener tablas de datos. Probemos leer los datos de `Ejemplo1.csv`. Para ello, leeremos el archivo en [`.csv`](https://es.wikipedia.org/wiki/Valores_separados_por_comas). Hay dos formas, 1) si estás en `RStudio` puedes irte a `Import Dataset > From text (base)` y elegir las opciones de archivo adecuadas. Eso te escribirá un código como el siguiente: 
 
 ```{r, fig.margin = TRUE, fig.cap = "Hadley Wickham, el creador de ggplot2.", fig.width=3.5, fig.height=3.5, cache=TRUE, echo = FALSE,  message=FALSE}
 knitr::include_graphics('images/hadleywickham.jpg')
@@ -63,6 +63,8 @@ setwd(filedir)
 Example1 <- read.csv(paste0(filedir,"Example1.csv"), header = TRUE, sep = ",", dec = ".")
 ```
 
+
+
 ```{r, eval = FALSE}
 #Leemos el archivo
 #header = TRUE indica que tiene encabezado
@@ -72,7 +74,9 @@ Example1 <- read.csv("Tu/directorio/Example1.csv",
                       header = TRUE, sep = ",", dec = ".")
 ```
 
-Dicha base de datos simulados ya se encuentra en un formato legible lista para ser graficada por lo que no necesitamos limpiarla (que veremos en otra sección). 
+2) la segunda forma es aprendiendo directamente que el comando es `read.csv` seguido del nombre del archivo. ¡Siempre puedes guardar cualquier archivo de `Excel` en `.csv` y leerlo con `R` así! 
+
+`Ejemplo1` es una base con datos simulados. Ésta, después de leerse, se encuentra en un formato listo para ser graficado por lo que no necesitamos limpiar la base (que veremos en otra sección). 
 
 ## Gráfica de puntos
 
@@ -176,14 +180,14 @@ ggplot(Example1) + geom_histogram(aes(x = Peso), binwidth = 0.5)
 
 El comando `fill` cambia el color interno de las barras. Los colores también pueden especificarse en formato [Hex](https://es.wikipedia.org/wiki/Colores_web): 
 ```{r}
-#Graficación con barras de ancho 0.05
+#El comando fill cambia el color
 ggplot(Example1) + 
   geom_histogram(aes(x = Peso), binwidth = 0.5, fill = "#EC4D37")
 ```
 
 Mientras que el comando `color` cambia el color del borde de la misma:
 ```{r}
-#Graficación con barras de ancho 0.05
+#Color cambia el borde
 ggplot(Example1) + 
   geom_histogram(aes(x = Peso), binwidth = 0.5, 
                  fill = "#EC4D37",  color = "#1D1B1B")
@@ -192,7 +196,7 @@ ggplot(Example1) +
 FInalmente, podemos hacer que el histograma muestre no el número de casos totales en la base sino la proporción de los casos mediante `..density..`. 
 
 ```{r}
-#Graficación con barras de ancho 0.05
+#..density.. nos da el % de casos de manera normalizada
 ggplot(Example1) + 
   geom_histogram(aes(x = Peso, y = ..density..), bins = 30, 
                  fill = "#EC4D37",  color = "#1D1B1B")
@@ -201,7 +205,7 @@ ggplot(Example1) +
 Podemos agregar, además, una densidad kernel que nos dé una idea de cómo se ve la distribución ajustada. Como veremos más adelante, la densidad kernel (aunque puede ser manipulable) es más fácil que no nos dé errores de distribución incorrecta. 
 
 ```{r}
-#Graficación con barras de ancho 0.05
+#Gráfica de histograma con densidad kernel
 ggplot(Example1) + 
   geom_histogram(aes(x = Peso, y = ..density..), bins = 30, 
                  fill = "#EC4D37",  color = "#1D1B1B") + 
@@ -211,11 +215,12 @@ ggplot(Example1) +
 Podemos cambiar los parámetros de `color` y `size` de la distribución para ajustar su color y tamaño. Así mismo, [`linetype` nos da una línea discontinua](https://ggplot2.tidyverse.org/reference/aes_linetype_size_shape.html): 
 
 ```{r}
-#Graficación con barras de ancho 0.05
+#Cambio de color y tipo de línea a la densidad
 ggplot(Example1) + 
   geom_histogram(aes(x = Peso, y = ..density..), bins = 30, 
                  fill = "#EC4D37",  color = "#1D1B1B") + 
-  geom_density(aes(x = Peso), color = "orange", size = 1)
+  geom_density(aes(x = Peso), color = "orange",
+               linetype = "dotted", size = 1)
 ```
 
 Finalmente, modificamos los temas:
@@ -225,9 +230,10 @@ Finalmente, modificamos los temas:
 ggplot(Example1) + 
   geom_histogram(aes(x = Peso, y = ..density..), bins = 30, 
                  fill = "#EC4D37",  color = "#1D1B1B") + 
-  geom_density(aes(x = Peso), color = "black", 
+  geom_density(aes(x = Peso), color = "orange", 
                linetype = "dotted", size = 1) +
-  xlab("Peso (kg)") + ylab("Densidad") +
+  xlab("Peso (kg)") + 
+  ylab("Densidad") +
   ggtitle("Histograma y densidad ajustada de peso") +
   theme_bw()
 ```
@@ -244,9 +250,10 @@ Y agregamos una línea vertical a la gráfica exactamente en la media:
 ggplot(Example1) + 
   geom_histogram(aes(x = Peso, y = ..density..), bins = 30, 
                  fill = "#EC4D37",  color = "#1D1B1B") + 
-  geom_density(aes(x = Peso), color = "black", 
+  geom_density(aes(x = Peso), color = "orange", 
                linetype = "dotted", size = 1) +
-  xlab("Peso (kg)") + ylab("Densidad") +
+  xlab("Peso (kg)") + 
+  ylab("Densidad") +
   ggtitle("Histograma y densidad ajustada de peso") +
   theme_bw() + 
   geom_vline(aes(xintercept = mean(Example1[ , "Peso" ])))
@@ -258,9 +265,10 @@ Podemos cambiar el color de la línea así como el tipo:
 ggplot(Example1) + 
   geom_histogram(aes(x = Peso, y = ..density..), bins = 30, 
                  fill = "#EC4D37",  color = "#1D1B1B") + 
-  geom_density(aes(x = Peso), color = "black", 
+  geom_density(aes(x = Peso), color = "orange", 
                linetype = "dotted", size = 1) +
-  xlab("Peso (kg)") + ylab("Densidad") +
+  xlab("Peso (kg)") + 
+  ylab("Densidad") +
   ggtitle("Histograma y densidad ajustada de peso") +
   theme_bw() + 
   geom_vline(aes(xintercept = mean(Example1[ , "Peso" ])), 
@@ -274,9 +282,10 @@ Finalmente, podemos agregar una anotación junto a la media que nos indique que 
 ggplot(Example1) + 
   geom_histogram(aes(x = Peso, y = ..density..), bins = 30, 
                  fill = "#EC4D37",  color = "#1D1B1B") + 
-  geom_density(aes(x = Peso), color = "black", 
+  geom_density(aes(x = Peso), color = "orange", 
                linetype = "dotted", size = 1) +
-  xlab("Peso (kg)") + ylab("Densidad") +
+  xlab("Peso (kg)") + 
+  ylab("Densidad") +
   ggtitle("Histograma y densidad ajustada de peso") +
   theme_bw() + 
   geom_vline(aes(xintercept = mean(Example1[ , "Peso" ])), 
@@ -294,7 +303,8 @@ Imita la siguiente gráfica de altura con color `red` donde se usó el comando `
 ggplot(Example1) + 
   geom_density(aes(x = Alturas), color = "red",
                fill = "deepskyblue3") +
-  xlab("Altura (m)") + ylab("Densidad") +
+  xlab("Altura (m)") + 
+  ylab("Densidad") +
   ggtitle("Histograma y densidad ajustada de altura") +
   theme_linedraw() + 
   theme(plot.background = element_rect(fill = "#fffff8"),
@@ -403,16 +413,15 @@ plotC <- ggplot(mis.datos) + geom_histogram(aes(x = C, y = ..density..), fill = 
         panel.background = element_rect(fill = "#fffff8"))
 
 plotD <- ggplot(mis.datos) + geom_histogram(aes(x = D, y = ..density..), fill = "deepskyblue3", color = "black", binwidth = bw) +
-  ylab("Proporción") +   theme(plot.background = element_rect(fill = "#fffff8"),
+  ylab("Proporción") +   
+  theme(plot.background = element_rect(fill = "#fffff8"),
         panel.background = element_rect(fill = "#fffff8"))
 
 ```
 
-Utiliza el siguiente comando para restar los valores de la columna de `A` a la base de datos:
-
 ```{r, echo = FALSE}
 #SI no lo haces así imprime a lo tonto
-ggdraw(grid.arrange(plotA, plotB, plotC, plotD, top = "Todos los histogramas que requieres")) +
+ggdraw(arrangeGrob(plotA, plotB, plotC, plotD, top = "Todos los histogramas que requieres")) +
   theme(plot.background = 
           element_rect(fill="#fffff8", color = NA))
 ```
@@ -445,13 +454,13 @@ ggplot(seguro.pop) +
   geom_bar(aes(x = Entidad, weight = PorcentajeAfiliada))
 ```
 
-Nota que hay gráficas donde el porcentaje supera el 100% esto es porque `R`, de inicio, combina los años `2010` y `2015` sumando los valores. Podemos ver esto con el comando `fill` diciéndole a `R` que `Periodo` no lo lea como número sino como `String` (de otra forma buscará colorearlo con el color `2010` y`2015` los cuales no se distinguen:
+Nota que hay gráficas donde el porcentaje supera el 100% esto es porque `R`, de inicio, combina los años `2010` y `2015` sumando los valores. Podemos ver esto con el comando `fill` diciéndole a `R` que `Periodo` no lo lea como número sino como caracter `char` (de otra forma buscará colorearlo con el color `2010` y `2015` los cuales no se distinguen):
 
 ```{r}
 #Gráfica encimada
 ggplot(seguro.pop) + 
   geom_bar(aes(x = Entidad, weight = PorcentajeAfiliada, 
-               fill = as.factor(Periodo)))
+               fill = as.character(Periodo)))
 ```
 
 Mediante `coord_flip()` podemos rotar las coordenadas: 
@@ -460,7 +469,7 @@ Mediante `coord_flip()` podemos rotar las coordenadas:
 #Gráfica encimada
 ggplot(seguro.pop) + 
   geom_bar(aes(x = Entidad, weight = PorcentajeAfiliada, 
-               fill = as.factor(Periodo))) +
+               fill = as.character(Periodo))) +
   coord_flip()
 ```
 
@@ -470,28 +479,35 @@ Existen dos formas de separar los años: mediante `facet_wrap()` en dos gráfica
 #Gráfica con facet_wrap()
 ggplot(seguro.pop) + 
   geom_bar(aes(x = Entidad, weight = PorcentajeAfiliada, 
-               fill = as.factor(Periodo))) +
+               fill = as.character(Periodo))) +
   coord_flip() + 
-  facet_wrap(~as.factor(Periodo))
+  facet_wrap(~as.character(Periodo))
 ```
 
 ```{r}
 #Gráfica con position
 ggplot(seguro.pop) + 
   geom_bar(aes(x = Entidad, weight = PorcentajeAfiliada, 
-               fill = as.factor(Periodo)), position = "dodge") +
+               fill = as.character(Periodo)), position = "dodge") +
   coord_flip() 
 ```
 
+```{marginfigure}
+Según [su propia página de Internet](http://www.seguropopular.org):
+  
+<<El seguro popular se encarga de brindar servicios de salud a todos las personas que estén inscritas en el sistema de protección social en salud, y tiene la capacidad de trabajar con distintos proveedores de servicios de salud tanto pública como privada en todos los estados de la República mexicana. El seguro popular en el DF, Puebla y Estado de México cumplen con una cobertura enorme de familias mexicanas.
+
+El principal objetivo del seguro popular es proteger a toda la población que no cuente ya con un seguro social de gastos médicos, buscando de este modo que todos los integrantes de las familias afiliadas al seguro popular tengan acceso a los servicios de salud, médicos, hospitalarios, farmacéuticos y quirúrgicos.>>
+```
 A mí me gusta más el de `facet_wrap()` así que continuaré trabajando con él. Podemos mejorar la leyenda mediante el `scale_fill_manual` (`scale_color_manual` respectivamente si nos interesa cambiar sólo el color de las barras)
 
 ```{r}
 #Gráfica colores mediante "scale_fill_manual"
 ggplot(seguro.pop) + 
   geom_bar(aes(x = Entidad, weight = PorcentajeAfiliada, 
-               fill = as.factor(Periodo))) +
+               fill = as.character(Periodo))) +
   coord_flip() + 
-  facet_wrap(~as.factor(Periodo)) + 
+  facet_wrap(~as.character(Periodo)) + 
   scale_fill_manual("Año", 
                     values = c("2010" = "#EB2188",
                                "2015" = "#080A52")) 
@@ -523,9 +539,9 @@ rev(levels(seguro.pop[,"Entidad"]))
 #Gráfica colores mediante "scale_fill_manual"
 ggplot(seguro.pop) + 
   geom_bar(aes(x = Entidad, weight = PorcentajeAfiliada, 
-               fill = as.factor(Periodo))) +
+               fill = as.character(Periodo))) +
   coord_flip() + 
-  facet_wrap(~as.factor(Periodo)) + 
+  facet_wrap(~as.character(Periodo)) + 
   scale_fill_manual("Año", 
                     values = c("2010" = "#EB2188",
                                "2015" = "#080A52")) +
@@ -537,9 +553,9 @@ Finalmente, podemos agregar los formatos de etiquetas usuales:
 #Gráfica colores mediante "scale_fill_manual"
 ggplot(seguro.pop) + 
   geom_bar(aes(x = Entidad, weight = PorcentajeAfiliada, 
-               fill = as.factor(Periodo))) +
+               fill = as.character(Periodo))) +
   coord_flip() + 
-  facet_wrap(~as.factor(Periodo)) + 
+  facet_wrap(~as.character(Periodo)) + 
   scale_fill_manual("Año", 
                     values = c("2010" = "#EB2188",
                                "2015" = "#080A52")) +
@@ -551,6 +567,21 @@ ggplot(seguro.pop) +
 ```
 
 # Gráficas de trayectorias
+```{r, fig.margin = TRUE, fig.cap = "En ggplot2 puedes graficar lo que quieras. Hasta puedes declarar tu amor. Este próximo 14 de febrero usa ggplot2.", fig.width=3.5, fig.height=3.5, cache=TRUE, echo = FALSE, message=FALSE}
+dat <- data.frame(t = seq(0, 2*pi, by = 0.01))
+x <-  function(t) 16 * sin(t)^3
+y <- function(t) 13*cos(t) - 5*cos(2*t) - 2*cos(3*t) - cos(4*t)
+
+dat$y <- y(dat$t)
+dat$x <- x(dat$t)
+
+heart <- ggplot(dat, aes(x,y)) +
+  geom_polygon(fill = "red", col = "firebrick", alpha = 0.9) +
+  theme_bw() + ggtitle("El amor según ggplot2") + xlab("") + ylab("")
+
+heart +  theme(plot.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8"))
+```
 La base de datos `Zika.csv` contiene datos sobre la cantidad de casos sospechados y confirmados de Zika en Latinoamérica del 15 de febrero al 20 de septiembre de 2016. Leamos la base:
 
 ```{r, echo = FALSE}
@@ -702,7 +733,8 @@ Utiliza los datos de `zika` para graficar la prevalencia de la enfermedad en Gua
 
 ```{r, echo = FALSE}
 zika.nicaragua <- subset(zika, zika[,"Country"] == "Nicaragua")
-zika.guatemala  <- subset(zika, zika[,"Country"] == "Guatemala")
+zika.guatemala <- subset(zika, zika[,"Country"] == "Guatemala")
+zika.mexico    <- subset(zika, zika[,"Country"] == "Mexico")
 
 ggplot() + 
   geom_path(aes(x = as.Date(Date), y = Cases, 
@@ -726,11 +758,13 @@ ggplot() +
   xlab("Semana") +
   ylab("Prevalencia") +
   ggtitle("Prevalencia de Zika en México, Guatemala y Nicaragua, OMS 2016") +
-  theme_classic() 
+  theme_classic()  + 
+  theme(plot.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8"))
 ```
 
 # Ajuste de líneas de predicción
-Continuaremos con los datos de `Zika` pero esta vez utilizaremos los datos de México y sólo utilizaremos casos confirmados:
+Continuaremos con los datos de `Zika` pero esta vez utilizaremos los datos de Colombia y sólo casos confirmados:
 
 ```{r}
 zika.colombia <- subset(zika, Country == "Colombia" & 
@@ -817,7 +851,8 @@ ggplot(subset(zika, Country == "Mexico" &
   ylab("Prevalencia de casos de Zika") +
   scale_x_date(date_breaks = "1 month", date_labels = "%B") +
   ggtitle("Prevalencia de casos de Zika en México\nAjuste mediante un Modelo Aditivo Generalizado") +
-  theme_linedraw()
+  theme_linedraw() + theme(plot.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8"))
 ```
 
 ## Personalización de las gráficas
@@ -965,7 +1000,7 @@ barras.2016 <- barras.2016 +
 barras.2016
 ```
 
-Finalmente usaremos laS libreríaS `gridExtra` y `cowplot` para poner una gráfica al lado de la otra. Para ello, instala la librería:
+Finalmente usaremos las librerías `gridExtra` y `cowplot` para poner una gráfica al lado de la otra. Para ello, instala la librería:
 ```{r, eval = FALSE}
 install.packages("gridExtra")
 install.packages("cowplot")
