@@ -1,6 +1,6 @@
 ---
 title: "Modelaje Epidemiológico en `R`"
-subtitle: "Estadística descriptiva"
+subtitle: "Limpieza de bases y estadística descriptiva"
 author: "Rodrigo Zepeda"
 date: "`r Sys.Date()`"
 output:
@@ -24,11 +24,574 @@ editor_options:
 
 ```{r setup, include=FALSE, message = FALSE, warnign = FALSE}
 library(ggplot2)
+library(knitr)
+library(kableExtra)
+library(haven)
+library(ggplot2)
+library(tidyverse)
+filedir <- "~/Dropbox/CURSO_INSP_2019/course_files/"
 options(tinytex.verbose = TRUE)
 knitr::opts_chunk$set(tidy = FALSE, cache.extra = packageVersion('tufte'), error = TRUE)
 options(htmltools.dir.version = FALSE)
 ```
 
-# Estadística descriptiva 
-Yo me enfrenté a `R` por primera vez hace más de 5 años cuando un grupo de 
+# Estadística descriptiva y limpieza de bases
+Existen dos formas de limpiar bases en `R`. La "clásica" usando sólo las funciones de `R` (como `which`, `subset` e identificadores de columnas) y la "nueva" (y más sencilla) usando el paquete de `tidyverse`. Yo estoy seguro que si ya conoces otro programa estadístico (por ejemplo `STATA`) te será mucho más fácil continuar limpiando tu base en èl. Aprenderemos a hacerlo en `R` de todas formas para entender cómo funciona ¡capaz que te convence!
 
+Primero que nada, carguemos la librería de `tidyverse`:
+```{r, eval = FALSE}
+#No olvides instalarla con install.packages si aún 
+#no lo has hecho
+library("tidyverse")
+```
+
+# Descripción de una base de datos
+
+Vamos a leer la base de datos `conjunto_de_datos_defunciones_generales_2017.CSV` la cual contiene el registro de mortalidad en México para el año `2017`:
+```{r, echo = FALSE}
+mortalidad.2017 <- read.csv(paste0(filedir,"conjunto_de_datos_defunciones_generales_2017.CSV"))
+```
+
+```{r, eval = FALSE}
+#No olvides el directorio
+mortalidad.2017 <- read.csv("conjunto_de_datos_defunciones_generales_2017.CSV")
+```
+
+Aquí sólo muestro las primeras columnas de la base y sus primeras entradas:
+
+```{r, echo = FALSE}
+kable(head(mortalidad.2017[,1:6])) 
+```
+
+La función `glimpse` nos permite darnos una idea de la composición de nuestros datos:
+```{r, eval = FALSE}
+mortalidad.2017 %>% glimpse() 
+```
+
+```{r, echo = FALSE}
+mortalidad.2017 %>% select(1:7) %>% glimpse() 
+```
+
+El comando `ncol` nos muestra el número de columnas en la base de datos y `nrow` nos muestra el número de filas en la base de datos. 
+```{r}
+ncol(mortalidad.2017) #Columnas
+nrow(mortalidad.2017) #Filas
+```
+
+Podemos ver los nombres de las columnas de la base de datos con `colnames`:
+```{r}
+#Mostramos las columnas
+colnames(mortalidad.2017)
+```
+
+Una descripción de las variables las puedes encontrar en el archivo `diccionario_datos_defunciones_generales_2017.csv`. Donde aparece como sigue:
+
+```{r, echo = FALSE}
+defunciones.diccionario <- read.csv(paste0(filedir,"Catalogo_datos_inegi/diccionario_datos_defunciones_generales_2017.csv"), header = T, encoding="latin1", dec=",", comment.char="#")
+defunciones.diccionario <- defunciones.diccionario[,c("NEMÓNICO","NOMBRE_CAMPO")]
+kable(defunciones.diccionario)
+```
+
+Una vez tenemos una base de datos podemos analizar sus entradas usando el nombre de la base y corchetes. Por ejemplo:
+
+```{r, eval = FALSE}
+#Obtengo todo el registro de la columna sexo
+mortalidad.2017[ ,"sexo"]
+```
+
+```{r, echo = FALSE}
+#Obtengo todo el registro de sexo
+head(mortalidad.2017[ ,"sexo"])
+```
+
+También podemos usar el número de columna:
+
+```{r, eval = FALSE}
+#Me regresa las observaciones de la columna 2
+#dada por mun_regis
+mortalidad.2017[ ,2]
+```
+
+```{r, echo = FALSE}
+#Obtengo todo el registro de sexo
+head(mortalidad.2017[ , 2])
+```
+
+También podemos acceder a la base por renglones. Por ejemplo, así vemos el tercer renglón:
+
+```{r, eval = FALSE}
+mortalidad.2017[3, ]
+```
+
+```{r, echo = FALSE}
+#Obtengo todo el registro de sexo
+mortalidad.2017[3, 1:6]
+```
+
+Finalmente, podemos combinar la primer entrada de la columna `lista1` se vería así:
+```{r}
+mortalidad.2017[1, "lista1"]
+```
+
+En resumen, la notación siempre es de la siguiente forma:
+$$
+\text{Base.de.datos}[\underbrace{f}_{fila},\overbrace{c}^{columna}]
+$$
+Esta notación `notación matricial` estándar en el mundo de computación y de las matemáticas. Siempre siempre primero es fila luego columna. ¡No lo olvides pues nos será útil para los modelos!
+
+Otra forma de seleccionar una columna es con \$ seguido del nombre de la columna. Por ejemplo: 
+```{r, eval = FALSE}
+mortalidad.2017$edo_civil
+```
+
+```{r, echo = FALSE}
+head(mortalidad.2017$edo_civil)
+```
+
+Por ciertos errores en los que se pueden incurrir al crear funciones, se recomienda que se utilice siempre la notación de doble corchete y se evite el signo de \$. Pero ambos métodos funcionan. Sólo recuerda que la notación es así: 
+
+$$
+\text{Base.de.datos}\$\text{Columna}[\underbrace{f}_{\text{Fila}}]
+$$
+
+
+Una última opción es con `select`:
+```{r, eval = FALSE}
+mortalidad.2017 %>% select(c("edo_civil"))
+```
+
+```{r, echo = FALSE}
+head(mortalidad.2017$edo_civil)
+```
+la cual nos regresa la columna de estado civil. El comando [`select`](https://dplyr.tidyverse.org/reference/select.html) es bastante útil si, por ejemplo, no recordamos exactamente el nombre de la columna. Por ejemplo, si sólo recordamos que tiene la palabra `"civil"` pero no exactamente cómo se escribe podemos usar `contains`:
+
+```{r, eval = FALSE}
+#Podemos usar contains si recordamos que dice civil 
+#pero no el nombre completo
+mortalidad.2017 %>% select(contains("civil"))
+```
+
+```{r, echo = FALSE}
+#Podemos usar contains si recordamos que dice civil 
+#pero no el nombre completo
+head(mortalidad.2017 %>% select(contains("civil")))
+```
+
+Podemos preguntarnos, de igual manera por la 7a entrada de `edo_civil` haciendo:
+
+```{r}
+mortalidad.2017$edo_civil[7]
+```
+
+Lo cual es equivalente a la forma anterior:
+```{r, eval = FALSE}
+mortalidad.2017[7, "edo_civil"]
+```
+
+En el caso del `tidyverse` el equivalente a `select`, para elegir fila, el equivalente se conoce como `slice`:
+```{r}
+#Selecciona la fila 11
+mortalidad.2017 %>% slice(11)
+```
+
+Podemos combinar multiples argumentos con `%>%`^[En el mismo renglón debe estar el `%>%` que el último comando para no generar error]:
+```{r}
+mortalidad.2017 %>% 
+  select(c("sexo","edo_civil")) %>% 
+  slice(11:20)
+```
+
+Esta forma de combinación con `pipes` (`%>%`) será bastante útil más adelante. 
+
+Para seleccionar múltiples filas o columnas, como vimos en el ejemplo anterior, hay que crear un vector usando `c`^[Se llama `c` por `concatenate` (concatenar).]. Un vector es una lista ordenada de variables del mismo tipo. Por ejemplo:
+```{r}
+mi.vector <- c(1, 141, 12)
+```
+
+Es un vector de 3 entradas. De hecho, la forma de acceder a sus entradas es la misma que la de los `data.frames` con un agregado: ¡sólo hay filas, no hay columnas!
+
+```{marginfigure}
+Intuitivamente podemos pensar un vector como una columna de una base de datos. En ella todas las variables son del mismo tipo. 
+```
+
+Para acceder a las entradas de un vector es de la siguiente forma: 
+```{r}
+#Para un vector sólo pongo el número de entrada ¡no hay columna!
+mi.vector[2] #entrada 2
+```
+
+En general la notación es la siguiente: 
+$$
+\text{vector}[\underbrace{i}_{\text{Entrada}}]
+$$
+
+Un vector que ya nos encontramos antes es el de columnas. Podemos, por ejemplo, ver el nombre de la cuarta columna de la base combinando lo que sabemos de vectores con el comando `colnames`:
+```{r}
+#Regresa el nombre de la 5a columna
+colnames(mortalidad.2017)[5]
+```
+
+La pregunta también puede hacerse al revés: podemos pedirle a `R` que nos conteste cuál es el número de columna para una columna dada. Por ejemplo, ¿cuál es el número de columna para `edad`?
+
+```{r}
+#Preguntamos a R cuál de las columnas se llama edad
+which(colnames(mortalidad.2017) == "edad")
+```
+
+Nota que si preguntamos por una columna que no existe, `R` nos regresa lo siguiente: 
+```{r}
+#Preguntamos a R cuál de las columnas se llama edad
+which(colnames(mortalidad.2017) == "Paraguas")
+```
+
+Esto significa que no hay ninguna columna con ese nombre. Finalmente, nota que el which puede regresar múltiples resultados si las cosas se repiten. Por ejemplo, el siguiente comando nos regresa las múltiples entradas del vector `nombres.de.amigos` donde hay un amigo que tiene el nombre de `Alejandro`:
+
+```{r}
+#Creo un vector con nombres de mis amigos
+nombres.de.amigos <- c("Alejandro", "Beatriz", "Alejandro", "Carla")
+
+#Pregunto por cuáles entradas contienen a Alejandro
+which(nombres.de.amigos == "Alejandro")
+```
+
+Finalmente, podemos usar vectores para seleccionar múltiples columnas y filas, por ejemplo si deseo seleccionar, de la base, las columnas de `sexo` y `edad`:
+
+```{r, eval = FALSE}
+mortalidad.2017[ , c("sexo", "edad")]
+```
+
+```{r, echo = FALSE}
+head(mortalidad.2017[ , c("sexo", "edad")])
+```
+
+Finalmente si quiero seleccionar sólo algunos renglones puedo ponerlos en un vector: 
+
+```{r}
+#Selecciona sólo el renglón 1 y el 7
+mortalidad.2017[c(1, 7), c("sexo", "edad")]
+```
+
+Mientras que el `:` selecciona _del renglón 1 al renglón 7_ 
+```{r}
+#Selecciona del 1 al 7
+mortalidad.2017[1:7, c("sexo", "edad")]
+```
+
+El equivalente usando `select` y `slice` es:
+```{r}
+mortalidad.2017 %>% 
+  select(c("sexo","edad")) %>%
+  slice(1:7)
+```
+
+**NOTA** Los dos puntos no funcionan para seleccionar columnas usando los nombres de las columnas como caracteres: 
+
+```{r}
+#Selecciona renglones del 2 al 7
+#y las columnas 5 a 9
+mortalidad.2017[2:7, 5:9]
+```
+
+Los `:` son una forma corta de hacer vectores, por eso los usamos:
+```{r}
+9:15
+```
+
+## Ejercicios 
+
+1. Lee el archivo `diversidad_dieta_adultos_251116.dta` el cual contiene el cuestionario de frecuencia de consumo de nutrimentos de la encuesta nacional de salud y nutrición (ENSANUT) 2016. Para ello usa el comando `read_dta` de la librería `haven` o bien en `RStudio > Import Dataset > From STATA`. 
+
+```{r, echo = FALSE}
+ffq.2016 <- read_dta(paste0(filedir,"Cuestionario De Frecuencia De Consumo Adultos/diversidad_dieta_adultos_251116.dta"))
+```
+
+a. Determina los nombres de todas las columnas de las variables usando `R` (no vale ver el archivo). 
+b. Determina el número de renglones y el número de filas totales de la base. 
+c. Encuentra cuál fila contiene el `folio_sel` dado por: `r ffq.2016$folio_sel[1234]`. 
+d. Regresa todas las mediciones para la `r nrow(ffq.2016)-10`a fila. 
+e. Regresa la 5a columna.
+f. Obtén el nombre de la `r ncol(ffq.2016)-1` columna. 
+g. Obtén la entrada en la columna `5` y fila `14`. 
+ 
+2. Considera la base de datos creada por el siguiente código:
+```{r}
+base.inventada <- data.frame(Tiempo = rexp(100), 
+                             Enfermo = rbinom(100, 83, 1/3))
+```
+
+Determina qué ocasionó los resultados siguientes: 
+
+a. ¿Por qué da error?
+```{r}
+#Primer error
+base.inventada[ , 200]
+```
+
+b. ¿Por qué da `NA`?
+```{r}
+#NA
+base.inventada[1000, ]
+```
+
+c. ¿Por qué dice esto?
+```{r}
+#Primer error
+base.inventada[0,0]
+```
+
+d. ¿Por qué da `NULL`?
+```{r}
+#NULL
+base.inventada[2, c("tiempo")]
+```
+
+e. Arregla este código para que no dé error
+```{r, eval = FALSE}
+base.inventada %>% select("Tiempo")
+               %>% slice(2)
+```
+
+# Limpieza de la base de datos
+De la base de mortalidad comencemos por quedarnos sólo con las columnas `ent_regis`, `sexo`, `edad`, `dia_ocurr`, `mes_ocurr`, `anio_ocurr` y `causa_def`. Para ello seleccionamos múltiples columnas mediante un vector con el nombre de las columnas a seleccionar: 
+
+```{r}
+#Reescribimos la variable sólo con las columnas que nos
+#interesan
+mortalidad.2017.editada <- mortalidad.2017 %>%
+  select(c("ent_regis", "sexo", "edad", 
+           "dia_ocurr", "mes_ocurr", "anio_ocur", "causa_def"))
+```
+
+**Ojo** `anio_ocur` tiene sólo una `r`. 
+
+Utilicemos `colnames` para mejorar los nombres de las variables: 
+```{r}
+colnames(mortalidad.2017.editada) <- c("Entidad", "Sexo", "Edad", 
+                                       "Día", "Mes", "Año", "Causa") 
+```
+
+Vamos a asociar a cada uno de los registros la variable correspondiente. Para ello leemos las bases. Comencemos con leer la base de causas de la defunción: 
+```{r, eval = FALSE}
+#Base mal leída
+dic.causa <- read.csv("Catalogo_datos_inegi/decatcausa.csv")
+```
+
+```{r, echo = FALSE}
+#Base mal leída
+dic.causa <- read.csv(paste0(filedir,"Catalogo_datos_inegi/decatcausa.csv"))
+head(dic.causa)
+```
+
+Según estés en `Mac` o `Windows` y el archivo provenga de la otra plataforma o de otro país puede que te llegues a topar con problemas como éste: las tildes se leen como quiere (seguro te ha pasado con `Excel`). Para leerlas correctamente, `R` contiene la variable `encoding`. [Usualmente el `encoding` es `UTF-8`](https://www.w3.org/International/questions/qa-choosing-encodings) pero [Windows es Windows](https://www.quora.com/Why-doesnt-Microsoft-use-UTF-8-on-Windows-10)... En mi experiencia con bases de datos mexicanas los `encodings` suelen ser `UTF-8`, `latin1` ó `WINDOWS-1252` así que siempre pruebo esos.^[ [No existe forma de detectar el `encoding` de un archivo](https://softwareengineering.stackexchange.com/questions/187169/how-to-detect-the-encoding-of-a-file). Y todos los programas se enfrentan a él. Mientras no haya una estandarización, seguiremos con estos problemas.] 
+
+Probemos el encoding `latin1`:
+```{r, eval = FALSE}
+dic.causa <- read.csv("Catalogo_datos_inegi/decatcausa.csv",
+                      encoding = "latin1")
+```
+
+```{r, echo = FALSE}
+#Base con información de los estados
+dic.causa <- read.csv(paste0(filedir,"Catalogo_datos_inegi/decatcausa.csv"), encoding="latin1")
+head(dic.causa)
+```
+
+Repetimos el proceso con las otras bases:
+
+```{r, eval = FALSE}
+#Base con información de sexo
+dic.edad <- read.csv("Catalogo_datos_inegi/deedad.csv", 
+                     encoding="latin1")
+
+#Base con información de sexo
+dic.sexo <- read.csv("Catalogo_datos_inegi/desexo.csv", 
+                     encoding="latin1")
+
+#Base con información de los estados
+dic.lugar <- read.csv("Catalogo_datos_inegi/decateml.csv", 
+                        encoding="latin1")
+
+
+```
+
+```{r, echo = FALSE}
+#Base con información de sexo
+dic.edad <- read.csv(paste0(filedir,"Catalogo_datos_inegi/deedad.csv"), encoding="latin1")
+
+#Base con información de sexo
+dic.sexo <- read.csv(paste0(filedir,"Catalogo_datos_inegi/desexo.csv"), encoding="latin1")
+
+#Base con información de los estados
+dic.lugar <- read.csv(paste0(filedir,"Catalogo_datos_inegi/decateml.csv"), encoding="latin1")
+
+#Base con información de los estados
+dic.edad <- read.csv(paste0(filedir,"Catalogo_datos_inegi/deedad.csv"), encoding="latin1")
+
+```
+
+Vamos a pegar la base de edad. Para ello lo que necesitamos hacer un `merge`. `merge` combina dos bases de datos según identificadores en común. Para el `merge` especificamos la columna (o vector de columnas) que contienen el identificador común.  
+
+```{r}
+#Juntamos sexo con su identificador
+mortalidad.2017.editada.v2 <- merge(mortalidad.2017.editada, dic.sexo,
+                                 by.x = "Sexo", by.y = "CVE", 
+                                 all.x = TRUE, all.y = FALSE)
+```
+
+Para no tener dos columnas con sexo, borramos una de ellas y renombramos, usando `rename` la segunda de ellas:
+```{r}
+#Eliminamos la columna de sexo
+mortalidad.2017.editada.v2 <- mortalidad.2017.editada.v2 %>% 
+                                  select(-c("Sexo"))
+
+#Renombramos DESCRIP como Sexo
+mortalidad.2017.editada.v2 <- mortalidad.2017.editada.v2 %>% 
+                                  rename("Sexo" = "DESCRIP")
+```
+
+### Ejercicio 
+Repite el proceso con las bases `deedad.csv` para la edad y `decatcausa.csv` para la causa de muerte, a fin de obtener una base de `mortalidad.2017.editada.v2` que se vea así:
+
+```{r, echo = FALSE}
+#Juntamos edad con su identificador
+mortalidad.2017.editada.v2 <- merge(mortalidad.2017.editada.v2, dic.edad,
+                                 by.x = "Edad", by.y = "CVE", 
+                                 all.x = TRUE, all.y = FALSE)
+
+#Eliminamos la columna de edad
+mortalidad.2017.editada.v2 <- mortalidad.2017.editada.v2 %>% 
+                                  select(-c("Edad"))
+
+#Renombramos DESCRIP como Sexo
+mortalidad.2017.editada.v2 <- mortalidad.2017.editada.v2 %>% 
+                                  rename("Edad" = "DESCRIP")
+
+#Juntamos causa
+mortalidad.2017.editada.v2 <- merge(mortalidad.2017.editada.v2, dic.causa,
+                                 by.x = "Causa", by.y = "CVE", 
+                                 all.x = TRUE, all.y = FALSE)
+
+#Eliminamos la columna de edad
+mortalidad.2017.editada.v2 <- mortalidad.2017.editada.v2 %>% 
+                                  select(-c("Causa"))
+
+#Renombramos DESCRIP como Sexo
+mortalidad.2017.editada.v2 <- mortalidad.2017.editada.v2 %>% 
+                                  rename("Causa" = "DESCRIP")
+
+kable(head(mortalidad.2017.editada.v2))
+```
+
+Finalmente, podemos unir los identificadores de entidad y localidad. Nota que el nombre de la entidad se puede obtener a partir de aquellos en `dic.lugar` que tienen en ceros el identificador de municipio y de localidad. Por lo que crearemos una sub-base que contenga sólo el nombre de las entidades. Para ello, utilizamos el comando `filter`:
+
+```{r}
+dic.entidad  <- dic.lugar %>% 
+  filter(cve_mun == 0 & cve_loc == 0) %>%
+  select(c("cve_ent", "nom_loc"))
+```
+
+Asignamos la entidad a la base:
+```{r}
+#Juntamos con la base
+mortalidad.2017.editada.v2 <- merge(mortalidad.2017.editada.v2, dic.entidad,
+                                 by.x = "Entidad", by.y = "cve_ent", 
+                                 all.x = TRUE, all.y = FALSE)
+
+#Eliminamos la columna de edad
+mortalidad.2017.editada.v2 <- mortalidad.2017.editada.v2 %>% 
+                                  select(-c("Entidad"))
+
+#Renombramos DESCRIP como Sexo
+mortalidad.2017.editada.v2 <- mortalidad.2017.editada.v2 %>% 
+                                  rename("Entidad" = "nom_loc")
+```
+
+Nota que el comando `filter` lo que hace es seleccionar elementos de la base que cumplan con los criterios especificados. Por ejemplo, podemos generar una base sólo para `Sonora`:
+
+```{r, eval = FALSE}
+#Sólo Sonora
+mortalidad.2017.editada.v2 %>% filter(Entidad == "Sonora")
+```
+
+El comando `distinct` te permite encontrar todos los valores que toma una variable:
+```{r}
+#Vemos cuáles valores toma Entidad
+mortalidad.2017.editada.v2 %>% distinct(Entidad)
+```
+
+Por otro lado, el comando `count` cuenta el número de observaciones agrupadas por una variable. 
+```{r, eval = FALSE}
+mortalidad.2017.editada.v2 %>% count(Entidad)
+```
+
+Así se obtienen los datos que forman esta tabla:
+
+```{r, echo = FALSE}
+kable(mortalidad.2017.editada.v2 %>% count(Entidad))
+```
+
+Podemos combinar los comandos de `filter` y `count` para, por ejemplo, contar la cantidad de registros de hombres: 
+
+```{r, eval = TRUE}
+mortalidad.2017.editada.v2 %>% 
+  filter(Sexo == "Hombres") %>%
+  count(Entidad)
+```
+
+O bien los de mujeres:
+
+```{r, eval = TRUE}
+mortalidad.2017.editada.v2 %>% 
+  filter(Sexo == "Hombres") %>%
+  count(Entidad)
+```
+
+El comando `group_by` te permite generar una única tabla:
+
+```{r, eval = TRUE}
+mortalidad.2017.editada.v2 %>% 
+  group_by(Sexo) %>%
+  count(Entidad)
+```
+
+Podemos agrupar por múltiples variables:
+
+```{r, eval = TRUE}
+mortalidad.2017.editada.v2 %>% 
+  group_by(Sexo, Mes) %>%
+  count(Entidad)
+```
+
+Finalmente, podemos utilizar el comando `arrange` para reordenar la base de mayor a menor (`desc`). Así, podemos analizar los estados con mayor cantidad de defunciones:
+```{r}
+mortalidad.2017.editada.v2 %>%
+  count(Entidad) %>%
+  arrange(desc(n))
+```
+
+## Ejercicio
+Responde las siguientes preguntas respecto a la mortalidad en México 2017:
+
+a. ¿Cuántas mujeres murieron en Aguascalientes?
+
+b. ¿Cuántos registros de hombres, mujeres y no especificado se tienen con `Causa` dada por `"Contacto traumático con maquinaria agrícola en calles y carreteras"`?
+
+c. ¿Cuál es el estado donde hubo mayores registros de defunciones por `"Paniculitis, no especificada"` ?
+
+d. Genera una gráfica como la siguiente (usando `ggplot2`) de mortalidad por `Enfermedad renal hipertensiva con insuficiencia renal` por `Entidad` y `Sexo`:
+
+```{r, echo = FALSE}
+enf.renal <- mortalidad.2017.editada.v2 %>% filter(Causa == "Enfermedad renal hipertensiva con insuficiencia renal") %>% group_by(Sexo) %>% count(Entidad)
+
+ggplot(enf.renal) + 
+  geom_col(aes(x = Entidad, y = n, fill = Sexo), position = "dodge") +
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, 
+                                   size = 6),
+        plot.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8"),
+        legend.background = element_rect(fill = "#fffff8")) + 
+  ylab("Defunciones") + xlab("Entidad Federativa") +
+  ggtitle("Defunciones por enfermedad renal hipertensiva con insuficiencia renal\nINEGI 2017") + 
+  scale_fill_manual("Sexo", values = c("#6B06A2","#F38B00","#00A75F"))
+```
