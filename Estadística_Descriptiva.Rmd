@@ -1,6 +1,6 @@
 ---
 title: "Modelaje Epidemiológico en `R`"
-subtitle: "Limpieza de bases"
+subtitle: "Limpieza de bases y estadística descriptiva I"
 author: "Rodrigo Zepeda"
 date: "`r Sys.Date()`"
 output:
@@ -29,6 +29,7 @@ library(kableExtra)
 library(haven)
 library(ggplot2)
 library(tidyverse)
+library(lubridate)
 filedir <- "~/Dropbox/CURSO_INSP_2019/course_files/"
 options(tinytex.verbose = TRUE)
 knitr::opts_chunk$set(tidy = FALSE, cache.extra = packageVersion('tufte'), error = TRUE)
@@ -493,9 +494,10 @@ dic.entidad  <- dic.lugar %>%
 Asignamos la entidad a la base:
 ```{r}
 #Juntamos con la base
-mortalidad.2017.editada.v2 <- merge(mortalidad.2017.editada.v2, dic.entidad,
-                                 by.x = "Entidad", by.y = "cve_ent", 
-                                 all.x = TRUE, all.y = FALSE)
+mortalidad.2017.editada.v2 <- merge(mortalidad.2017.editada.v2,
+                                    dic.entidad, by.x = "Entidad", 
+                                    by.y = "cve_ent", all.x = TRUE, 
+                                    all.y = FALSE)
 
 #Eliminamos la columna de edad
 mortalidad.2017.editada.v2 <- mortalidad.2017.editada.v2 %>% 
@@ -609,15 +611,16 @@ mortalidad.2017.editada.v2 %>%
 donde el comando `"Infarto|infarto"` busca la palabra con mayúscula o con minúscula. Esto nos permite obtener las categorías que nos interesan, aquellas con infarto al miocardio:
 
 ```{r}
-causas.miocardio <- c("Infarto agudo del miocardio, sin otra especificación",
-                      "Infarto transmural agudo del miocardio de la pared anterior",
-                      "Infarto transmural agudo del miocardio de la pared inferior",
-                      "Infarto subsecuente del miocardio, de parte no especificada",
-                      "Infarto agudo transmural del miocardio de otros sitios",
-                      "Infarto transmural agudo del miocardio, de sitio no especificado",
-                      "Infarto subsecuente del miocardio de la pared inferior",
-                      "Infarto subsecuente del miocardio de la pared anterior",
-                      "Infarto subendocárdico agudo del miocardio")
+causas.miocardio <- c(
+  "Infarto agudo del miocardio, sin otra especificación",
+  "Infarto transmural agudo del miocardio de la pared anterior",
+  "Infarto transmural agudo del miocardio de la pared inferior",
+  "Infarto subsecuente del miocardio, de parte no especificada",
+  "Infarto agudo transmural del miocardio de otros sitios",
+  "Infarto transmural agudo del miocardio, de sitio no especificado",
+  "Infarto subsecuente del miocardio de la pared inferior",
+  "Infarto subsecuente del miocardio de la pared anterior",
+  "Infarto subendocárdico agudo del miocardio")
 ```
 
 Finalmente, asociamos:
@@ -674,9 +677,10 @@ mortalidad.2017.editada.v2 <- mortalidad.2017.editada.v2 %>%
 
 #CAUSA
 #-----------------------------------------------------
-mortalidad.2017.editada.v2 <- merge(mortalidad.2017.editada.v2, dic.causa,
-                                 by.x = "Causa", by.y = "CVE", 
-                                 all.x = TRUE, all.y = FALSE)
+mortalidad.2017.editada.v2 <- merge(mortalidad.2017.editada.v2, 
+                                    dic.causa, by.x = "Causa", 
+                                    by.y = "CVE", all.x = TRUE, 
+                                    all.y = FALSE)
 
 #Eliminamos la columna de edad
 mortalidad.2017.editada.v2 <- mortalidad.2017.editada.v2 %>% 
@@ -688,9 +692,10 @@ mortalidad.2017.editada.v2 <- mortalidad.2017.editada.v2 %>%
 
 #ENTIDAD
 #-----------------------------------------------------
-mortalidad.2017.editada.v2 <- merge(mortalidad.2017.editada.v2, dic.entidad,
-                                 by.x = "Entidad", by.y = "cve_ent", 
-                                 all.x = TRUE, all.y = FALSE)
+mortalidad.2017.editada.v2 <- merge(mortalidad.2017.editada.v2,
+                                    dic.entidad, by.x = "Entidad", 
+                                    by.y = "cve_ent", all.x = TRUE, 
+                                    all.y = FALSE)
 
 #Eliminamos la columna de edad
 mortalidad.2017.editada.v2 <- mortalidad.2017.editada.v2 %>% 
@@ -709,7 +714,8 @@ mortalidad.miocardio <- mortalidad.2017.editada.v2 %>%
 mortalidad.miocardio[, "Año"] <- 2017
 
 # Renombraremos la columna n como defunciones
-mortalidad.miocardio.2017 <- mortalidad.miocardio %>% rename("Defunciones" = "n")
+mortalidad.miocardio.2017 <- mortalidad.miocardio %>% 
+  rename("Defunciones" = "n")
 ```
 
 Observa que el código correspondiente a `Sexo`, `Causa` y `Entidad` es prácticamente el mismo y sólo cambian pequeñas cosas. Lo mismo ocurrirá si queremos usar la base de `2016`, tenemos que hacer `copy-paste` de lo que llevamos y cambiar sólo el año de la base:
@@ -754,9 +760,10 @@ mortalidad.2016.editada.v2 <- mortalidad.2016.editada.v2 %>%
 
 #CAUSA
 #-----------------------------------------------------
-mortalidad.2016.editada.v2 <- merge(mortalidad.2016.editada.v2, dic.causa,
-                                 by.x = "Causa", by.y = "CVE", 
-                                 all.x = TRUE, all.y = FALSE)
+mortalidad.2016.editada.v2 <- merge(mortalidad.2016.editada.v2, 
+                                    dic.causa, by.x = "Causa", 
+                                    by.y = "CVE", all.x = TRUE, 
+                                    all.y = FALSE)
 
 #Eliminamos la columna de edad
 mortalidad.2016.editada.v2 <- mortalidad.2016.editada.v2 %>% 
@@ -768,9 +775,10 @@ mortalidad.2016.editada.v2 <- mortalidad.2016.editada.v2 %>%
 
 #ENTIDAD
 #-----------------------------------------------------
-mortalidad.2016.editada.v2 <- merge(mortalidad.2016.editada.v2, dic.entidad,
-                                 by.x = "Entidad", by.y = "cve_ent", 
-                                 all.x = TRUE, all.y = FALSE)
+mortalidad.2016.editada.v2 <- merge(mortalidad.2016.editada.v2, 
+                                    dic.entidad, by.x = "Entidad", 
+                                    by.y = "cve_ent", all.x = TRUE, 
+                                    all.y = FALSE)
 
 #Eliminamos la columna de edad
 mortalidad.2016.editada.v2 <- mortalidad.2016.editada.v2 %>% 
@@ -789,7 +797,8 @@ mortalidad.miocardio <- mortalidad.2016.editada.v2 %>%
 mortalidad.miocardio[, "Año"] <- 2016
 
 # Renombraremos la columna n como defunciones
-mortalidad.miocardio.2016 <- mortalidad.miocardio %>% rename("Defunciones" = "n")
+mortalidad.miocardio.2016 <- mortalidad.miocardio %>% 
+  rename("Defunciones" = "n")
 ```
 
 Hacer `copy-paste` de comandos es un error muy común cuando se está empezando a programar. ¡Imagínate si tuvieras que hacer la mortalidad desde `1990`! Seguro nos vamos a equivocar. Peor aún, imagina que decidimos agregar localidad en las variables ¡tendríamos que modificar cada uno de los copy pastes! 
@@ -993,9 +1002,10 @@ mortalidad.2016.editada.v2 <- mortalidad.2016.editada.v2 %>%
 
 #CAUSA
 #-----------------------------------------------------
-mortalidad.2016.editada.v2 <- merge(mortalidad.2016.editada.v2, dic.causa,
-                                 by.x = "Causa", by.y = "CVE", 
-                                 all.x = TRUE, all.y = FALSE)
+mortalidad.2016.editada.v2 <- merge(mortalidad.2016.editada.v2, 
+                                    dic.causa, by.x = "Causa", 
+                                    by.y = "CVE", all.x = TRUE, 
+                                    all.y = FALSE)
 
 #Eliminamos la columna de edad
 mortalidad.2016.editada.v2 <- mortalidad.2016.editada.v2 %>% 
@@ -1007,9 +1017,10 @@ mortalidad.2016.editada.v2 <- mortalidad.2016.editada.v2 %>%
 
 #ENTIDAD
 #-----------------------------------------------------
-mortalidad.2016.editada.v2 <- merge(mortalidad.2016.editada.v2, dic.entidad,
-                                 by.x = "Entidad", by.y = "cve_ent", 
-                                 all.x = TRUE, all.y = FALSE)
+mortalidad.2016.editada.v2 <- merge(mortalidad.2016.editada.v2, 
+                                    dic.entidad, by.x = "Entidad", 
+                                    by.y = "cve_ent", all.x = TRUE, 
+                                    all.y = FALSE)
 
 #Eliminamos la columna de edad
 mortalidad.2016.editada.v2 <- mortalidad.2016.editada.v2 %>% 
@@ -1023,8 +1034,8 @@ mortalidad.2016.editada.v2 <- mortalidad.2016.editada.v2 %>%
 
 Nota que en todos los casos aparecen los mismos tres comandos. Podemos abstraerlos para generar una función:
 ```{r}
-indicadores.mortalidad <- function(base.mortalidad, base.indicadores, indicador.x,
-                                   indicador.y, nombre.y){
+indicadores.mortalidad <- function(base.mortalidad, base.indicadores,
+                                   indicador.x, indicador.y, nombre.y){
   
     #SEXO
     #-----------------------------------------------------
@@ -1081,7 +1092,8 @@ mortalidad.miocardio <- mortalidad.2016.editada.v2 %>%
 mortalidad.miocardio[, "Año"] <- 2016
 
 # Renombraremos la columna n como defunciones
-mortalidad.miocardio.2016 <- mortalidad.miocardio %>% rename("Defunciones" = "n")
+mortalidad.miocardio.2016 <- mortalidad.miocardio %>% 
+  rename("Defunciones" = "n")
 ```
 
 ¿Será que podemos abstraer aún más esta función? ¡Por supuesto! Vamos a crear una función que nos permita leer las bases de datos para cada uno de los años de tal manera que podamos hacer el análisis mucho más rápido. 
@@ -1119,13 +1131,14 @@ analisis.mortalidad <- function(base, anio, causas){
   # 4 Filtramos
   mortalidad.causas <- mortalidad %>% 
     filter(Causa %in% !!causas) %>%
-    count(Sexo, Mes, Entidad)
+    count(Sexo, Mes, Entidad, Día)
   
   # 5 Agregaré una columna a la base que se llame año con 2016
   mortalidad.causas[, "Año"] <- anio
   
   # Renombraremos la columna n como defunciones
-  mortalidad.causas <- mortalidad.causas %>% rename("Defunciones" = "n")
+  mortalidad.causas <- mortalidad.causas %>% 
+    rename("Defunciones" = "n")
 
   return(mortalidad.causas)
 }
@@ -1141,8 +1154,7 @@ datos.2016 <- paste0(filedir, datos.2016)
 
 Veamos que sí sirve:
 ```{r}
-base.2016 <- analisis.mortalidad(datos.2016, 2016,
-                                 causas.miocardio)
+base.2016 <- analisis.mortalidad(datos.2016, 2016, causas.miocardio)
 ```
 
 Podemos, fácilmente, hacer los análisis para el resto de los años usando estas funciones:
@@ -1186,24 +1198,97 @@ mortalidad <- base.2017 %>%
 ```
 
 Sobre esta base, podemos hacer mas análisis, por ejemplo, analizar las muertes totales por año:
-```{r}
-#CÓDIGO
+```{r, eval = FALSE}
+mortalidad %>% 
+  group_by(Año) %>% 
+  summarise(Defunciones = sum(Defunciones))
 ```
 
-O bien graficar la evolución de las muertes totales por año y por mes:
+O bien graficar la evolución de las muertes totales por año, mes y sexo. Para ello usaremos pegamos la fecha y usamos `as.Date`:
 ```{r}
-#CÓDIGO
+#Eliminamos los registros que no tienen fecha
+mortalidad.con.fecha <- mortalidad %>% 
+  filter(Mes < 13 & Día < 32)
+
+#Hacemos que R sepa que estamos hablando de una fecha
+mortalidad.con.fecha$Fecha <-as.Date(paste(mortalidad.con.fecha$Año, 
+                                        mortalidad.con.fecha$Mes, 
+                                        mortalidad.con.fecha$Día, 
+                                        sep = "-"))
+
+#Eliminamos aquellos que quedaron sin fecha
+mortalidad.con.fecha <- mortalidad.con.fecha %>%
+  filter(!is.na(Fecha))
+
+#Creamos la base agrupada por fecha y sexo
+mortalidad.plot <- mortalidad.con.fecha %>% 
+  group_by(Sexo, Fecha) %>%
+  summarise(Defunciones = sum(Defunciones))
+
+#Graficamos
+ggplot(mortalidad.plot) + 
+  geom_point(aes(x = Fecha, y = Defunciones, color = Sexo)) +
+  theme_linedraw() +
+  theme(plot.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8"),
+        legend.background = element_rect(fill = "#fffff8")) +
+  ggtitle("Defunciones por infarto al miocardio en México (INEGI)")
 ```
 
 O ajustar un modelo `Loess` que nos describa la mortalidad por mes y año gráficamente:
 ```{r}
-#CÓDIGO
+#Eliminaremos a las personas de `Sexo no especificado` pues no
+#es fácil describirlas (pocas mediciones relativamente):
+
+#Creamos la base agrupada por fecha y sexo sin no especificado
+mortalidad.plot <- mortalidad.plot %>% 
+  filter(Sexo != "Sexo no especificado")
+
+#Agregamos el loess
+ggplot(mortalidad.plot) +
+  geom_point(aes(x = Fecha, y = Defunciones, color = Sexo), 
+              alpha = 0.1) +
+  geom_smooth(aes(x = Fecha, y = Defunciones, color = Sexo), 
+              method = "loess", span = 0.1, 
+              method.args = list(degree = 1)) + 
+  ggtitle("Defunciones de infarto miocardio ajustadas") +
+  theme_linedraw() +
+  theme(plot.background   = element_rect(fill = "#fffff8"),
+        panel.background  = element_rect(fill = "#fffff8"),
+        legend.background = element_rect(fill = "#fffff8"))
 ```
 
-Finalmente, podemos utilizar la función `summary` para obtener estadísticas descriptivas:
+Finalmente, podemos utilizar la función `summarise` para obtener estadísticas descriptivas como pueden ser la media `mean`, varianza `var`, cuantiles `quantile`, mínimo `min`, máximo `max`, mediana `median` de defunciones por año y sexo:
 ```{r}
-#CÓDIGO
+#Generamos la base de datos
+resumen.mortalidad <- 
+        mortalidad.con.fecha %>% 
+          group_by(Año, Sexo) %>% 
+          summarise(Promedio  = mean(Defunciones), 
+                    Varianza  = var(Defunciones),
+                    Cuantil75 = quantile(Defunciones, 0.75),
+                    Mínimo    = min(Defunciones),
+                    Máximo    = max(Defunciones),
+                    Mediana   = median(Defunciones))
+```
+
+Así obtenemos la siguiente tabla:
+
+```{r, echo = FALSE}
+kable(resumen.mortalidad)
+```
+
+Finalmente guardamos la base de datos ya sea en un `RDS` (formato de base de datos de `R`) ó en un `csv` para leerlo con nuestro programa favorito (Excel, Stata, SPSS, etc).
+
+```{r, eval = TRUE}
+#Lee con readRDS
+saveRDS(mortalidad.con.fecha, 
+        file = "MortalidadMiocardio.rds" )
+
+#Lee con Excel
+write.csv(mortalidad.con.fecha,
+          file = "MortalidadMiocardio.csv")
 ```
 
 ## Ejercicio
-Describe la mortalidad por tus causas favoritas (NO enfermedad miocardio, _ej_ `diabetes`, `cólera`, `tumor`) en México durante los años 2012 a 2017 y realiza una gráfica de la evolución de la enfermedad por sexo y por estado. ¿Qué puedes concluir?
+Describe la mortalidad por tus causas favoritas (NO enfermedad miocardio, _ej_ `diabetes`, `cólera`, `tumor`) en México durante los años 2012 a 2017 y realiza una gráfica de la evolución de la enfermedad por sexo y por estado. ¿Qué puedes concluir? ¿Cuál es el mínimo mensual por sexo?¿Y la varianza por estado? ¿Cómo se ven los cuartiles `quartiles` por año? ¿En qué entidad federativa hubo la mayor cantidad de defunciones por dicha causa en el periodo `2013-2016`?
