@@ -1,0 +1,57 @@
+---
+title: "Modelaje Epidemiológico en `R`"
+subtitle: "Modelos 2: Modelos de Markov Discretos"
+author: "Rodrigo Zepeda"
+date: "`r Sys.Date()`"
+output:
+  tufte::tufte_html: 
+    tufte_features: ["fonts", "background","italics"]
+    toc: false
+    includes:
+      in_header: javascriptcall.html
+    css: style.css
+  tufte::tufte_handout:
+    citation_package: natbib
+    latex_engine: xelatex
+  tufte::tufte_book:
+    citation_package: natbib
+    latex_engine: xelatex
+bibliography: skeleton.bib
+link-citations: yes
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE, message = FALSE, warnign = FALSE}
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+library(haven)
+library(ggplot2)
+library(tidyverse)
+library(lubridate)
+filedir <- "~/Dropbox/CURSO_INSP_2019/course_files/"
+options(tinytex.verbose = TRUE)
+knitr::opts_chunk$set(tidy = FALSE, cache.extra = packageVersion('tufte'), error = TRUE)
+options(htmltools.dir.version = FALSE)
+```
+
+# Caminata Aleatoria
+
+# Ciclos y condicionales en `R`
+
+## if
+
+## for
+
+## while
+
+# De vuelta a la caminata
+
+# Modelos por compartimentos
+
+## Planteamiento y algunos cálculos
+
+## Simulación vía `markovchain`
+
+## Simulación exacta 
