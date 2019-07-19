@@ -1,6 +1,6 @@
 ---
 title: "Modelaje Epidemiológico en `R`"
-subtitle: "Limpieza de bases y estadística descriptiva"
+subtitle: "Limpieza de bases"
 author: "Rodrigo Zepeda"
 date: "`r Sys.Date()`"
 output:
@@ -595,3 +595,615 @@ ggplot(enf.renal) +
   ggtitle("Defunciones por enfermedad renal hipertensiva con insuficiencia renal\nINEGI 2017") + 
   scale_fill_manual("Sexo", values = c("#6B06A2","#F38B00","#00A75F"))
 ```
+
+# Ejemplo de análisis: Mortalidad por infarto del miocardio de 2010 a 2017.
+
+Se desea hacer un análisis de la mortalidad por infarto del miocardio por estado de la república, sexo, año y mes. Para ello usaremos la función `str_detect`  que detecta si en un conjunto de caracteres (`string`) está la palabra:
+
+```{r}
+mortalidad.2017.editada.v2 %>% 
+  distinct(Causa) %>%
+  filter(str_detect(Causa, "Infarto|infarto"))
+```
+
+donde el comando `"Infarto|infarto"` busca la palabra con mayúscula o con minúscula. Esto nos permite obtener las categorías que nos interesan, aquellas con infarto al miocardio:
+
+```{r}
+causas.miocardio <- c("Infarto agudo del miocardio, sin otra especificación",
+                      "Infarto transmural agudo del miocardio de la pared anterior",
+                      "Infarto transmural agudo del miocardio de la pared inferior",
+                      "Infarto subsecuente del miocardio, de parte no especificada",
+                      "Infarto agudo transmural del miocardio de otros sitios",
+                      "Infarto transmural agudo del miocardio, de sitio no especificado",
+                      "Infarto subsecuente del miocardio de la pared inferior",
+                      "Infarto subsecuente del miocardio de la pared anterior",
+                      "Infarto subendocárdico agudo del miocardio")
+```
+
+Finalmente, asociamos:
+```{r}
+mortalidad.miocardio <- mortalidad.2017.editada.v2 %>% 
+  filter(Causa %in% causas.miocardio) %>%
+  count(Sexo, Mes, Entidad)
+```
+
+El inicio de la base se ve así:
+```{r, echo = FALSE}
+head(mortalidad.miocardio)
+```
+
+Queremos repetir el mismo análisis para las bases de 2012 hasta 2017. Para ello resumiremos sólo los pasos necesarios para juntar las causas:
+
+```{r, eval = TRUE}
+mi.base <- "conjunto_de_datos_defunciones_generales_2017.CSV"
+```
+
+```{r, echo = FALSE}
+mi.base <- paste0(filedir, mi.base)
+```
+
+```{r, eval = TRUE}
+# 1 Leemos la base
+mortalidad.2017 <- read.csv(mi.base)
+
+# 2 Elegimos sólo las variables que nos interesan
+mortalidad.2017.editada <- mortalidad.2017 %>%
+  select(c("ent_regis", "sexo", "edad", 
+           "dia_ocurr", "mes_ocurr", "anio_ocur", "causa_def"))
+
+#Cambiamos los nombres de las variables
+colnames(mortalidad.2017.editada) <- c("Entidad", "Sexo", "Edad", 
+                                       "Día", "Mes", "Año", "Causa") 
+
+# 3 Una vez que leímos previamente las bases de sexo dic.sexo
+#   las de estados, dic.lugar y las de causa, dic.causa las asociamos:
+
+#SEXO
+#-----------------------------------------------------
+mortalidad.2017.editada.v2 <- merge(mortalidad.2017.editada, dic.sexo,
+                                 by.x = "Sexo", by.y = "CVE", 
+                                 all.x = TRUE, all.y = FALSE)
+
+#Eliminamos la columna de sexo
+mortalidad.2017.editada.v2 <- mortalidad.2017.editada.v2 %>% 
+                                  select(-c("Sexo"))
+
+#Renombramos DESCRIP como Sexo
+mortalidad.2017.editada.v2 <- mortalidad.2017.editada.v2 %>% 
+                                  rename("Sexo" = "DESCRIP")
+
+#CAUSA
+#-----------------------------------------------------
+mortalidad.2017.editada.v2 <- merge(mortalidad.2017.editada.v2, dic.causa,
+                                 by.x = "Causa", by.y = "CVE", 
+                                 all.x = TRUE, all.y = FALSE)
+
+#Eliminamos la columna de edad
+mortalidad.2017.editada.v2 <- mortalidad.2017.editada.v2 %>% 
+                                  select(-c("Causa"))
+
+#Renombramos DESCRIP como Sexo
+mortalidad.2017.editada.v2 <- mortalidad.2017.editada.v2 %>% 
+                                  rename("Causa" = "DESCRIP")
+
+#ENTIDAD
+#-----------------------------------------------------
+mortalidad.2017.editada.v2 <- merge(mortalidad.2017.editada.v2, dic.entidad,
+                                 by.x = "Entidad", by.y = "cve_ent", 
+                                 all.x = TRUE, all.y = FALSE)
+
+#Eliminamos la columna de edad
+mortalidad.2017.editada.v2 <- mortalidad.2017.editada.v2 %>% 
+                                  select(-c("Entidad"))
+
+#Renombramos DESCRIP como Sexo
+mortalidad.2017.editada.v2 <- mortalidad.2017.editada.v2 %>% 
+                                  rename("Entidad" = "nom_loc")
+
+# 4 Filtramos
+mortalidad.miocardio <- mortalidad.2017.editada.v2 %>% 
+  filter(Causa %in% causas.miocardio) %>%
+  count(Sexo, Mes, Entidad)
+
+# 5 Agregaré una columna a la base que se llame año con 2017
+mortalidad.miocardio[, "Año"] <- 2017
+
+# Renombraremos la columna n como defunciones
+mortalidad.miocardio.2017 <- mortalidad.miocardio %>% rename("Defunciones" = "n")
+```
+
+Observa que el código correspondiente a `Sexo`, `Causa` y `Entidad` es prácticamente el mismo y sólo cambian pequeñas cosas. Lo mismo ocurrirá si queremos usar la base de `2016`, tenemos que hacer `copy-paste` de lo que llevamos y cambiar sólo el año de la base:
+
+```{r, eval = TRUE}
+mi.base <- "conjunto_de_datos_defunciones_generales_2016.CSV"
+```
+
+```{r, echo = FALSE}
+mi.base <- paste0(filedir, mi.base)
+```
+
+```{r, eval = TRUE}
+# 1 Leemos la base
+mortalidad.2016 <- read.csv(mi.base)
+
+# 2 Elegimos sólo las variables que nos interesan
+mortalidad.2016.editada <- mortalidad.2016 %>%
+  select(c("ent_regis", "sexo", "edad", 
+           "dia_ocurr", "mes_ocurr", "anio_ocur", "causa_def"))
+
+#Cambiamos los nombres de las variables
+colnames(mortalidad.2016.editada) <- c("Entidad", "Sexo", "Edad", 
+                                       "Día", "Mes", "Año", "Causa") 
+
+# 3 Una vez que leímos previamente las bases de sexo dic.sexo
+#   las de estados, dic.lugar y las de causa, dic.causa las asociamos:
+
+#SEXO
+#-----------------------------------------------------
+mortalidad.2016.editada.v2 <- merge(mortalidad.2016.editada, dic.sexo,
+                                 by.x = "Sexo", by.y = "CVE", 
+                                 all.x = TRUE, all.y = FALSE)
+
+#Eliminamos la columna de sexo
+mortalidad.2016.editada.v2 <- mortalidad.2016.editada.v2 %>% 
+                                  select(-c("Sexo"))
+
+#Renombramos DESCRIP como Sexo
+mortalidad.2016.editada.v2 <- mortalidad.2016.editada.v2 %>% 
+                                  rename("Sexo" = "DESCRIP")
+
+#CAUSA
+#-----------------------------------------------------
+mortalidad.2016.editada.v2 <- merge(mortalidad.2016.editada.v2, dic.causa,
+                                 by.x = "Causa", by.y = "CVE", 
+                                 all.x = TRUE, all.y = FALSE)
+
+#Eliminamos la columna de edad
+mortalidad.2016.editada.v2 <- mortalidad.2016.editada.v2 %>% 
+                                  select(-c("Causa"))
+
+#Renombramos DESCRIP como Sexo
+mortalidad.2016.editada.v2 <- mortalidad.2016.editada.v2 %>% 
+                                  rename("Causa" = "DESCRIP")
+
+#ENTIDAD
+#-----------------------------------------------------
+mortalidad.2016.editada.v2 <- merge(mortalidad.2016.editada.v2, dic.entidad,
+                                 by.x = "Entidad", by.y = "cve_ent", 
+                                 all.x = TRUE, all.y = FALSE)
+
+#Eliminamos la columna de edad
+mortalidad.2016.editada.v2 <- mortalidad.2016.editada.v2 %>% 
+                                  select(-c("Entidad"))
+
+#Renombramos DESCRIP como Sexo
+mortalidad.2016.editada.v2 <- mortalidad.2016.editada.v2 %>% 
+                                  rename("Entidad" = "nom_loc")
+
+# 4 Filtramos
+mortalidad.miocardio <- mortalidad.2016.editada.v2 %>% 
+  filter(Causa %in% causas.miocardio) %>%
+  count(Sexo, Mes, Entidad)
+
+# 5 Agregaré una columna a la base que se llame año con 2016
+mortalidad.miocardio[, "Año"] <- 2016
+
+# Renombraremos la columna n como defunciones
+mortalidad.miocardio.2016 <- mortalidad.miocardio %>% rename("Defunciones" = "n")
+```
+
+Hacer `copy-paste` de comandos es un error muy común cuando se está empezando a programar. ¡Imagínate si tuvieras que hacer la mortalidad desde `1990`! Seguro nos vamos a equivocar. Peor aún, imagina que decidimos agregar localidad en las variables ¡tendríamos que modificar cada uno de los copy pastes! 
+
+Quienes nos dedicamos a programar somos muy flojos y para ello inventamos el concepto de función. Éste nos permitirá repetir el mismo proceso para diferentes datos. 
+
+# Funciones en `R`
+
+Una función la podemos pensar como un pedazo de código que transforma un poco de código en otra cosa. 
+
+```{r, echo = FALSE, fig.cap="Una función toma ciertos valores de input y regresa ciertos outputs"}
+ggplot(data.frame(x = 1, y = 1), aes(x, y)) + 
+  geom_rect(aes(xmin = -0.5, ymin = 0, xmax = 1.5, ymax = 1), fill = "firebrick") +
+  annotate("text", x = 0.5, y = 0.5, label = "function(){}", color = "white", size = 8) + 
+  annotate("text", x = -1.5, y = 0.5, label = "Input", size = 8) + 
+  annotate("text", x = 2.5, y = 0.5, label = "Output", size = 8) + 
+  geom_segment(aes(x = -1, y = 0.5, xend = -0.6, yend = 0.5), arrow = arrow(length = unit(0.25, "cm"))) +
+  geom_segment(aes(x = 1.6, y = 0.5, xend = 1.9, yend = 0.5), arrow = arrow(length = unit(0.25, "cm"))) +
+  theme_void() +
+  xlim(-2,3) + ylim(-1,2) + 
+  theme( plot.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8"),
+        legend.background = element_rect(fill = "#fffff8"))
+```
+
+```{marginfigure}
+Por si te lo preguntabas, sí, también el diagrama lo hicimos con `ggplot2` ;)
+```
+
+Por ejemplo la siguiente función toma como `Input` un número y le suma `5` (yo sé que es una función muy inútil pero vamos paso a paso):
+
+```{r}
+#Defino mi función
+suma.5 <- function(mi.numero){
+  return(mi.numero + 5)
+}
+
+#Pruebo mi función
+suma.5(10)
+suma.5(1)
+suma.5("Pingüino")
+```
+
+La estructura básica de una función en `R` es como sigue:
+$$
+\begin{aligned}
+\text{Nombre.de.la.function}& \leftarrow\textrm{function}(\overbrace{\textrm{Inputs}}^{\text{Lo que necesita para funcionar}})\{
+\\
+& \text{Código} \\
+& \text{return}(\underbrace{\text{Output}}_{\textrm{Lo que resulta}})
+\\
+\}
+\end{aligned}
+$$
+Veamos otra función:
+
+```{r}
+#Función que dice ¡Hola ----! donde ---- es el nommbre que se mete
+mi.saludo <- function(nombre){
+  saludo <- paste0("¡Hola ", nombre, "!")
+  return(saludo)
+}
+
+#Ejemplos
+mi.saludo("Ana")
+mi.saludo("Jesús")
+```
+
+Una función puede tener múltiples parámetros, por ejemplo la función que resta un número a otro:
+```{r}
+resta.numeros <- function(num.1, num.2){
+  mi.resta <- num.1 - num.2
+  return(mi.resta)
+}
+
+#Restamos dos números
+resta.numeros(10, 3)
+
+#Observa cómo el orden importa
+resta.numeros(3, 10)
+```
+
+En general las buenas prácticas de `R` te piden que utilices [el formato `roxygen2`](https://kbroman.org/pkg_primer/pages/docs.html) para documentar la función ¡lo mejor es siempre poner qué hace tu función pues la idea es reciclarla cuantas veces sea necesaria!
+
+```{r}
+resta.numeros <- function(num.1, num.2){
+  #' resta.numeros
+  #' 
+  #' Función que calcula num.1 - num.2
+  #' @param num.1 Número que se va a restar
+  #' @param num.2 Número que se resta de num.1
+  #' @return num.1 - num.2
+  
+  mi.resta <- num.1 - num.2
+  return(mi.resta)
+}
+```
+
+En este caso, quizá no tiene mucho sentido documentar la función. Pero cuando uno trabaja con proyectos más grandes (o con más personas) ¡es bastante importante saber qué hace una función!
+
+Por último, una función también puede regresar múltiples valores. Para ello está el comando `list`. Por ejemplo, la función que regresa la media y desviación estándar de un vector: 
+
+```{r}
+media.y.varianza <- function(mi.vector){
+  #' media.y.varianza
+  #'
+  #' Función que calcula la media y desviación estándar de un vector
+  #' @param mi.vector Un vector de R al cual calcular media y desviación
+  #' @return mi.lista Lista de parámetros que contiene:
+  #'           media    Media del vector
+  #'           desv.est Desviación estándar del mismo
+  
+  #Calculamos la media
+  media    <- mean(mi.vector)
+  
+  #Calculamos la desviación estándar
+  desv.est <- sd(mi.vector)
+  
+  return(list(promedio = media, desviacion = desv.est))
+}
+
+#Veamos un ejemplo:
+un.vector <- c(0.27, -0.34, 0.11, -0.6, 0.82, -0.41)
+
+#Podemos calcular ambas
+media.y.varianza(un.vector)
+
+#Para acceder a un valor hay que usar $
+media.y.varianza(un.vector)$promedio
+```
+
+donde `mean` es una función de `R` que calcula la media de un vector:
+```{r}
+#Cremos un vector
+x <- c(1, 0.5, 2, 0.6, 0.4, 0, 0.2)
+mean(x)
+```
+
+y `sd` calcula su desviación estándar:
+```{r}
+sd(x)
+```
+
+## Ejercicios
+1. Construye una función que dada la altura (en metros) y peso (en kilogramos) de una persona, calcule su índice de masa corporal `IMC`. Recuerda que éste está dado por la fórmula:
+$$
+\text{IMC} = \dfrac{\text{Peso}}{(\text{Altura})^2}
+$$
+2. Construye una función que se llame `grafica.linea` que dado una base de datos (`data.frame`) que contiene las variables `x` y `y` cree una gráfica de línea con `ggplot` de `x` contra `y`. Prueba que con los siguientes datos funcione como en los ejemplos:
+
+```{r, echo = FALSE}
+grafica.linea <- function(mis.datos){
+  ggplot(mis.datos) + geom_line(aes(x = x, y = y))
+}
+```
+
+```{r}
+#Primera base de datos
+datos1 <- data.frame(x = 1:10, y = 1:10)
+grafica.linea(datos1)
+```
+
+```{r}
+#Segunda base de datos
+x <- seq(0,10*pi, length.out = 250)
+datos2 <- data.frame(x = x, y = sin(x))
+grafica.linea(datos2)
+```
+
+3. Utiliza las funciones de `cos()`, `sin()` y `log()` para crear una única función que dado un número regrese su coseno, su seno y su logaritmo natural. El 'output' de la función debe ser algo así:
+
+```{r, echo = FALSE}
+ejercicio.3 <- function(numero){
+  list(coseno = cos(numero), seno = sin(numero), logaritmo = log(numero))
+}
+```
+
+```{r}
+#Así debe de correr:
+ejercicio.3(12)
+```
+
+## De vuelta al análisis de bases
+
+Armados con el concepto de función podemos abstraer lo que tienen en común las secciones de Sexo, Entidad y Causa del apartado anterior:
+
+```{r, eval = FALSE}
+#SEXO
+#-----------------------------------------------------
+mortalidad.2016.editada.v2 <- merge(mortalidad.2016.editada, dic.sexo,
+                                 by.x = "Sexo", by.y = "CVE", 
+                                 all.x = TRUE, all.y = FALSE)
+
+#Eliminamos la columna de sexo
+mortalidad.2016.editada.v2 <- mortalidad.2016.editada.v2 %>% 
+                                  select(-c("Sexo"))
+
+#Renombramos DESCRIP como Sexo
+mortalidad.2016.editada.v2 <- mortalidad.2016.editada.v2 %>% 
+                                  rename("Sexo" = "DESCRIP")
+
+#CAUSA
+#-----------------------------------------------------
+mortalidad.2016.editada.v2 <- merge(mortalidad.2016.editada.v2, dic.causa,
+                                 by.x = "Causa", by.y = "CVE", 
+                                 all.x = TRUE, all.y = FALSE)
+
+#Eliminamos la columna de edad
+mortalidad.2016.editada.v2 <- mortalidad.2016.editada.v2 %>% 
+                                  select(-c("Causa"))
+
+#Renombramos DESCRIP como Sexo
+mortalidad.2016.editada.v2 <- mortalidad.2016.editada.v2 %>% 
+                                  rename("Causa" = "DESCRIP")
+
+#ENTIDAD
+#-----------------------------------------------------
+mortalidad.2016.editada.v2 <- merge(mortalidad.2016.editada.v2, dic.entidad,
+                                 by.x = "Entidad", by.y = "cve_ent", 
+                                 all.x = TRUE, all.y = FALSE)
+
+#Eliminamos la columna de edad
+mortalidad.2016.editada.v2 <- mortalidad.2016.editada.v2 %>% 
+                                  select(-c("Entidad"))
+
+#Renombramos DESCRIP como Sexo
+mortalidad.2016.editada.v2 <- mortalidad.2016.editada.v2 %>% 
+                                  rename("Entidad" = "nom_loc")
+
+```
+
+Nota que en todos los casos aparecen los mismos tres comandos. Podemos abstraerlos para generar una función:
+```{r}
+indicadores.mortalidad <- function(base.mortalidad, base.indicadores, indicador.x,
+                                   indicador.y, nombre.y){
+  
+    #SEXO
+    #-----------------------------------------------------
+    nueva.base <- merge(base.mortalidad, base.indicadores,
+                        by.x = indicador.x, by.y = indicador.y, 
+                        all.x = TRUE, all.y = FALSE)
+    
+    #Eliminamos la columna de sexo
+    nueva.base <- nueva.base %>% select(-c(!!indicador.x))
+    
+    #Renombramos DESCRIP como Sexo
+    nueva.base <- nueva.base %>% rename(!!indicador.x := nombre.y)
+    
+    return(nueva.base)
+
+}
+```
+
+Veamos que funciona con lo que habíamos hecho para `2016`:
+```{r}
+# 1 Leemos la base
+mortalidad.2016 <- read.csv(mi.base)
+
+# 2 Elegimos sólo las variables que nos interesan
+mortalidad.2016.editada <- mortalidad.2016 %>%
+  select(c("ent_regis", "sexo", "edad", 
+           "dia_ocurr", "mes_ocurr", "anio_ocur", "causa_def"))
+
+#Cambiamos los nombres de las variables
+colnames(mortalidad.2016.editada) <- c("Entidad", "Sexo", "Edad", 
+                                       "Día", "Mes", "Año", "Causa") 
+
+#Aquí cambiamos lo de sexo
+mortalidad.2016.editada.v2 <- 
+  indicadores.mortalidad(mortalidad.2016.editada, dic.sexo, 
+                         "Sexo", "CVE", "DESCRIP")
+
+#Aquí cambiamos lo de causa
+mortalidad.2016.editada.v2 <- 
+  indicadores.mortalidad(mortalidad.2016.editada.v2, dic.causa, 
+                         "Causa", "CVE", "DESCRIP")
+
+#Aquí cambiamos lo de estado
+mortalidad.2016.editada.v2 <- 
+  indicadores.mortalidad(mortalidad.2016.editada.v2, dic.entidad, 
+                         "Entidad", "cve_ent", "nom_loc")
+
+# 4 Filtramos
+mortalidad.miocardio <- mortalidad.2016.editada.v2 %>% 
+  filter(Causa %in% causas.miocardio) %>%
+  count(Sexo, Mes, Entidad)
+
+# 5 Agregaré una columna a la base que se llame año con 2016
+mortalidad.miocardio[, "Año"] <- 2016
+
+# Renombraremos la columna n como defunciones
+mortalidad.miocardio.2016 <- mortalidad.miocardio %>% rename("Defunciones" = "n")
+```
+
+¿Será que podemos abstraer aún más esta función? ¡Por supuesto! Vamos a crear una función que nos permita leer las bases de datos para cada uno de los años de tal manera que podamos hacer el análisis mucho más rápido. 
+
+```{r}
+analisis.mortalidad <- function(base, anio, causas){
+  
+  # 1 Leemos la base
+  mortalidad <- read.csv(base)
+  
+  # 2 Elegimos sólo las variables que nos interesan
+  mortalidad <- mortalidad %>%
+    select(c("ent_regis", "sexo", "edad", 
+             "dia_ocurr", "mes_ocurr", "anio_ocur", "causa_def"))
+  
+  #Cambiamos los nombres de las variables
+  colnames(mortalidad) <- c("Entidad", "Sexo", "Edad", 
+                                         "Día", "Mes", "Año", "Causa") 
+  
+  #Aquí cambiamos lo de sexo
+  mortalidad <- 
+    indicadores.mortalidad(mortalidad, dic.sexo, 
+                           "Sexo", "CVE", "DESCRIP")
+  
+  #Aquí cambiamos lo de causa
+  mortalidad <- 
+    indicadores.mortalidad(mortalidad, dic.causa, 
+                           "Causa", "CVE", "DESCRIP")
+  
+  #Aquí cambiamos lo de estado
+  mortalidad <- 
+    indicadores.mortalidad(mortalidad, dic.entidad, 
+                           "Entidad", "cve_ent", "nom_loc")
+  
+  # 4 Filtramos
+  mortalidad.causas <- mortalidad %>% 
+    filter(Causa %in% !!causas) %>%
+    count(Sexo, Mes, Entidad)
+  
+  # 5 Agregaré una columna a la base que se llame año con 2016
+  mortalidad.causas[, "Año"] <- anio
+  
+  # Renombraremos la columna n como defunciones
+  mortalidad.causas <- mortalidad.causas %>% rename("Defunciones" = "n")
+
+  return(mortalidad.causas)
+}
+```
+
+```{r, eval = TRUE}
+datos.2016 <- "conjunto_de_datos_defunciones_generales_2016.CSV"
+```
+
+```{r, echo = FALSE}
+datos.2016 <- paste0(filedir, datos.2016)
+```
+
+Veamos que sí sirve:
+```{r}
+base.2016 <- analisis.mortalidad(datos.2016, 2016,
+                                 causas.miocardio)
+```
+
+Podemos, fácilmente, hacer los análisis para el resto de los años usando estas funciones:
+```{r}
+datos.2017 <- "conjunto_de_datos_defunciones_generales_2017.CSV"
+datos.2015 <- "conjunto_de_datos_defunciones_generales_2015.CSV"
+datos.2014 <- "conjunto_de_datos_defunciones_generales_2014.CSV"
+datos.2013 <- "conjunto_de_datos_defunciones_generales_2013.CSV"
+datos.2012 <- "conjunto_de_datos_defunciones_generales_2012.CSV"
+```
+
+```{r, echo = FALSE}
+datos.2017 <- paste0(filedir, datos.2017)
+datos.2015 <- paste0(filedir, datos.2015)
+datos.2014 <- paste0(filedir, datos.2014)
+datos.2013 <- paste0(filedir, datos.2013)
+datos.2012 <- paste0(filedir, datos.2012)
+```
+
+```{r}
+base.2017 <- analisis.mortalidad(datos.2017, 2017,
+                                 causas.miocardio)
+base.2015 <- analisis.mortalidad(datos.2015, 2015,
+                                 causas.miocardio)
+base.2014 <- analisis.mortalidad(datos.2014, 2014,
+                                 causas.miocardio)
+base.2013 <- analisis.mortalidad(datos.2013, 2013,
+                                 causas.miocardio)
+base.2012 <- analisis.mortalidad(datos.2012, 2012,
+                                 causas.miocardio)
+```
+
+Finalmente, podemos juntar todos los datos en una sola base que contenga todos los años usando `bind_rows`:
+```{r}
+mortalidad <- base.2017 %>% 
+   bind_rows(base.2016) %>% 
+   bind_rows(base.2015) %>% 
+   bind_rows(base.2014) %>%
+   bind_rows(base.2013) %>%
+   bind_rows(base.2012)
+```
+
+Sobre esta base, podemos hacer mas análisis, por ejemplo, analizar las muertes totales por año:
+```{r}
+#CÓDIGO
+```
+
+O bien graficar la evolución de las muertes totales por año y por mes:
+```{r}
+#CÓDIGO
+```
+
+O ajustar un modelo `Loess` que nos describa la mortalidad por mes y año gráficamente:
+```{r}
+#CÓDIGO
+```
+
+Finalmente, podemos utilizar la función `summary` para obtener estadísticas descriptivas:
+```{r}
+#CÓDIGO
+```
+
+## Ejercicio
+Describe la mortalidad por tus causas favoritas (NO enfermedad miocardio, _ej_ `diabetes`, `cólera`, `tumor`) en México durante los años 2012 a 2017 y realiza una gráfica de la evolución de la enfermedad por sexo y por estado. ¿Qué puedes concluir?
