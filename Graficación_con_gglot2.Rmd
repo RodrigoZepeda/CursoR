@@ -1074,3 +1074,200 @@ df_mxstate$value <- seguro.pop.2010[ ,"PorcentajeAfiliada"]
 mxstate_choropleth(df_mxstate,
                    title = "Porcentaje de población afiliada al Seguro Popular") 
 ```
+
+##Ejercicios
+####NIVEL 1
+
+El siguiente código fue diseñado para ilustrar el cambio en el peso de los consumidores de
+bebidas azucaradas, de acuerdo a su nivel de actividad física.
+
+
+```{r, eval = FALSE,  message=FALSE}
+rm(list = ls())
+library(ggplot2)
+
+datos <- data.frame(Porciones = 0:2, 
+                    Bajo = c(0.38, 0.49, 0.59),
+                    BCIlow = c(0.15, 0.25, 0.32),
+                    BCIhigh = c(0.61, 0.72, 0.87), 
+                    Alto = c(0.28,0.36,0.44),
+                    ACIlow = c(0.03, 0.09, 0.04),
+                    ACIhigh = c(0.53, 0.63, 0.83))
+ggplot(datos) + 
+  
+  theme_classic()+
+  
+  geom_errorbar(aes(x = Porciones - 0.05, ymin = BCIlow, 
+                    ymax = BCIhigh, color = "Bajo"), 
+                    width = 0.2, size = 0.5) +
+  
+  geom_errorbar(aes(x = Porciones +0.05, ymin = ACIlow, 
+                    ymax = ACIhigh, color = "Alto"), 
+                    width = 0.2, size = 0.5) +
+  
+  geom_point(aes(x = Porciones -0.05, y = Bajo, 
+                 color = "Bajo"), stat="identity", 
+                 size = 2) +
+ 
+  geom_point(aes(x = Porciones +0.05, y = Alto, 
+                 color = "Alto"), stat="identity", 
+                 size = 2) +
+  
+  scale_x_continuous(name= "Consumo de bebidas 
+                     azucaradas (porciones/día)", 
+                     breaks = seq(0, 2, 1)) 
+  
+  scale_color_manual("Nivel de actividad física", 
+                     values = c( "Alto" = "darkorchid3", 
+                     "Bajo"="deepskyblue4"),
+                     breaks = c("Bajo","Alto")) +
+  
+  ylab("Cambio en el peso a un año (kg)") + 
+  
+  theme(axis.text=element_text(family="Arial", 
+                               face = "plain", size=12),
+        axis.title=element_text(family="Arial", 
+                                face = "plain", size=12),
+        legend.title=element_text(family="Arial", 
+                                  face = "plain", size=12), 
+        legend.text=element_text(family="Arial", 
+                                 face = "plain", size=12),
+        plot.title=element_text(family="Arial", 
+                                face="bold", size=12, hjust = 0.5)) 
+```
+1. ¿Qué significa el error? 
+
+```{r, eval = TRUE, echo= FALSE , message= TRUE, results= 'hide', fig.show='hide'}
+rm(list = ls())
+library(ggplot2)
+
+datos <- data.frame(Porciones = 0:2, 
+                    Bajo = c(0.38, 0.49, 0.59),
+                    BCIlow = c(0.15, 0.25, 0.32),
+                    BCIhigh = c(0.61, 0.72, 0.87), 
+                    Alto = c(0.28,0.36,0.44),
+                    ACIlow = c(0.03, 0.09, 0.04),
+                    ACIhigh = c(0.53, 0.63, 0.83))
+ggplot(datos) + 
+  
+  theme_classic()+
+  
+  geom_errorbar(aes(x = Porciones - 0.05, ymin = BCIlow, 
+                    ymax = BCIhigh, color = "Bajo"), 
+                    width = 0.2, size = 0.5) +
+  
+  geom_errorbar(aes(x = Porciones +0.05, ymin = ACIlow, 
+                    ymax = ACIhigh, color = "Alto"), 
+                    width = 0.2, size = 0.5) +
+  
+  geom_point(aes(x = Porciones -0.05, y = Bajo, 
+                 color = "Bajo"), stat="identity", 
+                 size = 2) +
+ 
+  geom_point(aes(x = Porciones +0.05, y = Alto, 
+                 color = "Alto"), stat="identity", 
+                 size = 2) +
+  
+  scale_x_continuous(name= "Consumo de bebidas 
+                     azucaradas (porciones/día)", 
+                     breaks = seq(0, 2, 1)) 
+  
+  scale_color_manual("Nivel de actividad física", 
+                     values = c( "Alto" = "darkorchid3", 
+                     "Bajo"="deepskyblue4"),
+                     breaks = c("Bajo","Alto")) +
+  
+  ylab("Cambio en el peso a un año (kg)") + 
+  
+  theme(axis.text=element_text(family="Arial", 
+                               face = "plain", size=12),
+        axis.title=element_text(family="Arial", 
+                                face = "plain", size=12),
+        legend.title=element_text(family="Arial", 
+                                  face = "plain", size=12), 
+        legend.text=element_text(family="Arial", 
+                                 face = "plain", size=12),
+        plot.title=element_text(family="Arial", 
+                                face="bold", size=12, hjust = 0.5)) 
+```
+
+
+2. Arregla el código. La gráfica que debes obtener se ve así:
+
+```{r,  cache=TRUE, echo = FALSE,  message=FALSE}
+knitr::include_graphics('images/Tarea_ej1.jpg')
+```
+
+2. Al agregar la siguiente línea al código nos aparecen los siguientes mensajes:
+
+```{r, eval = FALSE}
+ ylim(min= 0, max=0.50) 
+```
+
+```{r, eval = TRUE, echo= FALSE , message= TRUE, results= 'hide', fig.show='hide'}
+rm(list = ls())
+library(ggplot2)
+
+datos <- data.frame(Porciones = 0:2, 
+                    Bajo = c(0.38, 0.49, 0.59),
+                    BCIlow = c(0.15, 0.25, 0.32),
+                    BCIhigh = c(0.61, 0.72, 0.87), 
+                    Alto = c(0.28,0.36,0.44),
+                    ACIlow = c(0.03, 0.09, 0.04),
+                    ACIhigh = c(0.53, 0.63, 0.83))
+ggplot(datos) + 
+  
+  theme_classic()+
+  
+  geom_errorbar(aes(x = Porciones - 0.05, ymin = BCIlow, 
+                    ymax = BCIhigh, color = "Bajo"), 
+                    width = 0.2, size = 0.5) +
+  
+  geom_errorbar(aes(x = Porciones +0.05, ymin = ACIlow, 
+                    ymax = ACIhigh, color = "Alto"), 
+                    width = 0.2, size = 0.5) +
+  
+  geom_point(aes(x = Porciones -0.05, y = Bajo, 
+                 color = "Bajo"), stat="identity", 
+                 size = 2) +
+ 
+  geom_point(aes(x = Porciones +0.05, y = Alto, 
+                 color = "Alto"), stat="identity", 
+                 size = 2) +
+  
+  scale_x_continuous(name= "Consumo de bebidas 
+                     azucaradas (porciones/día)", 
+                     breaks = seq(0, 2, 1)) +
+  
+  scale_color_manual("Nivel de actividad física", 
+                     values = c( "Alto" = "darkorchid3", 
+                     "Bajo"="deepskyblue4"),
+                     breaks = c("Bajo","Alto")) +
+  
+  ylab("Cambio en el peso a un año (kg)") + 
+  
+  theme(axis.text=element_text(family="Arial", 
+                               face = "plain", size=12),
+        axis.title=element_text(family="Arial", 
+                                face = "plain", size=12),
+        legend.title=element_text(family="Arial", 
+                                  face = "plain", size=12), 
+        legend.text=element_text(family="Arial", 
+                                 face = "plain", size=12),
+        plot.title=element_text(family="Arial", 
+                                face="bold", size=12, hjust = 0.5)) +
+        ylim(min= 0, max=0.50) 
+```
+
+
+¿Qué es lo que está mal?
+
+###NIVEL 2
+El código `Prevalencia_Depresión.R` contiene datos y gráficas sobre la prevalencia de depresión diagnosticada y no diagnosticada en México, por sexo, escolaridad y nivel socioeconómico. 
+
+1. Basándote en el código, genera también las gráficas por sexo y escolaridad.
+2. Obten un arreglo de gráficas que se vea así:
+
+```{r,  cache=TRUE, echo = FALSE,  message=FALSE}
+knitr::include_graphics('images/Tarea_ej4.jpg')
+```
