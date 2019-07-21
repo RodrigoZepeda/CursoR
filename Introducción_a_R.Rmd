@@ -1,0 +1,1052 @@
+---
+title: "Modelaje Epidemiológico en `R`"
+subtitle: "Introducción a `R`"
+author: "Rodrigo Zepeda"
+date: "`r Sys.Date()`"
+output:
+  tufte::tufte_html: 
+    tufte_features: ["fonts", "background","italics"]
+    toc: false
+    includes:
+      in_header: javascriptcall.html
+    css: style.css
+  tufte::tufte_handout:
+    citation_package: natbib
+    latex_engine: xelatex
+  tufte::tufte_book:
+    citation_package: natbib
+    latex_engine: xelatex
+bibliography: skeleton.bib
+link-citations: yes
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE, message = FALSE, warnign = FALSE}
+#Esto hay que cambiarlo si estás en Windows
+escritorio <- "~/Desktop/"
+subDir  <- "Mi_curso_de_R"
+subcarpeta <- "~/Desktop/Mi_curso_de_R"
+filedir <- "~/Dropbox/CURSO_INSP_2019/course_files/"
+
+
+#Instala todas estas de una en una con install.packages("nombre")
+#por ejemplo install.packages("tufte")
+library(tufte)
+library(ggplot2)
+library(ggimage) 
+library(geomnet)
+library(grid)
+library(emoGG) #devtools::install_github("dill/emoGG")
+library(tidyverse)
+library(beepr)
+library(gridExtra)
+library(latex2exp)
+library(filesstrings)
+
+options(tinytex.verbose = TRUE)
+knitr::opts_chunk$set(tidy = FALSE, cache.extra = packageVersion('tufte'), error = TRUE)
+options(htmltools.dir.version = FALSE)
+options(repos="https://cran.itam.mx/ ")
+```
+<!--
+http://ncss-tech.github.io/stats_for_soil_survey/chapters/1_introduction/1_introduction.html
+-->
+# ¿`R`?
+Yo me enfrenté a `R` por primera vez hace más de 5 años cuando un grupo de investigadores con quienes trabajaba compartieron su código en `R`. Fue horrible. El código estaba mal comentado, elaborado sin ninguna lógica de programación (yo, según esto, ya sabía programar en ese entonces) y no funcionaba. Quizá, si ya conoces el programa, tu experiencia ha sido similar: en general cuando nos enfrentamos a `R` nos enfrentamos a cosas que otras personas escribieron para salir del aprieto sin mucha explicación. ¡Es lo peor del mundo porque no se entiende nada! El propósito de estas notas (¿y clase?) es dual: acompañarte en un acercamiento a `R` desde cero y perderle el miedo a dicho programa. 
+
+```{r, fig.margin = TRUE, fig.cap = "`R` es un programa chido de estadística. FIN.", fig.width=1.5, fig.height=1.5, cache=TRUE, echo = FALSE,  out.width = "150px", message=FALSE}
+knitr::include_graphics('images/rlogo.png')
+```
+
+
+Una de las primeras cosas que necesitamos saber es que `R` (por más que sus más ávidos defensores digan lo contrario) no es para todo. Si tú ya conoces otro lenguaje (sea `Stata`, `Excel`, `SAS`, etc) sabrás utilizar muchas de sus opciones. Estoy seguro que, de conocer uno de estos, te será muchísimo más fácil seguir sacando promedios en tu lenguaje favorito que en `R`, realizar regresiones lineales es probablemente más sencillo en `Stata` mientras que las gráficas de barras para mí son más simples en `Excel`. Lo que probablemente no sea más sencillo de hacer en otro lenguaje (salvo si tu otro lenguaje es `Python`, `Julia` ó `Matlab`) es realizar modelos de simulación, desde cero y todo el análisis que conlleva. Para eso, `R` es, indiscutiblemente, una de las mejores opciones para quienes no conocen de programación^[Modelos de simulación más avanzados suelen hacerse en `C`, `C++` o `Fortran` por su velocidad; empero, es necesario conocer más de programación.]. 
+
+Finalmente, uno de los consejos más importantes que te puedo dar es que este curso no te va a servir si no practicas. Igual que como pasa con los idiomas uno no aprende `R` en una semana _sin practicarlo después_. Mi sugerencia es que, a la vez que sigues estas notas comiences a trabajar un proyecto _tuyo_ específico junto con [el buscador de Internet de tu preferencia](https://yandex.com) a la mano y empieces a usar `R` en él. Practica^[La práctica hace al maestro]. 
+
+## Algunas ventajas de `R` y cosas no tan padres
+
+### Puntos a favor de `R`
+
+- Todo el mundo lo usa. Quizá éste es el punto más a favor. Si mucha gente lo conoce y lo utiliza, hay más opciones de ayuda. Los sitios de StackOverflow [en inglés](https://stackoverflow.com) y [en español](https://es.stackoverflow.com) son excelentes para pedir apoyo en `R`; los [grupos de usuarios de Google](https://groups.google.com/forum/#!forum/r-help-archive) son otra fuente muy buena. Entre más gente usa el programa; es más fácil obtener ayuda porque seguro alguien más tuvo hace ya tiempo el mismo problema que tú. 
+- Todas las personas que trabajan en estadística publican sus métodos y su código en `R` (eso, claro, cuando publican sus métodos). Es raro encontrar _un nuevo método estadístico_ en el mundo y que no se pueda usar, de alguna forma, en `R`. 
+
+- Dentro de los lenguajes de programación `R` es de los más sencillos. Quienes lo hicieron realmente se preocuparon por su público (de no especialistas) y en general desarrollan para él. 
+
+- `R` es gratis. Y en esta época de austeridad, cualquier ahorro es bueno. 
+
+- Todo lo que se hace en `R` es público. `R` no tiene métodos secretos ni es una caja negra. Todo lo que hace cada una de las funciones de `R`, cualquiera lo puede revisar, por completo. 
+
+- En `R` puedes hacer notas ¡como estas! donde guardes todo tu trabajo, reportes automatizados e incluso [documentos interactivos](https://gallery.shinyapps.io/086-bus-dashboard/) para facilitar el análisis de datos. 
+
+- `R` puede hacer gráficas bonitas: 
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+rojos  <- data.frame(x = rnorm(100, 1), y = rnorm(100,1))
+verdes <- data.frame(x = rnorm(100, -1), y = rnorm(100,-2))
+xmin   <- c(-4,4)
+ymin   <- c(-4,4)
+scatter <- ggplot(mapping=aes(x = x, y = y)) + 
+  geom_point(data = verdes, color = "deepskyblue3", size = 4) + 
+  geom_point(data = rojos, color = "tomato3", size = 4) +
+  geom_point(data = data.frame(x = 1, y = 2), color = "black", size = 5) +
+  geom_point(data = data.frame(x = 1, y = 2), color = "orange", size = 3) +
+  theme_classic() +
+  theme(plot.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8")) +
+  xlim(xmin[1],xmin[2]) + ylim(ymin[1],ymin[2]) + 
+  xlab("Diferencia de altura respecto a la media") + 
+  ylab("Diferencia de peso respecto a la media") +
+  ggtitle("Datos simulados de peso y altura")
+
+empty <- ggplot()+geom_point(aes(1,1), colour="white")+
+         theme(axis.ticks=element_blank(), 
+               axis.text.x=element_blank(), axis.text.y=element_blank(),                plot.background = element_rect(fill = "#fffff8"),
+               panel.background = element_rect(fill = "#fffff8"),
+               axis.title.x=element_blank(), axis.title.y=element_blank())
+
+xhist <- seq(xmin[1],xmin[2], length.out = 100)
+hist_top <- ggplot(mapping=aes(x=x,y=y)) + 
+  geom_line(color="tomato3", data = data.frame(x = xhist, y = dnorm(xhist,1))) +
+  geom_line(color="deepskyblue3", data = data.frame(x = xhist, y = dnorm(xhist,-1))) +
+  theme_classic() + xlim(xmin[1],xmin[2]) + 
+  theme(plot.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8")) +
+  ylab("Densidad") + xlab("") +
+  ggtitle("Altura")
+
+yhist      <- seq(ymin[1],ymin[2], length.out = 100)
+hist_right <- ggplot(mapping=aes(x=x,y=y)) + 
+                geom_line(color="tomato3", data = data.frame(x = yhist, y = dnorm(yhist,1))) +
+                geom_line(color="deepskyblue3", data = data.frame(x = yhist, y = dnorm(yhist,-2))) + 
+                  ylab("Densidad") + xlab("") +
+                ggtitle("Peso") +
+                theme_classic() + theme(plot.background = element_rect(fill = "#fffff8"),
+                      panel.background = element_rect(fill = "#fffff8")) +
+                xlim(ymin[1],ymin[2]) + coord_flip()
+
+g <- arrangeGrob(
+            hist_top +  geom_vline(xintercept = 0, linetype="dashed", color = "forestgreen"), 
+            empty, 
+            scatter +  geom_vline(xintercept = 0, linetype="dashed", color = "forestgreen") +
+              geom_hline(yintercept = -0.5, linetype="dashed", color = "forestgreen") + 
+              annotate("text", x = -3.5, y = 3.5, label = TeX("$\\Omega_1$"), color = "black") + 
+              annotate("text", x = 3.5,  y = 3.5, label = TeX("$\\Omega_2$"), color = "tomato3") + 
+              annotate("text", x = 3.5, y = -3.5, label = TeX("$\\Omega_3$"), color = "black") + 
+              annotate("text", x = -3.5, y = -3.5, label = TeX("$\\Omega_4$"), color = "deepskyblue3"), 
+            hist_right +  geom_vline(xintercept = -0.5, linetype="dashed", color = "forestgreen"), ncol=2, nrow=2, widths=c(5, 2), heights=c(2, 5),
+            bottom = textGrob("RESULTADOS DE LA SIMULACIÓN", gp=gpar(fontface="bold", col ="black")))
+
+cowplot::ggdraw(g) + 
+  theme(plot.background = element_rect(fill="#fffff8", color = NA))
+
+```
+
+
+Por supuesto, no todo es miel sobre hojuelas con `R`. Particularmente, algunos de los problemas con el lenguaje:
+
+```{r, fig.margin = TRUE, fig.cap = "La curva de aprendizaje de `R` es más empinada pero después de un rato vale la pena", fig.width=5.5, fig.height=3.5, cache=TRUE, echo = FALSE, message=FALSE}
+
+#Get data
+x     <- seq(-0.5,2, length.out=250)
+pdata <- data.frame(x = x, y = x^2)
+
+ggplot(pdata) + 
+  geom_vline(xintercept = 1, linetype = "dashed", color = "gray", size = 0.5) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "gray", size = 0.5) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "gray", size = 0.5) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray", size = 0.5) +
+  geom_line(aes(x = x, y = y, color = "STATA, SPSS ó SAS"), data = subset(pdata, x > 0)) +
+  geom_line(aes(x = x, y = 0, color = "STATA, SPSS ó SAS"), data = subset(pdata, x < 0)) + 
+  geom_line(aes(x = x, y = x, color = "R")) + 
+  geom_point(aes(x = x, y = y), color = "gray", data = data.frame(x = 1, y = 1)) + 
+  geom_point(aes(x = x, y = y), color = "gray", data = data.frame(x = 0, y = 0)) + 
+  theme_classic() + 
+  ylab(toupper("Dificultad para programar")) +
+  xlab(toupper("Dificultad del modelo")) + 
+  coord_cartesian(ylim = c(-0.5, 4), clip = 'off') + 
+  annotate("text", x = 0.5, y = -0.9, label = "No uses R") +
+  annotate("text", x = 1.5, y = -0.9, label = "Usa R") +
+  annotate("text", x = -0.25, y = -0.9, label = "¡R!") +
+  theme(axis.text = element_blank(),
+        axis.title.x = element_text(margin = margin(0.5, unit = "cm")),
+        axis.ticks.y = element_blank(),
+        plot.background = element_rect(fill = "#fffff8"),
+        legend.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8"),
+        axis.ticks.length.x = unit(.5, "cm")) + 
+  scale_x_continuous(breaks = c(0,1)) +
+  scale_y_continuous(breaks = c(0,1)) + 
+  scale_color_manual("Programa", 
+                     values = c("STATA, SPSS ó SAS" = "tomato3", 
+                                "R" = "deepskyblue3"))
+
+```
+
+- La curva de aprendizaje es mucho más empinada que para otros programas estadísticos (como  `Stata`, `SAS` o `SPSS`) ¡particularmente si es tu primera vez programando!
+
+- La mayor parte de las personas que trabajan en `R` no son programadores de verdad. Gran parte del código que te puedes encontrar **en el mundo real** está escrito [con prisa para salir del aprieto](https://nsaunders.wordpress.com/2014/05/14/this-is-why-code-written-by-scientists-gets-ugly/) sin mucha planeación, con pocos comentarios, falta de control de versiones y pocas herramientas de revisión. ¡Internet está lleno de [creaturas espantosas escritas en `R`](https://codegolf.stackexchange.com/a/4011)!
+
+```{r, fig.margin = TRUE, fig.cap = "`R` puede ser muy lento pero eso te da oportunidad de hacer otras cosas ;) .", fig.width=3.5, fig.height=3.5, cache=TRUE, echo = FALSE,  message=FALSE}
+knitr::include_graphics('images/compiling.png')
+```
+
+- `R` [de ninguna manera es veloz](https://github.com/matthieugomez/benchmark-stata-r) por lo que algunos programas (lo veremos en simulación) pueden ser extremada (y dolorosamente) lentos.  
+
+# Bienvenidx a `R`, `r R.Version()$nickname` (sí, así se llama esta versión)
+
+`R` es un lenguaje de cómputo y un programa estadístico [libre](https://www.gnu.org/philosophy/free-sw.html), gratuito, [de programación funcional](http://adv-r.had.co.nz/Functional-programming.html) (¿qué es eso?), [orientado a objetos](https://en.wikipedia.org/wiki/Object-oriented_programming) (_what??_) que mutó a partir de otros dos lenguajes conocidos como `Scheme` y `S`^[De ahí que se llame `R` porque la `R` es una mejor letra que la `S` (todos lo sabemos) 
+-Atte. Rodrigo, el autor de este documento.]. El primero de estos fue  desarrollado en el MIT por Sussman y Steele mientras que el segundo surgió en los laboratorios Bell^[Mejor conocidos ahora como AT&T, la compañía celular que nunca tiene señal] creado por Becker, Wilks y Chambers. `R` [nació en junio de 1995](https://cran.r-project.org/doc/html/interface98-paper/paper_2.html) a partir del trabajo de 	Ross Ihaka y Robert Gentleman^[Sus nombres empiezan con la letra `R` ¿coincidencia?]. 
+
+Desde su creación, la mayor parte del desarrollo de `R` ha sido trabajo completamente voluntario de la [Fundación R](https://www.r-project.org/foundation/), del equipo de R Core y de miles de usuarios que han creado funciones específicas para `R` conocidas como paquetes (`packages`). Actualmente el repositorio más importante de `R`, CRAN, contiene `r nrow(available.packages())` paquetes con distintas funciones para hacer ¡lo que quieras!
+
+Como todo el trabajo en `R` es voluntario hace falta: 
+
+1. Una homologación en los métodos. Puedes encontrar varias funciones _que supuestamente hacen exactamente lo mismo_ (como es el caso de `emojifont`, `fontemoji` y `emoGG` para graficar usando emojis). 
+
+2. Estandarizar la notación. Algunos paquetes como aquellos del `tidyverse` (veremos más adeltna) utilizan `pipes` (`%>%`); estos sólo funcionan en el `tidyverse` pero no fuera del mismo.
+
+Sin embargo, también es una gran ventaja que sean los usuarios de `R` quienes guían su desarrollo. El lenguaje va mutando según peticiones de las personas que lo usan. Si hay algo que te gustaría `R` tuviera y aún no existe ¡lo puedes proponer! 
+
+## Nuestro entorno de trabajo
+
+### `R`
+
+```{r, fig.margin = TRUE, fig.cap = "Oficialmente, la página de `R` es de las páginas más feas del mundo. ¡No te dejes llevar por las apariencias!", fig.width=3.5, fig.height=3.5, cache=TRUE, echo = FALSE,  message=FALSE}
+knitr::include_graphics('images/CRAN1.png')
+```
+
+A lo largo de estas notas estaré trabajando con: `r R.Version()$version.string` _`r R.Version()$nickname`_. La más reciente versión de `R` la puedes encontrar en [CRAN](https://cran.r-project.org). Para ello ve al sitio y selecciona tu plataforma. 
+
+```{marginfigure}
+**Nota usuarios de Mac**
+En algunas Mac, al abir R, aparece el siguiente mensaje de advertencia:
+
+`During startup - Warning messages: 1: Setting LC_CTYPE failed [...]`
+
+para [solucionarlo](https://stackoverflow.com/questions/9689104/installing-r-on-mac-warning-messages-setting-lc-ctype-failed-using-c) ve a `Aplicaciones` y abre `Terminal`. Copia y pega en ella el siguiente texto:
+
+`defaults write org.R-project.R force.LANG en_US.UTF-8`
+
+Da enter, cierra la `Terminal` y reinicia `R`. 
+```
+
+- En el caso de Windows da clic en `Download R for Windows` y luego en `install R for the first time`. Finalmente, ejecuta el instalable que aparece al dar click en  ``r paste0("Download R ", R.Version()$major,".",R.Version()$minor," for Windows")`` . 
+<!-- Para este curso haremos uso de las herramientas de desarrollador [Rtools](https://cran.r-project.org/bin/windows/Rtools/) -->
+
+- En el caso de Mac selecciona `Download R for (Mac) OS X` y luego elige   ``r paste0("R-", R.Version()$major,".",R.Version()$minor,".pkg")``. En Mac puede que necesites instalar adicionalmente [XQuartz](https://www.xquartz.org) (según tu versión de Mac). Si tu Mac es una versión suficientemente antigua, sigue las instrucciones específicas de `CRAN`.  
+
+
+```{marginfigure}
+Si tienes problemas para instalar puedes usar [RStudio Cloud](https://rstudio.cloud).
+```
+
+- En el caso de Linux al elegir `Download R for Linux` tendrás la opción de buscar tu distribución específica. Al elegirla, aparecerán instrucciones para tu terminal de comandos; síguelas. En el caso de Linux, según los paquetes de `R` que elijamos instalar en la computadora requerirás instalar paquetería adicional para tu distribución de Linux. `R` te informará de la paquetería necesaria conforme la requiera.    
+
+### RStudio
+
+```{r, fig.margin = TRUE, fig.cap = "RStudio es una empresa que se dedica a hacer cosas para R.", fig.width=3.5, fig.height=3.5, cache=TRUE, echo = FALSE,  message=FALSE}
+knitr::include_graphics('images/rstudio.png')
+```
+
+
+`RStudio` es una interfaz gráfica (IDE) para `R`. Puedes pensar a `R` como el _Bloc de Notas_ y a `RStudio` como _Word_. El _Bloc_ tiene todas las capacidades que necesitas para poder escribir; empero, es muchísimo mejor trabajar tus _papers_ en _Word_. De la misma manera, `R` tiene todas las capacidades para hacer estadística _pero un formato horrible_ y `RStudio` se ha convertido en la más popular forma de usar `R`. Por supuesto que no es la única; algunas alternativas son [Atom con ide-r](https://atom.io/packages/ide-r), [Eclipse con StatET](https://marketplace.eclipse.org/content/statet-r) y [RKWard](https://rkward.kde.org). En general es posible seguir estas notas sin que tengas `RStudio` pero, si es tu primera vez programando, no lo recomiendo.
+
+```{marginfigure}
+Si ya tienes experiencia con lenguajes como Python, Javascript, Java ó alguno de los mil C que existen, no tendrás ningún problema usando el editor de tu preferencia.
+```
+
+Para descargar `RStudio` ve a [su página](https://www.rstudio.com) y da clic en `Download RStudio`. Baja tu pantalla hasta donde dice `Installers for Supported Platforms` y elige tu plataforma: `Windows`, `Mac OS X` ó tu sabor de `Linux` preferido. Una vez descargado el archivo, ábrelo y sigue las instrucciones que aparecen en pantalla.  
+
+
+# Primeros pasos en `RStudio`
+Una vez hayas instalado `R` y `RStudio`, abre `RStudio`^[Si decidiste no instalar RStudio salta al final de esta sección.]. Te enfrentarás a una pantalla similar a esta: 
+
+```{r fig-main, fig.cap = "La primera vez que abres RStudio", cache=TRUE, echo = FALSE}
+knitr::include_graphics('images/RStudio1.png')
+```
+
+Si tu RStudio tiene sólo 3 páneles, como en mi caso, ve a la esquina superior izquierda (signo de hoja+) y elige un nuevo `R Script`
+
+```{r, fig.cap = "Elige hoja+ para crear un nuevo archivo", cache=TRUE, echo = FALSE}
+knitr::include_graphics('images/RStudio2.png')
+```
+
+Tendrás, entonces, 4 páneles como se ve a continuación: 
+
+```{r, fig.cap = "RStudio <3", cache=TRUE, echo = FALSE}
+# Import the image
+library(grid)
+bg <- png::readPNG("images/RStudio3.png")
+ggplot() +  
+  annotation_custom(rasterGrob(bg, 
+                                 width = unit(1,"npc"), 
+                                 height = unit(1,"npc")), 
+                      -Inf, Inf, -Inf, Inf) +
+  geom_circle(aes(x = 2.5, y = 1.5), radius=0.1, fill = "deepskyblue3", color = "deepskyblue3", alpha = 0.95) +
+  annotate("text", x= 2.5, y = 1.5, label = "1", size = 10) +
+  geom_circle(aes(x = 2.5, y = 7.5), radius=0.1, fill = "deepskyblue3", color = "deepskyblue3", alpha = 0.95) +
+  annotate("text", x= 2.5, y = 7.5, label = "2", size = 10) +
+  geom_circle(aes(x = 7.5, y = 1.5), radius=0.1, fill = "deepskyblue3", color = "deepskyblue3", alpha = 0.95) +
+  annotate("text", x= 7.5, y = 1.5, label = "4", size = 10) +
+  geom_circle(aes(x = 7.5, y = 7.5), radius=0.1, fill = "deepskyblue3", color = "deepskyblue3", alpha = 0.95) +
+  annotate("text", x= 7.5, y = 7.5, label = "3", size = 10) +
+  xlim(c(0,10)) + ylim(c(0,10)) + theme_void()
+
+
+```
+
+
+
+1. El primer panel (esquina inferior izquierda) es la `Consola`. Aquí es donde se ejecutan las acciones. Prueba escribir `2 + 3` en él y presiona enter. Aparece el resultado de la suma. Definitivamente, `R` es la calculadora que más trabajo cuesta instalar. 
+
+```{r,  fig.cap = "La consola de `R` es la calculadora más difícil de instalar que existe.", cache=TRUE, echo = FALSE,  message=FALSE}
+knitr::include_graphics('images/RStudio4.png')
+```
+
+2. El segundo panel (esquina superior izquierda) es el panel con el `Script`. Aquí se escribe el programa pero no _se ejecuta_. Prueba escribir `10 + 9`. ¿Ves que no pasa nada? Lo que acabas de hacer es crear un programa que, cuando se ejecute, hará la suma de `10 + 9`. ¡Qué programa más aburrido! Sin embargo, no todo está perdido: presiona `CTRL+Enter` (`Cmd+Enter` en Mac) al final de la línea o bien da clic en `Run` y verás que, en la consola, aparece la instrucción y el resultado de la misma. El `Script` es una excelente fuente para tener un historial de lo que estás haciendo. 
+
+```{r, fig.cap = "El `Script` sirve para salvar las instrucciones en el orden en que las vas a ejecutar.", cache=TRUE, echo = FALSE,  message=FALSE}
+knitr::include_graphics('images/RStudio5.png')
+```
+
+3. El tercer panel contiene el ambiente. Aquí aparecerán las variables que vayamos creando. Por ahora, para poner un ejemplo, importaremos el archivo `Example1.csv` (con valores simulados) dando clic en `Import Dataset` y `From Text (base)`. Selecciona el archivo y elige las opciones en la ventana de previsualización que hagan que se vea bien. Nota que una vez realizada la importación aparece en el panel derecho `Example1.` Al dar clic podrás ver la base de datos. Las bases de datos y variables que utilices durante tus análisis aparecerán en esa sección.
+
+```{r, echo = FALSE}
+set.seed(371)
+Example1 <- data.frame(Alturas = rnorm(100, 1.65, 0.3), Peso = rnorm(100, 80, 1))
+write.csv(Example1, paste0(filedir,"Example1.csv"), row.names=FALSE)
+```
+
+```{r, fig.cap = "El `Ambiente` muestra las variables (incluyendo bases de datos) que estás utilizando en este momento. A diferencia de otros programas estadísticos (o sea `Stata`) en `R` es posible tener múltiples bases de datos abiertas a la vez.",  cache=TRUE, echo = FALSE,  message=FALSE}
+knitr::include_graphics('images/RStudio6.png')
+```
+
+4. Para entender mejor lo que ocurre en el último de los páneles, lo mejor es trabajar con nuestra base. Escribe en la consola `plot(Example1)` . En el cuarto pánel aparecerá una gráfica. El cuarto de los páneles para nosotros tendrá esa utilidad: mostrará las gráficas que hagamos así como la ayuda. Para ver la ayuda para las instrucciones de `R` puedes escribir `?`. Prueba teclear `?plot` en la consola. El signo de interrogación es un `help()` que muestra las instrucciones para usar una función.  
+
+```{r, fig.margin=TRUE, fig.cap = "La gráfica que aparece de hacer un `plot` de la base de datos de ejemplo.",  cache=TRUE, echo = FALSE, message=FALSE}
+plot(Example1)
+```
+
+```{r,  fig.cap = "El cuarto panel muestra respectivamente las gráficas y la ayuda.", cache=TRUE, echo = FALSE,  message=FALSE}
+knitr::include_graphics('images/RStudio7.png')
+```
+
+Mi sugerencia personal es que escribas todo lo que haces en el `Script` y que sólo utilices la consola para verificar valores. De esta manera podrás almacenar todas las instrucciones ejecutadas y volver a ellas cuando se requieran. Asegúrate de que al guardar tu `Script`, éste tenga una codificación UTF-8 (Sobre todo si trabajas en Windows). 
+
+```{r,  fig.cap = "El formato de codificación UTF-8, permite representar todos los caracteres que se usan en todos los idiomas. ", cache=TRUE, echo = FALSE,  message=FALSE}
+knitr::include_graphics('images/Save_with_encoding.png')
+```
+
+Por último te sugiero utilizar `#` gatos para comentar tu código. Así, el código anterior lo podrías ver en la consola como:
+
+```{r, eval = FALSE}
+#Aquí pruebo cómo R hace las sumas
+10 + 9
+```
+
+[Comenta](https://www.freecodecamp.org/news/code-comments-the-good-the-bad-and-the-ugly-be9cc65fbf83/). [Comenta](https://www.c-sharpcorner.com/blogs/why-comments-are-important-while-writing-a-code). [Comenta, por favor](https://blog.codinghorror.com/code-tells-you-how-comments-tell-you-why/). Tu ser del futuro que regrese a sus archivos de `R` un mes después de haberlos hecho te lo agradecerá (y tu profe también). 
+
+Finalmente y como aclaración para estas notas, el código de `R` aparece como:
+```{r, eval = FALSE}
+#Esto es código de R
+7 - 2
+```
+
+Mientras que los resultados de evaluar en `R` se ven con `#`:
+```{r, echo = FALSE}
+#Esto es código de R
+7 - 2
+```
+
+Así, la evaluación con su resultado se ve de la siguiente forma:
+```{r}
+#Esto es código de R
+7 - 2
+```
+
+# Primeros pasos con `R`
+
+## Cálculos numéricos
+`R` sirve como calculadora para las operaciones usuales. En él puedes hacer sumas,
+
+```{r}
+#Esto es una suma en R
+12 + 31
+```
+
+```{r, fig.margin = TRUE, fig.cap = "Ada Lovelace (1815-1852), la primera en diseñar un algoritmo computacional ¡y sin tener computadoras!", fig.width=3.5, fig.height=3.5, cache=TRUE, echo = FALSE, message=FALSE}
+knitr::include_graphics('images/ada_lovelace.jpg')
+```
+
+restas,
+```{r}
+#Esto es una resta en R
+3 - 4
+```
+ 
+multiplicaciones,
+```{r}
+#Esto es una multiplicación en R
+7*8
+```
+
+divisiones,
+```{r}
+#Esto es una división en R
+4/2
+```
+
+
+
+sacar logaritmos naturales $\ln$,
+```{r}
+#Para sacar logaritmo usas el comando log
+log(100)
+```
+
+o bien logaritmos en cualquier base,^[Recuerda que un logaritmo base $a$ te dice a qué potencia $b$ tuve que elevar $a$ para llegar a $b$. Por ejemplo $\log_{10}(100) = 2$ te dice que para llegar al $100$ tuviste que hacer $10^2$.]
+```{r}
+#Puedes especificar la base del logaritmo con base 
+log(100, base = 10)
+```
+
+también puedes elevar a una potencia (por ejemplo hacer $6^3$),
+```{r}
+#Así se calculan potencias
+6^3
+```
+
+calcular la exponencial $e$,
+```{r}
+#Para exponenciales puedes usar exp
+exp(1)
+```
+
+o bien exponenciar cualquier variable $e^{-3}$,
+```{r}
+#O bien exponenciales específicas, e^-3
+exp(-3)
+```
+
+también puedes usar el número $\pi$.
+```{r}
+#Cálculo de pi
+pi
+```
+
+No olvides que `R` usa el orden de las operaciones de matemáticas. Siempre es de izquierda a derecha con las siguientes excepciones: 
+
+1. Primero se evalúa lo que está entre paréntesis. 
+
+2. En segundo lugar se calculan potencias. 
+
+3. Lo tercero en evaluarse son multiplicaciones y divisiones. 
+
+4. Finalmente, se realizan sumas y restas. 
+
+Por ejemplo, en la siguiente ecuación 
+$$
+2 - 2 \cdot \frac{(3^4 - 9)}{(5 + 4)}
+$$
+se resuelven primero los paréntesis $(3^4 - 9) = 81 - 9 = 72$ y $(5 + 4) = 9$; luego se resuelve la división: $\frac{72}{9}=8$, se multiplica por el $2$: $2 \cdot 8$ y finalmente se hace la resta: $2-8 = -6$. 
+
+## Ejercicio 
+Determina, sin evaluar, los resultados de los siguientes segmentos de código:
+```{r, eval = FALSE}
+#Primer ejercicio 
+(9 - 3)^2 * (2 - 1) - 6
+```
+
+
+
+```{r, eval = FALSE}
+#Segundo ejercicio 
+6 * 2 / (7 - 3) * 5
+```
+
+```{r, eval = FALSE}
+#Tercer ejercicio 
+2 * 3 ^ 2 * 2 / (5 - 4) * 1 / 10 
+```
+
+Evalúa para comprobar tu respuesta. 
+
+## Ejercicio 
+Calcula el área y el perímetro de un círculo de radio 5. Recuerda que la fórmula del área es $\pi \cdot r^2$ donde $r$ es el radio; mientras que la del perímetro es: $\pi \cdot d$ donde $d$ es el díametro (= dos veces el radio).
+
+### Respuestas
+```{r, echo = FALSE}
+r = 5
+cat(paste0("Área = ", pi*r^2))
+cat(paste0("Perímetro = ", pi*r*2))
+```
+
+## Variables
+
+`R` es un programa orientado a objetos; esto quiere decir que `R` almacena la información en un conjunto de variables que pueden tener diferentes `clases` y opera con ellos según su clase. Por ejemplo, un conjunto de caracteres, entre comillas, es un `Character` (`R` lo piensa como texto)
+
+```{r}
+#Un conjunto de caracteres es un char
+"Hola"
+```
+
+Un número (por ejemplo `2` tiene clase `numeric`)^[Puede ser `float`, `int`, `double` pero no nos preocuparemos por eso.]. Hay que tener mucho cuidado con combinar floats con `Strings`:
+
+```{r}
+#Código que sí funciona porque ambos son números
+2 + 4 
+```
+
+```{r, fig.margin = TRUE, fig.cap = "El algoritmo diseñado por Ada Lovelace.", fig.width=3.5, fig.height=3.5, cache=TRUE, echo = FALSE,, message=FALSE}
+knitr::include_graphics('images/algorithm_lovelace.jpg')
+```
+
+```{r}
+#Código que no funciona porque uno es caracter
+2 + "4" 
+```
+
+Si lo piensas, este último error ¡tiene todo el sentido! no puedes sumar un número a un texto. ¿O qué significaría `'Felices' * 4` ?
+
+La magia de `R` comienza con que puedes almacenar valores en variables. Por ejemplo, podemos asignar un valor a una variable:
+```{r}
+#Asignamos x = 10
+x <- 10
+```
+
+
+
+Hay dos formas de asignar valores, una es con la flecha de asignación $\leftarrow$ y otra con el signo de igual:
+```{r}
+#Podemos asignar valores con el signo de =
+y = 6
+```
+
+Nota que, cuando realizamos operaciones, la asignación es la última  que se realiza:
+```{r}
+#Aquí z = 106
+z <- y + x^2
+```
+
+Los valores que fueron asignados en las variables, `R` los recuerda y es posible calcular con ellos:
+```{r}
+#Podemos realizar una suma
+x + y
+
+#O bien podemos realizar una multiplicación
+3*y - x
+```
+
+Podemos preguntarnos por el valor de las variables numéricas mediante los operadores `==` (sí, son dos iguales), `!=` (que es un $\neq$) `>`, `>=`, `<=` y `<`:
+```{r}
+#Podemos preguntarnos si x vale 4
+x == 4
+```
+
+```{marginfigure}
+El operador de asignación también se puede utilizar al revés $2 \rightarrow x$ pero no lo hagas, por favor. 
+```
+
+Nota que no estamos asignando el valor de `x`:
+```{r}
+x
+```
+
+Podemos preguntarnos por diferencia:
+```{r}
+x != 4 
+```
+
+Así como por mayores, menores incluyendo posibles igualdades (_i.e._ los casos $\geq$ y $\leq$)
+```{r}
+#Nos preguntamos si x > y
+x > y
+
+#Nos preguntamos si x >= 10
+x >= 10
+
+#Nos preguntamos si y < 6
+y < 6
+
+#O bien si y <= 6
+y <= 6
+```
+
+En todos los casos los resultados han sido `TRUE` ó `FALSE`. La clase de variables que toma valores `TRUE` ó `FALSE` se conoce como booleana. Hay que tener mucho cuidado con ellas porque, puedes acabar con resultados muy extraños:
+
+```{r}
+#MALAS PRÁCTICAS, NO HAGAS ESTO
+#Cuando lo usas como número TRUE vale 1
+100 + TRUE
+
+#MALAS PRÁCTICAS, NO HAGAS ESTO
+#Cuando lo usas como número FALSE vale 0
+6*FALSE
+```
+
+```{marginfigure}
+[Aquí](https://medium.com/mindorks/common-bad-programming-practices-7fb470ed74d2) puedes encontrar una lista de malas prácticas en computación a evitar. 
+```
+
+Finalmente, nota que es posible reescribir una variable y cambiar su valor:
+```{r}
+#Aquí x vale 10, como antes
+x
+
+#Aquí cambianos el valor de x y valdrá 0.5
+x <- 0.5
+x
+```
+
+## Ejercicios
+Determina el valor que imprime `R` en cada caso, sin que corras los siguientes pedazos de código. Después, verifica tu respuesta con `R`:
+
+```{r, eval = FALSE}
+#Primer ejercicio
+x <- 100
+y <- 3
+x > y
+```
+
+```{r, eval = FALSE}
+#Segundo ejercicio
+z <- (4 - 2)^3
+z <- z + z + z
+z
+```
+
+```{r, eval = FALSE}
+#Tercer ejercicio
+x <- 3
+y <- 2
+z <- x * y
+x <- 5
+y <- 10
+z
+```
+
+```{r, eval = FALSE}
+#Cuarto ejercicio
+variable1 <- 1000
+variable2 <- 100
+variable3 <- variable1/variable2 <= 10
+variable3
+```
+
+```{r, eval = FALSE}
+#Quinto ejercicio
+"2" - 2
+```
+
+```{r, eval = FALSE}
+#Sexto ejercicio
+(0.1 + 0.1 + 0.1) == 0.3
+```
+
+### NIVEL 3
+
+Determina, sin correr el programa, qué regresa la consola en este caso
+```{r}
+x <- 2 
+x <- 5 + x -> y -> x
+x <- x^2
+x
+```
+
+Comprueba con la consola tus resultados; puede que encuentres respuestas poco intuitivas. 
+
+## Observaciones sobre la aritmética de punto flotante
+
+Si hiciste el penúltimo ejercicio (el cual, obviamente hiciste y comprobaste con la consola) podrás haber notado una trampa. Analicemos qué ocurre; quizá hicimos mal la suma
+```{r}
+#Veamos si este lado está mal
+(0.1 + 0.1 + 0.1)
+
+#O si éste es el que tiene la trampa
+0.3
+```
+
+Aparentemente no hay nada malo ¿qué rayos le pasa a `R`? La respuesta está [en la aritmética de punto flotante](https://www.youtube.com/watch?v=PZRI1IfStY0). Podemos pedirle a `R` que nos muestre los primeros 100 dígitos de la suma `0.1 + 0.1 + 0.1`:
+
+```{r, fig.margin = TRUE, fig.cap = "Réplica de la Z3, la primer computadora con punto flotante (1941).", fig.width=3.5, fig.height=3.5, cache=TRUE, echo = FALSE,  message=FALSE}
+knitr::include_graphics('images/Z3_Deutsches_Museum.jpeg')
+```
+
+```{r}
+#Veamos qué pasa con la suma
+options(digits = 22) #Cambiamos dígitos
+(0.1 + 0.1 + 0.1)    #Sumamos
+```
+
+```{marginfigure}
+El comando `options(digits = 22)` especifica que `R` debe imprimir en la consola `22` dígitos. No más. 
+```
+
+¡[Ahí está el detalle](https://www.youtube.com/watch?v=1jaCpeXg-gg)! `R` no sabe sumar. En general, ningún programa de computadora sabe hacerlo. Veamos otros ejemplos:
+
+```{r}
+4.1 - 0.1 #Debería dar 4
+3/10      #Debería ser 0.3
+log(10^(12345), base = 10) #Debería dar 12345
+``` 
+
+El problema está en cómo las computadoras representan los números. Ellas escriben los números en binario. Por ejemplo, 230 lo representan como `r DescTools::DecToBin(230)` mientras que el 7 es: `r DescTools::DecToBin(7)`. El problema de las computadoras radica en que éstas tienen una memoria finita por lo que números muy grandes como: $124765731467098372654176$ la computadora hace lo mejor por representarlos eligiendo el más cercano:
+```{r}
+#Nota la diferencia entre lo que le decimos a R
+#y lo que resulta
+x <- 124765731467098372654176
+x
+```
+
+```{marginfigure}
+Un error de punto flotante en la vida real ocasionó en los años noventa, [la explosión del cohete `Ariane 5`](https://www.esa.int/Newsroom/Press_Releases/Ariane_501_-_Presentation_of_Inquiry_Board_report). Moraleja: hay que tener cuidado y respeto al punto flotante.  
+```
+
+No olvides cambiar la cantidad de dígitos que deseas que imprima `R` en su consola de vuelta:
+```{r}
+options(digits = 6) #Cambiamos dígitos
+```
+
+El mismo problema ocurre con números decimales cuya representación binaria es periódica; por ejemplo el $\frac{1}{10}$ en binario se representa como $0.0001100110011\overline{0011}\dots$. Como es el cuento de nunca acabar con dicho número, `R` lo trunca y almacena sólo los primeros dígitos de ahí que, cada vez que escribes `0.1`, `R` en realidad almacene el <code>`r sprintf(0.1, fmt = '%#.22f')`</code> que es _casi lo mismo_ pero no es estrictamente igual. Hay que tener mucho cuidado con esta inexactitud de las computadoras (inexactitud estudiada por la rama de [Análisis Numérico](https://www.springer.com/gp/book/9781461484523)) pues puede generar varios resultados imprevistos.
+
+### ¿Cómo checar un if?
+
+En general lo que hacen las computadoras para comparar valores es que verifican que, en valor absoluto, el error sea pequeño. Recuerda que el valor absoluto de $x$, $|x|$, regresa siempre el positivo:
+$$
+|4| = 4 \qquad \textrm{y} \qquad |-8| = 8
+$$
+
+Para verificar que algo es más o menos $0.3$ suele usarse el valor absoluto^[En `R` el comando `abs` toma el valor absoluto.] de la siguiente manera:
+```{r}
+abs( (0.1 + 0.1 + 0.1) - 0.3 ) < 1.e-6
+```
+
+donde `1.e-6` es notación corta para `r sprintf("%f", 1.e-6)`  (también escrito como $1\times 10^{-6}$). La pregunta que nos estamos haciendo es que si el error entre sumar $0.1+0.1+0.1$ y $0.3$ es muy pequeño $< 0.000001$:
+$$
+| (0.1 + 0.1 + 0.1) - 0.3 | < 0.000001
+$$
+
+
+
+# Leer y almacenar variables en `R`
+
+Para terminar esta sección, aprenderemos cómo guardar variables en `R`. Para eso, el concepto de directorio es uno de los más relevantes. En general, en computación, [el directorio](https://en.wikipedia.org/wiki/Working_directory) se refiere a la dirección en tu computadora donde estás trabajando. Por ejemplo, si estás en una carpeta en tu escritorio de nombre "Ejercicios_R" probablemente tu directorio sea '~/Desktop/Ejercicios_R/' (en Mac) o bien '~\\Desktop\\Ejercicios_R\\'  en Windows^[Windows usa backslash. Y hay [toda una historia detrás de ello](https://www.howtogeek.com/181774/why-windows-uses-backslashes-and-everything-else-uses-forward-slashes/)]. La forma de saber tu directorio (en general) es ir a la carpeta que te interesa y con clic derecho ver propiedades (o escribir `ls` en la terminal `Unix`).
+
+`R` tiene un directorio `default` que quién sabe dónde está (depende de tu instalación, generalmente está donde tu `Usuario`). Usualmente lo mejor es elegir un directorio para cada uno de los proyectos que hagas. Para ello si estás en `RStudio` puedes utilizar `Shift+Ctrl+H` (`Shift+Cmd+H` en Mac) o bien ir a `Session > Set Working Directory > Choose Directory` y elegir el directorio donde deseas trabajar tu proyecto. Pensando que elegiste el escritorio (`Desktop` en mi computadora) notarás que en la consola aparece el comando  `setwd("~/Desktop")` (o bien con '\\' si eres Windows). Mi sugerencia es que copies ese comando en tu `Script` para que, la próxima vez que lo corras ya tengas preestablecido el directorio. 
+
+```{r, eval = FALSE}
+#Si eres Mac/Linux
+setwd("~/Desktop") 
+
+#Si eres Windows
+setwd("C:\Users\Rodrigo\Desktop") #Rodrigo = Mi usuario
+```
+
+```{r, echo = FALSE}
+setwd(escritorio)
+```
+
+Podemos verificar el directorio elegido con `getwd()`:
+```{r, eval = FALSE}
+getwd()
+```
+
+```{r, echo = FALSE}
+setwd(escritorio)
+getwd()
+```
+
+```{marginfigure}
+En general es buena práctica en `R` establecer, hasta arriba del `Script`, el comando de directorio. Esto con el propósito de que, cuando compartas un archivo, la persona a quien le fue compartido el archivo pueda rápidamente elegir su propio directorio en su computadora. 
+```
+
+Probemos guardar unas variables en un archivo dentro de nuestro directorio. Para ello utilizaremos el comando `save`. 
+```{r, echo = FALSE, results='hide'}
+dir.create(file.path(getwd(), subDir), showWarnings = FALSE)
+```
+
+```{r}
+#Crear las variables
+x <- 200
+y <- 100
+
+#Los archivos de variables de R son rda
+save(x,y, file = "MisVariables.rda")
+```
+
+Si vas a tu directorio, notarás que el archivo `MisVariables.rda` acaba de ser creado. De esta forma `R` puede almacenar objetos creados en `R` que sólo `R` puede leer (más adelante veremos cómo exportar bases de datos y gráficas). Observa que en tu ambiente (si estás en `RStudio` puedes verlas en el panel 3) deben aparecer las variables que hemos usado hasta ahora:
+
+```{r, echo = FALSE}
+rm(rojos, empty, pdata, scatter, xmin, ymin, hist_right, hist_top,
+   verdes, bg, g, r, xhist, yhist)
+names(.GlobalEnv)[-which(names(.GlobalEnv) %in% c(".Random.seed", "escritorio","subDir","subcarpeta", "filedir"))]
+```
+
+Podemos probar sumar nuestras variables y todo funciona súper:
+```{r}
+x + y #Funciona magnífico
+```
+
+Limpiemos el ambiente. El comando equivalente al `clear all` en `R` es un poco más complicado de memorizar: 
+```{r, eval = FALSE}
+#EL clear all de R
+rm(list = ls())
+```
+
+```{r, echo = FALSE}
+rm(x,y)
+```
+
+Ahora, si vuelves a ver el ambiente, éste estará vacío: ¡hemos limpiado el historial! Nota que si intentamos operar con las variables, `R` ya no las recuerda:
+
+```{r}
+x + y #Error
+```
+
+```{marginfigure}
+Así como hay que lavarse las manos antes de comer, es buen hábito limpiar todas las variables del ambiente de `R` antes de usarlo. 
+```
+
+Podemos leer la base de datos usando `load`:
+```{r}
+#Leemos las variables
+load("MisVariables.rda")
+
+#Una vez leídas podemos empezar a jugar con ellas
+x + y #Ya funciona
+```
+
+Por último, es necesario resaltar la importancia del directorio. Para ello crea una nueva carpeta en tu escritorio de nombre <code>`r subDir`</code>. Mueve el archivo `"MisVariables.rda"` dentro de la carpeta. Borra todo e intenta leer de nuevo el archivo:
+
+```{r, echo = FALSE, message=FALSE}
+file.move(path.expand("MisVariables.rda"), path.expand(subcarpeta))
+```
+
+```{r, eval = FALSE}
+#Borramos todo
+rm(list = ls())
+
+#Intentamos leer el archivo de nuevo
+load("MisVariables.rda")
+```
+
+
+```{r, echo = FALSE}
+setwd("~")
+load("MisVariables.rda")
+```
+
+Este error es porque `R` sigue pensando que nuestro directorio es el escritorio y está buscando el archivo ahí sin hallarlo. Para encontrarlo hay que cambiar el directorio a través de `RStudio` (ya sea `Ctrl+Shift+H` o `Session >Set Working Directory > Choose Directory`) o bien a través de comandos en `R`: 
+
+```{r, eval = FALSE}
+#Si eres Mac/Linux
+setwd("~/Desktop/Mi_curso_de_R") 
+
+#Si eres Windows
+setwd("C:\Users\Rodrigo\Desktop\Mi_curso_de_R") #Rodrigo = Mi usuario
+```
+
+```{r, echo = FALSE}
+setwd(subcarpeta)
+```
+
+```{r}
+#Aquí sí se puede leer
+load("MisVariables.rda")
+```
+
+### Ejercicio
+Responde a las siguientes preguntas: 
+
+1. ¿Qué es el directorio y por qué es necesario establecerlo? 
+
+2. Si `R` me da el error `'No such file or directory'` ¿qué hice mal?
+
+3. En `RStudio`, ¿qué hace `Session > Restart R`? ¿cuál es la diferencia con `rm(list = ls())`?
+
+4. ¿Qué hace el comando `cat("\014")`? (_Ojo_ puede que no haga nada). Si funciona, ¿cuál es la diferencia con `rm(list = ls())` y con `Restart R`?
+
+# Instalación de paquetes
+Un paquete de `R` es un conjunto de funciones adicionales elaboradas por los usuarios, las cuales permiten hacer cosas adicionales en `R`. Para instalarlos requieres de una conexión a Internet (o bien puedes instalarlos a partir de un archivo, por ejemplo, mediante una `USB`). El comando de instalación es `install.packages` seguido del nombre del paquete. Por ejemplo (y por ocio) descarguemos el paquete `beepr` para hacer reproducir sonidos en la computadora^[En los siguientes capítulos descargaremos paquetes más interesantes; pero no desprecies la utilidad de `beepr` yo lo he usado en múltiples ocasiones para que la computadora me avise que ya terminó de correr un código.]. Para ello:  
+
+```{r, eval = FALSE}
+install.packages("beepr")
+```
+
+```
+[...]
+* DONE (beepr)
+
+The downloaded source packages are in
+	‘/algun/lugar/downloaded_packages’
+```
+
+Esto significa que el paquete ha sido instalado. Nos interesa usar la función `beep` que emite un sonido (`??beep` para ver la ayuda). Si la llamamos así tal cual, nos da error:
+```{r}
+beep(3)
+```
+
+`R` es incapaz de hallar la función porque aún no le hemos dicho dónde se encuentra. Para ello podemos llamar al paquete mediante la función `library` y decirle a `R` que incluya las funciones que se encuentran dentro de `beepr`:
+
+```{r}
+library(beepr)
+beep(3) #Esto produce un sonido
+```
+
+El comando `library` le dice a `R` ¡hey, voy a usar unas funciones que creó alguien más y que están dentro del paquete `beepr`! De esta manera, al correr `beep(3)`, `R` ya sabe dónde hallar la función y por eso no arroja error. 
+
+### Ejercicios
+
+**NIVEL 1**
+
+1. Instala los paquetes `tidyverse` en `R`.
+2. De `tidyverse` haz lo necesario para que el siguiente bloque de código te arroje una gráfica:
+
+```{r}
+#Aquí tienes que hacer algo
+#
+# RELLENA AQUÍ
+#
+
+#Esto genera un histograma
+set.seed(1364752)
+mis.datos <- data.frame(x = rnorm(1000))
+ggplot(mis.datos, aes(x = x)) + 
+  geom_histogram(bins = 50, fill = "deepskyblue3") +
+  ggtitle("Histograma generado por el código")
+
+```
+
+**NIVEL 3**
+
+1. Instala el paquete `devtools` (para hacerlo probablemente necesites instalar más cosas en tu computadora; averigua cuáles)
+2. Usa `devtools` para instalar el paquete [`emoGG`](https://github.com/dill/emoGG) desde Github.
+3. Verifica que tu instalación fue correcta haciendo la siguiente gráfica:
+```{r}
+library(emoGG)
+ggplot(mtcars, aes(wt, mpg))+ geom_emoji(emoji="1f697")
+```
+
+
+# Comentarios adicionales sobre el formato
+Así como en el español existen reglas de gramática para ponernos todos de acuerdo y entendernos entre todos, en `R` también existen _sugerencias_ a seguir para escribir tu código. Las sugerencias que aquí aparecen fueron adaptadas de las que [utiliza el equipo de `Google`](https://google.github.io/styleguide/Rguide.xml).
+
+1. No escribas líneas de más de 80 caracteres (si se salió de tu pantalla, mejor continúa en el siguiente renglón).
+
+2. Coloca espacios entre operadores `+,*,/,-,<-,=, <, <=, >, >=, ==` y usa paréntesis para agrupar: 
+```{r, eval = FALSE}
+#Esto no se ve muy bien
+abs(3*5/(4-9)^2-60/100-888+0.1*8888-4/10*2) < 1.e-6
+
+#Los espacios permiten distinguir el orden de las operaciones
+abs( (3 * 5) / (4 - 9)^2 - 60 / 100 - 888 
+      + (0.1 * 8888) - (4 / 10) * 2 ) < 1.e-6
+```
+
+3. Intenta alinear la asignación de variables para legibilidad:
+```{r, eval = FALSE}
+#Esto no tanto
+altura <- 1.80
+peso <- 80
+edad <- 32
+
+#Esto se ve bien
+altura <- 1.80
+peso   <- 80
+edad   <- 32
+```
+
+4. Utiliza nombres que evoquen la variable que representas
+```{r, eval=FALSE}
+#Cuando regreses a esto no sabrás ni qué
+x <- 10
+y <- 2
+z <- 3.14
+W <- z * x^y #¿Qué calculé?
+
+#Es mejor especificar la variable
+radio        <- 10
+potencia     <- 2
+pi_aprox     <- 3.14
+area_circulo <- pi_aprox * radio^potencia
+
+```
+
+5. No utilices un nombre demasiado similar para cosas diferentes. 
+```{r}
+#Aquí, seguro eventualmente te vas a equivocar
+altura <- 10   #Altura del edificio
+Altura <- 1.8  #Mi altura
+ALTURA <- 2000 #La altitud de la CDMX
+
+#Siempre elegir nombres claros, aunque largos
+altura.edificio <- 10   #Altura del edificio
+altura.Rodrigo  <- 1.8  #Mi altura
+altura.CDMX     <- 2000 #La altitud de la CDMX
+```
+
+6. Comenta:
+```{r, eval = FALSE}
+#¿Qué hace esto?
+x <- 168
+x <- x/100
+y <- 71.2
+print(y/x^2) 
+  
+#Es mejor así
+altura <- 168        #en centímetros
+altura <- altura/100 #en metros
+peso   <- 71.2       #peso en kg
+print(peso/altura^2) #índice masa corporal
+```
+
+```{r, fig.margin = TRUE, fig.cap = "Trad: Un periodista se acerca a un programador a preguntarle ¿qué hace que un código sea malo? -Sin comentarios.", fig.width=3.5, fig.height=3.5, cache=TRUE, echo = FALSE,  message=FALSE}
+knitr::include_graphics('images/tweet1.jpg')
+```
+
+7. Siempre pon las llamadas a los paquetes y el directorio al inicio de tu archivo para que otro usuario sepa qué necesita.
+
+Código limpio y legible:
+```{r, eval = FALSE}
+#Asumiendo aquí inicia el archivo:
+setwd("Mi directorio")
+
+#Llamamos la librería
+library(beepr)
+library(tidyverse)
+
+#Analizamos una base de datos de R
+data(iris) #Base de datos de flores
+
+#Agrupamos la base por especie
+iris.agrupada <- group_by(iris, Species)
+
+#Obtenemos la media por longitud de sépalo
+iris.media    <- summarise(iris.agrupada, SL.mean = mean(Sepal.Length))
+
+#Avisa que ya terminó
+beep(5)
+```
+es siempre preferible a código escrito _con prisas_ :
+
+```{r, fig.margin = TRUE, fig.cap = "Yo, leyendo mi código no comentado y con mala edición 6 meses después de haberlo hecho.", fig.width=1.5, fig.height=1.5, cache=TRUE, echo = FALSE,   message=FALSE}
+knitr::include_graphics('images/Grandma-Finds-The-Internet.jpg')
+```
+
+```{r, eval = FALSE}
+data(iris);setwd("Mi directorio")
+library(tidyverse);x<-group_by(iris,Species  )
+#Aquí hacemos esto
+iris.means=summarise( x,SL.mean=mean(Sepal.Length));library(beepr);beep(5)#FIN
+```
+
+Siempre escribe tu código pensando que alguien más ([y ese alguien más puedes ser tú](https://www.redaccionmedica.com/virico/noticias/el-gato-de-schrodinger-y-por-que-no-abrir-la-puerta-cerrada-de-la-consulta-5188)) va a leerlo. ¡No olvides comentar!
+
+## Continuación
+¡Felicidades! Ya terminaste esta sección. Puedes ir a:
+
+- [Graficación con `ggplot2`](Graficación_con_gglot2.html).
+- [Bases de datos y análisis descriptivo en `R`](Estadística_Descriptiva.html). 
+
+
