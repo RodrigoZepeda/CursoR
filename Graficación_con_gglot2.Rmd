@@ -1195,10 +1195,10 @@ ggplot(datos) +
 2. Arregla el código. La gráfica que debes obtener se ve así:
 
 ```{r,  cache=TRUE, echo = FALSE,  message=FALSE}
-knitr::include_graphics('images/Tarea_ej1.jpg')
+knitr::include_graphics('images/Softdrinks.jpg')
 ```
 
-2. Al agregar la siguiente línea al código nos aparecen los siguientes mensajes:
+3. Al agregar la siguiente línea al código nos aparecen los siguientes mensajes:
 
 ```{r, eval = FALSE}
  ylim(min= 0, max=0.50) 
@@ -1266,8 +1266,8 @@ ggplot(datos) +
 El código `Prevalencia_Depresión.R` contiene datos y gráficas sobre la prevalencia de depresión diagnosticada y no diagnosticada en México, por sexo, escolaridad y nivel socioeconómico. 
 
 1. Basándote en el código, genera también las gráficas por sexo y escolaridad.
-2. Obten un arreglo de gráficas que se vea así:
+2. Obtén un arreglo de gráficas que se vea así:
 
 ```{r,  cache=TRUE, echo = FALSE,  message=FALSE}
-knitr::include_graphics('images/Tarea_ej4.jpg')
+knitr::include_graphics('images/Arreglo_depresión.jpg')
 ```
