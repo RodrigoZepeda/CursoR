@@ -1,7 +1,7 @@
 ---
 title: "Modelaje Epidemiológico en `R`"
 subtitle: "Graficación con  `ggplot2`"
-author: "Rodrigo Zepeda"
+author: "Rodrigo Zepeda y Rossana Torres"
 date: "`r Sys.Date()`"
 output:
   tufte::tufte_html: 
@@ -75,6 +75,11 @@ Example1 <- read.csv("Tu/directorio/Example1.csv",
 ```
 
 2) la segunda forma es aprendiendo directamente que el comando es `read.csv` seguido del nombre del archivo. ¡Siempre puedes guardar cualquier archivo de `Excel` en `.csv` y leerlo con `R` así! 
+
+```{r,  fig.cap = "Para guardar un archivo de `Excel` en formato `csv` puedes utilizar ` F12` (`Shift+Command+S` en Mac) o bien, ir a `File > Save As...` y luego seleccionar `File Format`. ", cache=TRUE, echo = FALSE,  message=FALSE}
+knitr::include_graphics('images/CSV.png')
+```
+
 
 `Ejemplo1` es una base con datos simulados. Ésta, después de leerse, se encuentra en un formato listo para ser graficado por lo que no necesitamos limpiar la base (que veremos en otra sección). 
 
@@ -565,6 +570,57 @@ ggplot(seguro.pop) +
   xlab("Entidad federativa") +
   theme_bw()
 ```
+
+# Boxplots
+Descarga la base de datos `dientes.csv` el cual contiene mediciones del crecimiento de los dientes de conejillos de indias después de darles vitamina C:
+
+```{r, echo = FALSE}
+dientes <- read.csv(paste0(filedir,"dientes.csv"),  header = TRUE, sep = ",", dec = ".")
+```
+
+```{r}
+dientes <- read.csv("dientes.csv")
+```
+
+Las variables incluidas son `len` (longitud del diente), `supp` el tipo de suplemento `VC` (ácido ascórbico) u `OJ` (jugo de naranja) así como dósis de vitamina C  `dose` (en mg/día). 
+
+Probemos hacer una gráfica de cajas con el comando `geom_boxplot`:
+```{r}
+ggplot(dientes) + geom_boxplot(aes(x = as.character(dose), y = len))
+```
+
+Podemos colorear el `outlier`:
+
+```{r}
+ggplot(dientes) + geom_boxplot(aes(x = as.character(dose), y = len),
+                               outlier.color = "firebrick", 
+                               outlier.size = 5)
+```
+
+Podemos agregar la media con stat summary:
+
+```{r}
+ggplot(dientes) + geom_boxplot(aes(x = as.character(dose), y = len),
+                               outlier.color = "firebrick", 
+                               outlier.size = 5) +
+  stat_summary(aes(x = as.character(dose), y = len), 
+               fun.y=mean, geom="point", shape="triangle", 
+               size=4, color = "blue")
+```
+
+Fimalmente, si quieres agregar puntos:
+```{r}
+ggplot(dientes) + geom_boxplot(aes(x = as.character(dose), y = len),
+                               outlier.color = "firebrick", 
+                               outlier.size = 5) +
+  stat_summary(aes(x = as.character(dose), y = len), 
+               fun.y=mean, geom="point", shape="triangle", 
+               size=4, color = "blue") + 
+  geom_jitter(aes(x = as.character(dose), y = len), 
+              shape=16, position=position_jitter(0.2), alpha = 0.2)
+
+```
+
 
 # Gráficas de trayectorias
 ```{r, fig.margin = TRUE, fig.cap = "En ggplot2 puedes graficar lo que quieras. Hasta puedes declarar tu amor. Este próximo 14 de febrero usa ggplot2.", fig.width=3.5, fig.height=3.5, cache=TRUE, echo = FALSE, message=FALSE}
@@ -1068,4 +1124,201 @@ library("mxmaps")
 df_mxstate$value <- seguro.pop.2010[ ,"PorcentajeAfiliada"]
 mxstate_choropleth(df_mxstate,
                    title = "Porcentaje de población afiliada al Seguro Popular") 
+```
+
+##Ejercicios
+####NIVEL 1
+
+El siguiente código fue diseñado para ilustrar el cambio en el peso de los consumidores de
+bebidas azucaradas, de acuerdo a su nivel de actividad física.
+
+
+```{r, eval = FALSE,  message=FALSE}
+rm(list = ls())
+library(ggplot2)
+
+datos <- data.frame(Porciones = 0:2, 
+                    Bajo = c(0.38, 0.49, 0.59),
+                    BCIlow = c(0.15, 0.25, 0.32),
+                    BCIhigh = c(0.61, 0.72, 0.87), 
+                    Alto = c(0.28,0.36,0.44),
+                    ACIlow = c(0.03, 0.09, 0.04),
+                    ACIhigh = c(0.53, 0.63, 0.83))
+ggplot(datos) + 
+  
+  theme_classic()+
+  
+  geom_errorbar(aes(x = Porciones - 0.05, ymin = BCIlow, 
+                    ymax = BCIhigh, color = "Bajo"), 
+                    width = 0.2, size = 0.5) +
+  
+  geom_errorbar(aes(x = Porciones +0.05, ymin = ACIlow, 
+                    ymax = ACIhigh, color = "Alto"), 
+                    width = 0.2, size = 0.5) +
+  
+  geom_point(aes(x = Porciones -0.05, y = Bajo, 
+                 color = "Bajo"), stat="identity", 
+                 size = 2) +
+ 
+  geom_point(aes(x = Porciones +0.05, y = Alto, 
+                 color = "Alto"), stat="identity", 
+                 size = 2) +
+  
+  scale_x_continuous(name= "Consumo de bebidas 
+                     azucaradas (porciones/día)", 
+                     breaks = seq(0, 2, 1)) 
+  
+  scale_color_manual("Nivel de actividad física", 
+                     values = c( "Alto" = "darkorchid3", 
+                     "Bajo"="deepskyblue4"),
+                     breaks = c("Bajo","Alto")) +
+  
+  ylab("Cambio en el peso a un año (kg)") + 
+  
+  theme(axis.text=element_text(family="Arial", 
+                               face = "plain", size=12),
+        axis.title=element_text(family="Arial", 
+                                face = "plain", size=12),
+        legend.title=element_text(family="Arial", 
+                                  face = "plain", size=12), 
+        legend.text=element_text(family="Arial", 
+                                 face = "plain", size=12),
+        plot.title=element_text(family="Arial", 
+                                face="bold", size=12, hjust = 0.5)) 
+```
+1. ¿Qué significa el error? 
+
+```{r, eval = TRUE, echo= FALSE , message= TRUE, results= 'hide', fig.show='hide'}
+rm(list = ls())
+library(ggplot2)
+
+datos <- data.frame(Porciones = 0:2, 
+                    Bajo = c(0.38, 0.49, 0.59),
+                    BCIlow = c(0.15, 0.25, 0.32),
+                    BCIhigh = c(0.61, 0.72, 0.87), 
+                    Alto = c(0.28,0.36,0.44),
+                    ACIlow = c(0.03, 0.09, 0.04),
+                    ACIhigh = c(0.53, 0.63, 0.83))
+ggplot(datos) + 
+  
+  theme_classic()+
+  
+  geom_errorbar(aes(x = Porciones - 0.05, ymin = BCIlow, 
+                    ymax = BCIhigh, color = "Bajo"), 
+                    width = 0.2, size = 0.5) +
+  
+  geom_errorbar(aes(x = Porciones +0.05, ymin = ACIlow, 
+                    ymax = ACIhigh, color = "Alto"), 
+                    width = 0.2, size = 0.5) +
+  
+  geom_point(aes(x = Porciones -0.05, y = Bajo, 
+                 color = "Bajo"), stat="identity", 
+                 size = 2) +
+ 
+  geom_point(aes(x = Porciones +0.05, y = Alto, 
+                 color = "Alto"), stat="identity", 
+                 size = 2) +
+  
+  scale_x_continuous(name= "Consumo de bebidas 
+                     azucaradas (porciones/día)", 
+                     breaks = seq(0, 2, 1)) 
+  
+  scale_color_manual("Nivel de actividad física", 
+                     values = c( "Alto" = "darkorchid3", 
+                     "Bajo"="deepskyblue4"),
+                     breaks = c("Bajo","Alto")) +
+  
+  ylab("Cambio en el peso a un año (kg)") + 
+  
+  theme(axis.text=element_text(family="Arial", 
+                               face = "plain", size=12),
+        axis.title=element_text(family="Arial", 
+                                face = "plain", size=12),
+        legend.title=element_text(family="Arial", 
+                                  face = "plain", size=12), 
+        legend.text=element_text(family="Arial", 
+                                 face = "plain", size=12),
+        plot.title=element_text(family="Arial", 
+                                face="bold", size=12, hjust = 0.5)) 
+```
+
+
+2. Arregla el código. La gráfica que debes obtener se ve así:
+
+```{r,  cache=TRUE, echo = FALSE,  message=FALSE}
+knitr::include_graphics('images/Softdrinks.jpg')
+```
+
+3. Al agregar la siguiente línea al código nos aparecen los siguientes mensajes:
+
+```{r, eval = FALSE}
+ ylim(min= 0, max=0.50) 
+```
+
+```{r, eval = TRUE, echo= FALSE , message= TRUE, results= 'hide', fig.show='hide'}
+rm(list = ls())
+library(ggplot2)
+
+datos <- data.frame(Porciones = 0:2, 
+                    Bajo = c(0.38, 0.49, 0.59),
+                    BCIlow = c(0.15, 0.25, 0.32),
+                    BCIhigh = c(0.61, 0.72, 0.87), 
+                    Alto = c(0.28,0.36,0.44),
+                    ACIlow = c(0.03, 0.09, 0.04),
+                    ACIhigh = c(0.53, 0.63, 0.83))
+ggplot(datos) + 
+  
+  theme_classic()+
+  
+  geom_errorbar(aes(x = Porciones - 0.05, ymin = BCIlow, 
+                    ymax = BCIhigh, color = "Bajo"), 
+                    width = 0.2, size = 0.5) +
+  
+  geom_errorbar(aes(x = Porciones +0.05, ymin = ACIlow, 
+                    ymax = ACIhigh, color = "Alto"), 
+                    width = 0.2, size = 0.5) +
+  
+  geom_point(aes(x = Porciones -0.05, y = Bajo, 
+                 color = "Bajo"), stat="identity", 
+                 size = 2) +
+ 
+  geom_point(aes(x = Porciones +0.05, y = Alto, 
+                 color = "Alto"), stat="identity", 
+                 size = 2) +
+  
+  scale_x_continuous(name= "Consumo de bebidas 
+                     azucaradas (porciones/día)", 
+                     breaks = seq(0, 2, 1)) +
+  
+  scale_color_manual("Nivel de actividad física", 
+                     values = c( "Alto" = "darkorchid3", 
+                     "Bajo"="deepskyblue4"),
+                     breaks = c("Bajo","Alto")) +
+  
+  ylab("Cambio en el peso a un año (kg)") + 
+  
+  theme(axis.text=element_text(family="Arial", 
+                               face = "plain", size=12),
+        axis.title=element_text(family="Arial", 
+                                face = "plain", size=12),
+        legend.title=element_text(family="Arial", 
+                                  face = "plain", size=12), 
+        legend.text=element_text(family="Arial", 
+                                 face = "plain", size=12),
+        plot.title=element_text(family="Arial", 
+                                face="bold", size=12, hjust = 0.5)) +
+        ylim(min= 0, max=0.50) 
+```
+
+
+¿Qué es lo que está mal?
+
+###NIVEL 2
+El código `Prevalencia_Depresión.R` contiene datos y gráficas sobre la prevalencia de depresión diagnosticada y no diagnosticada en México, por sexo, escolaridad y nivel socioeconómico. 
+
+1. Basándote en el código, genera también las gráficas por sexo y escolaridad.
+2. Obtén un arreglo de gráficas que se vea así:
+
+```{r,  cache=TRUE, echo = FALSE,  message=FALSE}
+knitr::include_graphics('images/Arreglo_depresión.jpg')
 ```
