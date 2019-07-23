@@ -1,7 +1,7 @@
 ---
 title: "Modelaje Epidemiológico en `R`"
 subtitle: "Graficación con  `ggplot2`"
-author: "Rodrigo Zepeda"
+author: "Rodrigo Zepeda y Rossana Torres"
 date: "`r Sys.Date()`"
 output:
   tufte::tufte_html: 

@@ -1,7 +1,7 @@
 ---
 title: "Modelaje Epidemiológico en `R`"
 subtitle: "Modelos 1: Regresiones"
-author: "Rodrigo Zepeda"
+author: "Rodrigo Zepeda & Rossana Torres"
 date: "`r Sys.Date()`"
 output:
   tufte::tufte_html: 
@@ -36,13 +36,264 @@ knitr::opts_chunk$set(tidy = FALSE, cache.extra = packageVersion('tufte'), error
 options(htmltools.dir.version = FALSE)
 ```
 
+# Distribuciones de probabilidad
+
+Vamos a considerar la siguiente base de datos (que no son normales):
+```{r}
+n         <- 20
+mis.datos <- data.frame(x = rexp(n))
+```
+
+Dichos datos podemos ajustarlos con un histograma:
+```{r}
+ggplot(mis.datos) + 
+  geom_histogram(aes(x = x, y = ..density..))
+```
+
+Podemos repetir el proceso con cada vez más datos:
+```{r}
+n         <- 100
+mis.datos <- data.frame(x = rexp(n))
+ggplot(mis.datos) + 
+  geom_histogram(aes(x = x, y = ..density..))
+```
+
+```{r}
+n         <- 1000
+mis.datos <- data.frame(x = rexp(n))
+ggplot(mis.datos) + 
+  geom_histogram(aes(x = x, y = ..density..))
+```
+
+
+```{r}
+n         <- 10000
+mis.datos <- data.frame(x = rexp(n))
+ggplot(mis.datos) + 
+  geom_histogram(aes(x = x, y = ..density..), bins = 100)
+```
+
+
+```{r}
+n         <- 100000
+mis.datos <- data.frame(x = rexp(n))
+ggplot(mis.datos) + 
+  geom_histogram(aes(x = x, y = ..density..), bins = 1000)
+```
+
+Conforme aumentamos la cantidad de datos que tenemos y aumentamos la cantidad de barras (`bins`) que ajustamos esto semeja una curva. De hecho la curva a la que se acerca es una [distribución exponencial](https://en.wikipedia.org/wiki/Exponential_distribution) que podemos graficar con `dexp`:
+
+```{r}
+n         <- 100000
+x         <- seq(0, 10, length.out = 1000)
+mis.datos <- data.frame(x = rexp(n))
+mi.dist   <- data.frame(x = x, y = dexp(x))
+ggplot(mis.datos) + 
+  geom_histogram(aes(x = x, y = ..density..), bins = 1000) + 
+  geom_line(aes(x = x, y = y), data = mi.dist, color = "red", size = 1)
+```
+
+Podemos pensar una distribución de probabilidad como un histograma con ancho de barras _infinitamente pequeño_.^[En términos prácticos en la computadora algo no es infinitamente pequeño ¿recuerdas? sino sólo lo suficiente para que la memoria de la computadora diga ¡hasta aquí!] Ejemplos de distribuciones hay muchos: puede ser la normal, la gamma, la lognormal, la exponencial, la beta, etc:
+```{r}
+#Distribución normal
+x <- seq(-5, 5, length.out = 100)
+mis.datos <- data.frame(x = x, y = dnorm(x)) 
+ggplot(mis.datos) + geom_line(aes(x = x, y = y)) + 
+  ggtitle("Normal")
+
+#Distribución beta
+x <- seq(0, 1, length.out = 100)
+mis.datos <- data.frame(x = x, y = dbeta(x, 0.5, 0.5)) 
+ggplot(mis.datos) + geom_line(aes(x = x, y = y)) + 
+  ggtitle("Beta")
+
+#Distribución gamma
+x <- seq(0, 5, length.out = 100)
+mis.datos <- data.frame(x = x, y = dgamma(x, 1.2, 2.3)) 
+ggplot(mis.datos) + geom_line(aes(x = x, y = y)) + 
+  ggtitle("Gamma")
+
+#Distribución normal
+x <- seq(0, 5, length.out = 100)
+mis.datos <- data.frame(x = x, y = dlnorm(x)) 
+ggplot(mis.datos) + geom_line(aes(x = x, y = y)) + 
+  ggtitle("Lognormal")
+```
+
+Para simular datos de cada una de las distribuciones podemos usar los comandos `rnorm`, `rgamma`, `rlnorm`, etc. Por ejemplo, veamos datos simulados de una gamma:
+```{r}
+x <- seq(0, 20, length.out = 250)
+mi.densidad   <- data.frame(x = x, y = dgamma(x, 2, 1/2))
+mi.simulacion <- data.frame(sim = rgamma(2000, 2, 1/2))
+ggplot(mi.densidad) + 
+  geom_histogram(aes(x = sim, y = ..density..), data = mi.simulacion, 
+                 bins = 100) +
+  geom_line(aes(x = x, y = y), color = "firebrick", size = 1) 
+```
+
+Nota que en general las distribuciones tienen más variables que se conocen como parámetros. En una normal los parámetros son `mu` ($\mu$) y `sigma` ($\sigma$) correspondientes a media y varianza. En general los parámetros están relacionados con la media y la varianza pero significan otras cosas. Por ejemplo para la gamma, los parámetros corresponden a tiempo promedio de ocurrencia de eventos independientes (por ejemplo defunciones por cáncer) y la tasa de ocurrencia del evento. En general el planteamiento matemático del modelo involucra cálculo por lo que es un planteamiento mucho más complejo.
+
+## Teorema central del límite
+En general la gente asume que todo es normal. No hay ninguna razón para esto y el nombre de `normal` no proviene del concepto de `normalidad` como algo `usual` sino que viene del concepto matemático de `norma` la cual representa la distancia entre dos vectores. ¡No hay nada de Normal en la normal!^[De hecho mucha gente argumenta que deberíamos llamarla Gaussiana para evitarnos confusiones de pensar que la normal es normal.] La normal es tan prevalente en análisis estadísticos por un teorema que se conoce como _Teorema Central del Límite_ . Éste era uno de los favoritos de Fisher (quien inventó las técnicas estadísticas clásicas) y por ello la gente lo utiliza tanto. La idea del teorema es que si tomas la distribución de probabilidad de los promedios de distintas muestras aleatorias, conforme aumentas el tamaño de muestra _los promedios_ van a parecerse a una normal. 
+
+Para ello tomemos una muestra aleatoria de datos, por ejemplo gamma (para que no tengan nada de normal)
+```{r}
+tamaño.muestra    <- 10
+muestra.aleatoria <- rgamma(tamaño.muestra, 2, 1/2)
+mean(muestra.aleatoria)
+```
+
+Vamos a construir una función a partir de esto para poder repetirla:
+```{r}
+media.muestra <- function(tmuestra){
+  muestra.aleatoria <- rgamma(tmuestra, 2, 1/2)
+  return(mean(muestra.aleatoria))
+}
+```
+
+Finalmente repetimos el proceso múltiples veces. Más adelante veremos el significado de estos comandos, por ahora créemee que al hacer esto estoy repitiendo el tomar la muestra y sacar su promedio `1000` veces:
+
+```{r}
+n        <- 20
+tmuestra <- 20
+sims <- data.frame(x = sapply(rep(tmuestra, n), media.muestra))
+ggplot(sims) + 
+  geom_histogram(aes(x = x, y = ..density..), bins = 4) +
+  ggtitle("Histograma de 20 medias muestrales tomadas de 100 muestras")
+```
+
+Observa que, conforme cambiamos la cantidad de medias muestrales, se va pareciendo cada vez más a una normal
+
+```{r}
+n        <- 500
+tmuestra <- 20
+sims <- data.frame(x = sapply(rep(tmuestra, n), media.muestra))
+ggplot(sims) + 
+  geom_histogram(aes(x = x, y = ..density..), bins = n/10) +
+  ggtitle("Histograma de 500 medias muestrales tomadas de 100 muestras")
+```
+
+
+```{r}
+n        <- 50000
+tmuestra <- 100
+sims <- data.frame(x = sapply(rep(tmuestra, n), media.muestra))
+ggplot(sims) + 
+  geom_histogram(aes(x = x, y = ..density..), bins = n/10) +
+  ggtitle("Histograma de 500 medias muestrales tomadas de 100 muestras")
+```
+
+El teorema central del límite lo que nos dice es que los promedios muestrales de diferentes muestras aleatorias se ven normales si las muestras son suficientemente grandes. De ahí que para promedios la gente asuma `normalidad`
+
+**OJO** El teorema central del límite nos habla de cómo se ve _el promedio de tus datos, no los datos_. 
+
+**OJO 2** A ojo no podemos concluir qué distribución siguen los datos para eso existen distintas pruebas. Como las que veremos a continuación:
+
+## Pruebas para ajustar una distribución
+Dados datos ¿cómo saber de qué distribución venían? Lo peor que puedes hacer es especificar mal la distribución intentando adivinar _a ojo_ cuál era. Siempre para cualquier modelo necesitas realizar ciertas hipótesis, especificar la distribución de un modelo es una hipótesis muy fuerte que en general debemos evitar pues, establecer cuál es la distribución del modelo predetermina cuál es la varianza y media de tus datos. Siempre que podamos hay que evitarlo. Pero puede haber ocasiones en las que sea inevitable para ello existen diferentes pruebas, la más básica es _Kolmogorov Smirnoff_. Esta prueba determina con cierta probabilidad si una función sigue o no un modelo. Veamos cómo usarla
+
+```{r}
+#Generamos datos que vengan de una normal
+x <- rnorm(1000)
+ks.test(x, "pnorm", exact = TRUE)
+```
+
+El valor $p = 0.366$ ¿qué significa?
+
+**OJO** La mayor parte de las veces _con datos reales_ Kolmogorov-Smirnov rechazará el modelo. Esto es porque hay infinitos modelos por lo que la probabilidad de que tus datos realmente provengan de la distribución que propones es muy muy pequeña. 
+
+### Reto
+Encuentra una base de datos _reales_ con más de $50$ observaciones que sigan una distribución normal. Verifica con `ks`. 
+
+## Ajustes de distribución mediante kernel
+
+Como en general, para datos reales es extremadamente raro que sigan una distribución de las conocidas se utiliza una densidad `kernel` para ajustar los datos. Ésta es como un histograma _pero continuo_. Existen distintos métodos, en general Epanechnikov es una buena idea
+
+```{r}
+nsims        <- 100
+x            <- seq(0,10, length.out = 1000)
+mis.sims     <- data.frame(sims = rexp(nsims))
+mi.kernel    <- density(mis.sims$sims, kernel = "epanechnikov", n = 1000)
+datos.kernel <- data.frame(x = mi.kernel$x, y = mi.kernel$y)
+verdadero    <- data.frame(x = x, y = dexp(x))
+
+
+#Graficamos
+ggplot(datos.kernel) + 
+  geom_histogram(aes(x = sims, y = ..density..), data = mis.sims, bins = 25) + 
+  geom_line(aes(x = x, y = y), color = "red") +
+  geom_line(aes(x = x, y = y), color = "green", data = verdadero)
+```
+
+Observa que el `kernel` se parece más y más a la distribución verdadera conforme aumentamos el tamaño:
+
+```{r}
+nsims        <- 10000
+mis.sims     <- data.frame(sims = rexp(nsims))
+mi.kernel    <- density(mis.sims$sims, kernel = "epanechnikov", n = 1000)
+datos.kernel <- data.frame(x = mi.kernel$x, y = mi.kernel$y)
+verdadero    <- data.frame(x = x, y = dexp(x))
+
+
+#Graficamos
+ggplot(datos.kernel) + 
+  geom_histogram(aes(x = sims, y = ..density..), 
+                 data = mis.sims, bins = 100) + 
+  geom_line(aes(x = x, y = y), color = "red") +
+  geom_line(aes(x = x, y = y), color = "green", data = verdadero)
+
+```
+
+Las densidades `kernel` son unos de los objetos de la estadística no paramétrica. Ésta consiste en eliminar algunas de las hipótesis (por ejemplo, dejar de agregar la hipótesis pesadísima de que los datos siguen una distribución normal) y dejarse llevar por los datos prácticamente sin ninguna hipótesis de por medio. Volveremos a las densidades más adelante. 
+
 # Regresión lineal
 
-## Idea
+## Idea: Regresión lineal de una variable contra otra
+
+La idea de una regresión lineal simple entre dos variables es ajustar una línea recta que explique cómo se relacionan dos datos (llamémosle `x` y `y`)^[Mucha gente habla de variables dependientes e independientes. Son términos anticuados que ya no se usan en estadística porque en realidad ambas son dependientes de sí.] Recuerda que la ecuación de una recta es:
+$$
+y = \underbrace{m}_{\text{Pendiente}} \cdot x + \overbrace{b}^{\text{Ordenada}}
+$$
+
+La pendiente determina la inclinación de la recta:
+```{r}
+linea_pendiente <- function(m){
+  x <- seq(0, 1, length.out = 100)
+  y <- m*x + 2
+  return(y)
+}
+
+#Creamos varias líneas
+x      <- seq(0, 1, length.out = 100)
+lineas <- sapply(seq(0, 5, by = 0.5), linea_pendiente)
+lineas <- cbind(x, lineas)
+
+#Lines
+ggplot(as.data.frame(lineas)) + 
+  geom_line(aes(x = x, y = V2, color = "0")) +
+  geom_line(aes(x = x, y = V3, color = "1")) +
+  geom_line(aes(x = x, y = V4, color = "2")) +
+  geom_line(aes(x = x, y = V5, color = "3")) +
+  geom_line(aes(x = x, y = V6, color = "4")) +
+  geom_line(aes(x = x, y = V7, color = "5")) +
+  scale_color_manual("Pendiente (m)", values = rainbow(6)) +
+  theme_bw()
+
+
+
+
+```
+
+Mientras que la ordenada determina por dónde toca el origen
+```{r}
+
+```
 
 ## Y si mis datos no son lineales
 
 ## Verificación del modelo
+
+## Idea: Regresión lineal de múltiples variables
 
 # Regresión logística
 
@@ -50,11 +301,15 @@ options(htmltools.dir.version = FALSE)
 
 ## Verificación del modelo
 
-## Estimación de distribuciones: kernel y probabilidades
-
 ## Regresión kernel
 
+## Modelos aditivos generalizados
+
 ## Regresión de Cox
+
+## Regresión Poisson 
+
+## Series de tiempo
 
 ## Bosques aleatorios
 
