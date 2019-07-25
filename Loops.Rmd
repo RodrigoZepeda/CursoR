@@ -1,0 +1,716 @@
+---
+title: "Modelaje Epidemiológico en `R`"
+subtitle: "Ciclos"
+author: "Rodrigo Zepeda"
+date: "`r Sys.Date()`"
+output:
+  tufte::tufte_html: 
+    tufte_features: ["fonts", "background","italics"]
+    toc: false
+    includes:
+      in_header: javascriptcall.html
+    css: style.css
+  tufte::tufte_handout:
+    citation_package: natbib
+    latex_engine: xelatex
+  tufte::tufte_book:
+    citation_package: natbib
+    latex_engine: xelatex
+bibliography: skeleton.bib
+link-citations: yes
+editor_options: 
+  chunk_output_type: console
+---
+```{r setup, include=FALSE, message = FALSE, warnign = FALSE}
+library("ggplot2")
+library("gridExtra")
+library("cowplot")
+
+filedir <- "~/Dropbox/CURSO_INSP_2019/course_files/"
+options(tinytex.verbose = TRUE)
+knitr::opts_chunk$set(tidy = FALSE, cache.extra = packageVersion('tufte'), error = TRUE)
+options(htmltools.dir.version = FALSE)
+```
+
+Vamos a analizar los ciclos (se encuentran en el [manual de R](http://cran.r-project.org/doc/manuals/R-lang.html#Looping) por si gustas.
+
+##For
+Al `for` lo alimentas con una lista de elementos y él (o ella) realizan la operación indicada con todos los elementos de la lista. Es decir el `for` recorre de uno por uno los elementos de una lista y les aplica una instrucción. 
+
+La estructura es como sigue:
+$$
+\begin{equation}
+\textrm{ for } \Big( \overbrace{i}^\text{Nombre de tu variable} \textrm{ in } \underbrace{1:10}_\text{Lista de elementos}\Big)  \overbrace{ \left \{\textrm{Házle algo a $i$} \right \} }^\text{Instrucción que aplicarle a cada elemento} 
+\end{equation}
+$$
+Por ejemplo una función que imprima los cuadrados de los primeros 10 números:
+
+```{r}
+for (i in 1:10){
+print(i^2)
+}
+```
+
+##While
+El `while` es una instrucción peligrosa. Un `while` realiza una instrucción indefinidamente mientras se cumpla una condición. La estructura es como sigue: 
+$$
+\begin{equation}
+\textrm{ while } \overbrace{\Big( \textrm{Condición fabulosa} \Big)}^\text{Cosas que tienen que cumplirse para seguir operando} \underbrace{ \left \{ \textrm{Cosas por hacer} \right \}}_\text{Instrucciones}
+\end{equation}
+$$
+Por ejemplo, mientras nuestro número $i$ sea $\leq 5$ le sumamos $1$. 
+Por ejemplo, mientras nuestro número $i$ sea $\leq 5$ le sumamos $1$. 
+
+```{r, echo=TRUE, eval= FALSE}
+i=1
+while (i<=5){
+print(i)
+i=i+1
+}
+```
+
+##IMPORTANTE
+Es muy importante que pusiéramos $i = i + 1$ ya que esto obliga a que cada vez que da una vuelta la computadora sume el valor de $i$. Sin ésta instrucción la $i$ valdría siempre 1 y jamás saldríamos del loop (jamás llegaría a valer 5). Si alguna vez quedas atrapado en un loop puedes usar el botón de STOP que tiene R junto a la consola o la tecla escape del teclado. 
+
+##If-else (condicionales)
+En el manual podemos encontrar la [sección de condicionales](http://cran.r-project.org/doc/manuals/R-lang.html#if). Los condicionales evalúan el camino que debe de seguir el código según una condición. Los condicionales tienen la siguiente estructura:
+
+$$
+\begin{align*}
+if  (Condición)  \left \{  \right. \\ \\ \text{Cosas por hacer si ocurre la condición}  \\ \\ \left.  \right \} else \left \{ \right. \\ \\ \text{Cosas por hacer si no se cumple} \\ \\ \left. \right \} \\ \\
+\end{align*}
+$$
+
+¡Vamos al ejemplo!
+
+Asignemos, primero, el valor de 2 a $i$:
+
+```{r, echo=TRUE, eval= FALSE}
+i = 2
+```
+
+Luego pongamos el condicional
+
+```{r, echo= TRUE, eval= FALSE}
+if (i == 5){   # Nota el doble signo de igual '=='. 
+  i=i^2        # Si sólo pones uno, R hace que i=5.
+}
+```
+
+Veamos cuánto vale $i$
+```{r, echo= TRUE, eval= TRUE}
+print(i)
+```
+
+
+
+Hagamos ahora $i = 5$ y veamos qué pasa cuando atraviesa el condicional: 
+
+```{r, echo=TRUE, eval= TRUE}
+i = 5
+if (i == 5){   
+  i=i^2      
+}
+print(i)
+```
+
+Hagamos ahora un condicional más complicado: pongamos que si $i = 5$ entonces haga $i^2$ pero si $i \neq 5$ entonces al valor de $i$ le sume $1$: 
+
+```{r, echo= TRUE, eval= TRUE}
+i=1
+if (i == 5){
+  i=i^2
+} else {
+  i=i+1
+}
+print(i)
+```
+
+##And-or (Operadores lógicos)
+
+¿Qué pasa si tienes varias condiciones que necesitas se cumplan a la vez? ¡Para eso están los [operadores lógicos](http://cran.r-project.org/doc/manuals/R-lang.html#Operators)! .
+
+##And
+
+Por ejemplo, supongamos queremos usar dos condiciones dentro del `if`. ¡Es muy fácil! Basta con escribir `Condición` 1 & `Condición` 2. 
+
+Ejemplo:
+
+```{r, echo= TRUE, eval= TRUE}
+i=1
+j=7
+if( (i == 1) & (i < j) ) {
+  i=i+j  
+}
+print(i)
+```
+
+
+Por otro lado si ahora hacemos $i > j$:
+
+```{r, echo= TRUE, eval= TRUE}
+i=11
+j=7
+if( (i == 1) & (i < j) ) {
+  i=i+j  
+}
+print(i)
+```
+
+Y si hacemos que $i = 1$ pero $i > j$:
+```{r, echo= TRUE, eval= TRUE}
+i=1
+j=0
+if( (i == 1) & (i < j) ) {
+  i=i+j  
+}
+print(i)
+```
+
+
+
+
+##Or
+
+El `or` se usa en el caso de que querramos que se cumpla al menos una de dos condiciones del `if`. Es decir, si tenemos dos condiciones el or se cumple cuando se cumple una de ellas o cuando se cumplen ambas. Por ejemplo:
+
+Cuando $i = 1$ con $i > j$:
+
+```{r, echo= TRUE, eval= TRUE}
+i=1
+j = 1/2
+if( (i == 1) | (i < j) ) {
+i=i+j
+}
+print(i)
+
+```
+
+Cuando $i \neq 1$ pero $ i < j $:  
+
+```{r}
+i=21
+j = 22
+if( (i == 1) | (i < j) ) {
+i=i+j
+}
+print(i)
+```
+
+
+O bien cuando $i \neq 1$ e $i > j$
+
+```{r}
+i=121
+j = 22
+if( (i == 1) | (i < j) ) {
+i=i+j
+}
+print(i)
+```
+
+
+La siguiente tabla resume cuándo se cumplen las condiciones:
+
+$$
+\begin{array}{ccccc} 
+Condición 1 & Condición 2 & And & Or \\
+\hline
+Si & Si & Si & Si \\ 
+Si & No & No & Si \\ 
+No & Si & No & Si \\ 
+No & No & No & No \\ 
+\end{array}
+$$
+
+##Ejercicio 1
+Crea los comandos necesarios para calcular la media y desviacion estandar del siguiente vector:
+
+```{r}
+numeros <- c(7.65688984, 0.45416281, -0.53197482, -11.68901517, 
+             -0.22092715, -6.65860576, -0.96411401, -0.04875882, 
+             -0.88076032, -9.47716275, 12.48699956, 58.37690942, 
+             0.75332369, -0.07644519, -0.47168251, 0.04574367, 
+             0.21158367, 6.57919350, 1.61654489, -144.28602691)
+```
+
+
+Tus resultados deberían ser:
+```{r, echo= FALSE}
+print(paste0("Media: ",mean(numeros)))
+print(paste0("Desviación: ",sd(numeros)))
+```
+
+
+`Nota` Para el ejercicio puedes usar cualquier función de R excepto: `mean`, `sd`, `var`.
+
+##RECORDATORIO
+Por si no lo recuerdas, aquí están las definiciones de media y desviacion estándar. Si bien no es la única forma pues ¡hay varias definiciones equivalentes!. 
+
+Aquí consideraremos $X$ como una variable con observaciones para $N$ individuos. Es decir: $X = (x_1,x_2,\cdots,x_n)$.
+
+
+
+##Media
+$$
+\begin{equation}
+\textrm{Media de }X = \frac{x_1 + x_2 + \cdots + x_n}{n} 
+\end{equation}
+$$
+##Desviación estándar
+$$
+\begin{equation}
+\textrm{Desviación Estándar de }X = \sqrt{\textrm{Media de }X^2 - \Big(\textrm{Media de }X\Big)^2} 
+\end{equation}
+$$
+
+##Ejercicio 2
+Sin correr el siguiente pedazo de código en R, estima cuánto valdrá $k$ al final:
+
+```{r, eval= FALSE}
+k <- 3
+for (i in 1:6){
+  
+  if (i > k || k == 3){
+    
+    k <- k^2
+    
+  } else if (i == 3 & k == 7) {
+    
+    k <- k - 2
+    
+  } else if (k > i & i < 5) {
+    
+    k <- k*i/2
+    
+  } else if (k > i & i >= 5) {
+    
+    k <- k + 1
+    
+  } else {
+    
+    k <- k/2
+    
+  }
+  
+}
+```
+
+
+##Ejercicio 3
+Un grupo de investigadores tienen tres vectores de datos sobre individuos: `sexo`, `edad`  y exposición (horas) a humo de tabaco `expo`.
+
+```{r}
+sexo <- c("Hombre","Mujer","Mujer","Mujer","Hombre",
+          "Mujer","Hombre","Hombre")
+edad <- c(28, 12, 77, 32, 46, 53, 17, 20, 88)
+expo  <- c(1, 0, 1.5, 2.2, 2, 5, 1.01, 3.2)
+```
+
+
+Ellos saben que por cada hora de exposición el riesgo relativo de enfermedad cardiovascular es de $1.025$ para hombres menores a 45 y $1.032$ para mujeres de la misma edad. Para mayores de 45, el riesgo es $1.052$ en caso de hombres y $1.066$ en caso de mujeres. 
+
+Los investigadores hicieron el siguiente código para estimar los riesgos de cada uno de los individuos. Ayúdalos a que su código funcione: 
+
+```{r, eval= FALSE}
+#Hay n personas: para cada una hay que calcular su riesgo 
+
+n      <- length(sexo)
+riesgo <- c()
+while (persona < n){
+  
+  #Checar la edad de la persona
+  if (edad[persona] < 45){
+    
+    #Checar el sexo
+    if (sexo[persona] = Hombre){
+      
+      riesgo[persona] <- expo[persona]*1.025
+      
+    } else {
+      
+      riesgo[persona] <- expo[persona]*1.032
+      
+    }
+    
+  } else {
+    
+    #Checar el sexo
+    if (sexo[persona] = Hombre){
+      
+      riesgo[persona] <- expo[persona]*1.052
+      
+    } else {
+      
+      riesgo[persona] <- expo[persona]*1.066
+      
+    }
+    
+  }
+  
+  
+  
+}
+```
+
+
+Para que cheques que funcione, te dejo la respuesta. El riesgo es:
+
+```{r, echo= FALSE, eval= TRUE}
+#Hay n personas: para cada una hay que calcular su riesgo relativo
+n       <- length(sexo)
+riesgo  <- c()
+persona <- 1
+
+while (persona < n){
+  
+  #Checar la edad de la persona
+  if (edad[persona] < 45){
+    
+    #Checar el sexo
+    if (sexo[persona] == "Hombre"){
+      
+      riesgo[persona] <- expo[persona]*1.025
+      
+    } else {
+      
+      riesgo[persona] <- expo[persona]*1.032
+      
+    }
+    
+  } else {
+    
+    #Checar el sexo
+    if (sexo[persona] == "Hombre"){
+      
+      riesgo[persona] <- expo[persona]*1.052
+      
+    } else {
+      
+      riesgo[persona] <- expo[persona]*1.066
+      
+    }
+    
+  }
+  
+  persona <- persona + 1
+  
+}
+
+print(riesgo)
+```
+
+
+
+##Advertencias y otras cosas poco intuitivas
+
+Es importante entender cómo funcionan las computadoras para poder simular (y entender los problemas de la simulación). Aunque los números son infinitos, las computadoras no tienen una cantidad infinita de dígitos. Por ejemplo, nosotros (humanos) podemos representar:
+$$
+\begin{equation}
+1 - 0.000000001 = 0.99999999
+\end{equation}
+$$
+La computadora no puede hacerlo: 
+```{r}
+1 - 0.000000001
+```
+
+
+Tampoco puede representar números muy grandes: 
+```{r}
+exp(1000)
+```
+
+
+Mientras que para los humanos no hay ``un número positivo más chico'' (si dices, por ejemplo, que $0.00000000001$ es el más chico de todos los positivos (no cero), siempre puedes dividirlo entre $2$: $0.00000000001/2$ y obtener un número más pequeño) para las computadoras sí hay. Eso quiere decir que cuando hacemos una operación la computadora NO da la respuesta correcta sólo su mejor aproximación. A veces su mejor aproximación es la respuesta correcta: 
+
+```{r}
+sqrt(100)
+```
+
+
+Otras veces está cerca:
+
+```{r}
+sqrt(12345678.12345678^2)
+```
+
+
+Pero...
+
+##Donde fallan estas cosas
+
+Intuitivamente, los decimales que nos acabamos de comer en el inciso anterior no importan ¡son simples decimales! El siguiente ejemplo muestra que sí importan.
+
+Este ejemplo calcula una función recursivamente. ¿Puedes explicar qué estamos haciendo?
+
+```{r}
+ejemplo <- c()
+a       <- 2.701
+for (i in 1:100){
+  
+  if (i == 1){
+    
+    ejemplo[i] <- 10
+    
+  } else {
+    
+    ejemplo[i] <- ejemplo[i-1] + 
+                  a*ejemplo[i-1]*(1-ejemplo[i-1]/100)
+    
+  }
+  
+}
+ 
+print(ejemplo[100])
+```
+
+
+El ejemplo anterior resulta en un maravilloso resultado de ejemplo[100]. Redondeemos a dos decimales el valor de $a$ para que sea $2.70$.  Intuitivamente, el valor debería estar cerca y ser ciento y tantos. Pues no...
+
+```{r}
+ejemplo2 <- c()
+a       <- 2.70
+for (i in 1:100){
+  
+  if (i == 1){
+    
+    ejemplo2[i] <- 10
+    
+  } else {
+    
+    ejemplo2[i] <- ejemplo2[i-1] + 
+                   a*ejemplo2[i-1]*(1-ejemplo2[i-1]/100)
+    
+  }
+  
+}
+ 
+print(ejemplo2[100])
+  
+```
+
+¡Resulta que con cambiar un decimal, el resultado cambió hasta ejemplo2[100]!
+La gráfica siguiente muestra como varían los valores coincidiendo al inicio y alejándose después:
+
+```{r, echo= FALSE}
+library(ggplot2)
+
+ejedato <- as.data.frame(cbind(x = 1:100, y1 = ejemplo, y2 = ejemplo2))
+ggplot(ejedato, aes(x = x)) + 
+  geom_path(aes(y = y1), col = "purple") + 
+  geom_path(aes(y = y2), col = "firebrick") +
+  theme_classic()
+
+
+```
+
+##Números pseudoaleatorios
+Para simular necesitamos generar números aleatorios. La única forma que tenemos de hacerlo (actualmente) es por medio de isótopos radiactivos que decaen aleatoriamente. ¡Si tienes uno  guardado por ahí es el momento de usarlo!
+
+Como no es muy bueno que tengamos por ahí material radiactivo, los matemáticos han generado números que se conocen como pseudoaleatorios. Estas son funciones (como la del apartado anterior) que si conoces el valor inicial (en el caso pasado, $a$) las funciones son tan alocadas que los números que resultan de ella ''parecen aleatorios''. 
+
+##Ejercicio 4
+Considera los siguientes dos fragmentos de código. Analiza los resultados. ¿Cuál de ellos es un mejor generador pseudoaleatorio y por qué?
+
+```{r}
+a         <- 2
+aleatorio <- c()
+for( i in 1:100){
+  aleatorio[i] <- a + i
+}
+```
+
+
+```{r, echo= FALSE}
+print(head(aleatorio))
+```
+
+
+```{r}
+aleatorio2 <- c()
+for (i in 1:100){
+  
+  if (i == 1){
+    
+    aleatorio2[i] <- 0.9
+    
+  } else {
+    
+    aleatorio2[i] <- aleatorio2[i-1] + 
+                   2.81*aleatorio2[i-1]*(1-aleatorio2[i-1]/17)
+  }
+  
+}
+
+```
+
+
+```{r, echo= FALSE}
+print(head(aleatorio2))
+```
+
+##Aleatoreidad en R
+
+Nuestra semilla
+```{r, echo=FALSE , eval=TRUE, results='hide'}
+set.seed(98)
+```
+
+
+Si un día despiertas con ganas de tener 10 números aleatorios, en R ¡puedes hacerlo!:
+```{r, eval= FALSE}
+runif(10)
+```
+
+```{r, echo=FALSE}
+round(runif(10),2)
+```
+
+
+Además puedes especificar la distribución. Por ejemplo, ahora sacaremos 7 números aleatorios de una normal estándar:
+
+```{r, eval= FALSE}
+rnorm(7)
+```
+
+```{r, echo= FALSE}
+round(rnorm(7),2)
+```
+
+O bien 8 valores de una exponencial con parámetro 5:
+```{r, eval= FALSE}
+rexp(8,rate=5)
+```
+
+
+```{r, echo= FALSE}
+round(rexp(8,rate=5),2)
+```
+
+
+Vamos entonces a simular 1,000 números alearorios de una normal estándar:
+```{r}
+y=rnorm(1000)
+```
+
+
+Un comando muy útil es la función `summary` que resume los cuantiles principales de la distribución así como el mínimo, el máximo y el promedio. 
+```{r}
+summary(y)
+```
+
+Al momento de pedir ayuda para el comando `rnorm` nos podemos dar cuenta de otras funciones interesantes relacionadas con la normal:
+```{r, eval= FALSE}
+?rnorm
+```
+
+
+Podemos, estimar, por ejemplo, la densidad acumulada de una normal estándar en el 0. Es decir, ¿a qué percentil de una normal corresponde el 0?
+
+```{r}
+pnorm(0)
+```
+
+
+Podemos hacer lo mismo para los números entre -10 y 10:
+```{r}
+pnorm(-10:10)
+```
+
+Igualmente podemos graficar cómo se ven:
+```{r}
+plot(-10:10,pnorm(-10:10))
+```
+
+
+O bien graficar la función de distribución de una normal entre -10 y 10:
+```{r}
+plot(-10:10,dnorm(-10:10))
+```
+
+
+¿Notas cómo nos faltan números en medio? Es porque el comando `-10:10` recorre los números entre -10 y 10 de 1 en 1. 
+```{r}
+-10:10
+```
+
+
+Para hacer más refinada la cantidad de puntos podemos hacer ahora una nueva secuencia pero yendo de 0.1 en 0.1:
+
+```{r}
+x = seq(-10,10,0.1)
+```
+
+
+Puedes ver cómo se guardaron estos valores (este documento nada más muestra los primeros 9 porque es desperdiciar mucho espacio poner los 201 valores que hizo R)
+
+```{r, eval= FALSE}
+x
+```
+
+
+```{r, echo= FALSE}
+head(x,9)
+```
+
+
+¡La gráfica ahora se ve genial!
+
+```{r}
+plot(x,dnorm(x))
+```
+
+
+##Las semillas
+En el apartado anterior dijimos que los números de R no eran aleatorios sino pseudoaleatorios y que estos se generaban por medio de una función. Cuando estamos haciendo investigación con simulaciones, para que nuestro estudio sea reproducible, aunque usemos números aleatorios, debemos usar siempre los mismos. La semilla se asegura de ello. Para poner una semilla usa el comando `set.seed` y pon dentro un entero.  
+
+```{r}
+set.seed(1234)
+```
+
+
+Obtengamos un número aleatorio normal:
+```{r}
+rnorm(1)
+```
+
+
+```{r}
+rnorm(1)
+```
+
+
+Volvamos a poner la semilla y saquemos un tercero:
+```{r}
+set.seed(1234)
+rnorm(1)
+```
+
+
+¿Notas que es el mismo número que al inicio? 
+
+##Ejercicio 5
+
+Considera una población cuyo peso se distribuye normal con media 69 y desviación estándar 4.7. Esa misma población tiene una altura normal con media 1.8 $m^2$ y desviación estándar de $0.05$. Simula su índice de masa corporal. Calcula la media y desviación estándar del mismo. ¡No te olvides de usar una semilla!
+
+
+##Ejercicio 6
+
+Un grupo de investigadores ha decidido que el índice de masa corporal tiene una distribución Cauchy y han simulado el índice de masa corporal como sigue: 
+
+```{r, eval= FALSE}
+set.seed(6207)
+#Simular IMC
+imc <- rcauchy(100,25,0.9)
+
+#Calcular la media
+mean(imc)
+```
+
+El código es correcto. Pero la hipótesis de la distribución Cauchy no. Calcula la media varias veces usando diferentes semillas ¿Cuál es el problema? ¿Ocurre lo mismo si calculas la mediana?
+
+
+
+
+
