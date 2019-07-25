@@ -28,6 +28,8 @@ library(knitr)
 library(kableExtra)
 library(haven)
 library(ggplot2)
+library(forecast)
+library(ggseas)
 library(tidyverse)
 library(lubridate)
 filedir <- "~/Dropbox/CURSO_INSP_2019/course_files/"
@@ -135,6 +137,10 @@ Nota que en general las distribuciones tienen más variables que se conocen como
 
 ## Teorema central del límite
 En general la gente asume que todo es normal. No hay ninguna razón para esto y el nombre de `normal` no proviene del concepto de `normalidad` como algo `usual` sino que viene del concepto matemático de `norma` la cual representa la distancia entre dos vectores. ¡No hay nada de Normal en la normal!^[De hecho mucha gente argumenta que deberíamos llamarla Gaussiana para evitarnos confusiones de pensar que la normal es normal.] La normal es tan prevalente en análisis estadísticos por un teorema que se conoce como _Teorema Central del Límite_ . Éste era uno de los favoritos de Fisher (quien inventó las técnicas estadísticas clásicas) y por ello la gente lo utiliza tanto. La idea del teorema es que si tomas la distribución de probabilidad de los promedios de distintas muestras aleatorias, conforme aumentas el tamaño de muestra _los promedios_ van a parecerse a una normal. 
+
+```{marginfigure}
+Un excelente libro para el tema de regresiones en `R` es [Data Analysis and Graphics Using R](https://www.cambridge.org/core/books/data-analysis-and-graphics-using-r/E04AEC5BCEF09D2E51A63EB5A8CB0680)
+```
 
 Para ello tomemos una muestra aleatoria de datos, por ejemplo gamma (para que no tengan nada de normal)
 ```{r}
@@ -271,29 +277,241 @@ lineas <- cbind(x, lineas)
 #Lines
 ggplot(as.data.frame(lineas)) + 
   geom_line(aes(x = x, y = V2, color = "0")) +
-  geom_line(aes(x = x, y = V3, color = "1")) +
-  geom_line(aes(x = x, y = V4, color = "2")) +
-  geom_line(aes(x = x, y = V5, color = "3")) +
-  geom_line(aes(x = x, y = V6, color = "4")) +
-  geom_line(aes(x = x, y = V7, color = "5")) +
-  scale_color_manual("Pendiente (m)", values = rainbow(6)) +
-  theme_bw()
-
-
-
+  geom_line(aes(x = x, y = V3, color = "0.5")) +
+  geom_line(aes(x = x, y = V4, color = "1")) +
+  geom_line(aes(x = x, y = V5, color = "1.5")) +
+  geom_line(aes(x = x, y = V6, color = "2")) +
+  geom_line(aes(x = x, y = V7, color = "2.5")) +
+  geom_line(aes(x = x, y = V8, color = "3")) +
+  geom_line(aes(x = x, y = V9, color = "3.5")) +
+  geom_line(aes(x = x, y = V10, color = "4")) +
+  geom_line(aes(x = x, y = V11, color = "4.5")) +
+  geom_line(aes(x = x, y = V12, color = "5")) +
+  scale_color_manual("Pendiente (m)", values = rainbow(11)) +
+  theme_bw() +
+  ggtitle("Diferentes pendientes")
 
 ```
 
-Mientras que la ordenada determina por dónde toca el origen
+Mientras que la ordenada determina por dónde toca el eje de las ordenadas ($y$):
 ```{r}
+linea_ordenada <- function(b){
+  x <- seq(-1, 1, length.out = 100)
+  y <- x + b
+  return(y)
+}
+
+#Creamos varias líneas
+x      <- seq(0, 1, length.out = 100)
+lineas <- sapply(seq(-5, 5, by = 1), linea_ordenada)
+lineas <- cbind(x, lineas)
+
+#Lines
+ggplot(as.data.frame(lineas)) + 
+  geom_line(aes(x = x, y = V2, color = "-5")) +
+  geom_line(aes(x = x, y = V3, color = "-4")) +
+  geom_line(aes(x = x, y = V4, color = "-3")) +
+  geom_line(aes(x = x, y = V5, color = "-2")) +
+  geom_line(aes(x = x, y = V6, color = "-1")) +
+  geom_line(aes(x = x, y = V7, color = "0")) +
+  geom_line(aes(x = x, y = V8, color = "1")) +
+  geom_line(aes(x = x, y = V9, color = "2")) +
+  geom_line(aes(x = x, y = V10, color = "3")) +
+  geom_line(aes(x = x, y = V11, color = "4")) +
+  geom_line(aes(x = x, y = V12, color = "5")) +
+  scale_color_manual("Ordenada (b)", values = rainbow(11)) +
+  theme_bw() +
+  geom_vline(aes(xintercept = 0)) +
+  geom_hline(aes(yintercept = 0)) + 
+  ggtitle("Diferentes valores de ordenada")
 
 ```
 
-## Y si mis datos no son lineales
+En una regresión lineal simple el problema consiste en determinar la línea que mejor explique la variable a predecir `y` en función de mis observaciones `x`. Para ello, vamos a jugar con una base completamente inventada antes de analizar datos reales. 
+```{r}
+#Genero una línea recta
+base1 <- data.frame(x = 1:100, y = 3*(1:100) + 2)
 
-## Verificación del modelo
+ggplot(base1, aes(x = x, y = y)) +
+  geom_smooth(aes(x = x, y = y, color = "Predicción"), method = "lm") +
+  geom_point(aes(x = x, y = y, color = "Observaciones")) 
+ 
+```
 
+Éste es un modelo perfecto de regresión lineal. Veamos los resultados del modelo (sin graficar) de `R`:
+```{r}
+#Correr la regresión aparentemente no hace nada
+modelo1 <- lm(y ~ x, data = base1)
+summary(modelo1)
+```
+
+El intercepto nos da la altura de la línea como vimos anteriormente mientras que el estimado para `x` es la pendiente de la línea. Estamos muy seguros de que la línea está bien pues los errores son pequeñísimos. Observa que es tan raro tener tan buen modelo ¡que hasta R se queja!
+
+Podemos además ver gráficas de diagnostico para cada uno de los resultados:
+```{r}
+plot(modelo1)
+```
+
+En este caso que el modelo es perfecto: parecidas a estas debe ser un buen modelo. Veamos cómo cambia la regresión si cambiamos uno de los puntos y agregamos un outlier: 
+
+```{r}
+library("tidyverse")
+base2 <- base1 %>% bind_rows(c(x = 101, y = 10000))
+
+ggplot(base2, aes(x = x, y = y)) +
+  geom_smooth(aes(x = x, y = y, color = "Predicción"), method = "lm") +
+  geom_point(aes(x = x, y = y, color = "Observaciones")) 
+
+``` 
+
+¡Un solo _outlier_ nos cambió toda la línea! Veamos si cambia algo en el `summary`:
+
+```{r}
+#Correr la regresión aparentemente no hace nada
+modelo2 <- lm(y ~ x, data = base2)
+summary(modelo2)
+```
+
+Nota que `R` ya no está seguro del intercepto: incrementamos el error horriblemente y la $R^2$ (ahora volvemos a ella) disminuyó a casi nada. Finalmente, estudiemos esto en las gráficas de diagnostico:
+
+```{r}
+plot(modelo2)
+```
+
+Observa que los residuales contra ajustados se desvía al final lo que nos dice que no es buen ajuste para los últimos. El `qqplot` muestra que el ajuste es bueno para las variables de en medio pero no los extremos; finalmente, el apalancamiento nos muestra que la observación `101` está apalancando mucho: ¡es un outlier!
+
+Veamos, ahora, qué pasa, si mis datos no son lineales: ¿cómo se ven las gráficas?
+```{r}
+base3 <- base1 %>% mutate(y = sqrt(y))
+
+ggplot(base3, aes(x = x, y = y)) +
+  geom_smooth(aes(x = x, y = y, color = "Predicción"), method = "lm") +
+  geom_point(aes(x = x, y = y, color = "Observaciones")) 
+```
+
+Por otro lado observa el modelo ¿qué notas?
+```{r}
+modelo3 <- lm(x ~ y, data = base3)
+summary(modelo3)
+```
+
+¿Ahora qué ves en las gráficas de diagnóstico?
+```{r}
+plot(modelo3)
+```
+
+## Ejercicio 
+Lee las bases de datos de `R` llamadas `Anscombe.Rda`. Ellas contienen mediciones de conteo de glóbulos blancos contra dosis de una medicina clasificados por uno de cuatro grupos de edad. Para cada grupo de edad: 
+
+1. Realiza un modelo de regresión y observa el `summary`. No grafiques. Determina sólo con el `summary` cuáles modelos sí funcionan y cuáles no. 
+
+2. Observa las gráficas de diagnóstico. Determina sólo con las gráficas de diagnóstico cuál es un buen modelo y cuáles no. 
+
+3. Finalmente, grafica los datos y verifica tu análisis. 
+
+```{r, echo = FALSE}
+data(anscombe)
+globulos.blancos <- anscombe
+colnames(globulos.blancos) <- NULL
+n <- nrow(anscombe)
+base1 <- globulos.blancos[1:n,c(1,2)] 
+base2 <- globulos.blancos[1:n,c(3,4)]
+base3 <- globulos.blancos[1:n,c(5,6)]
+base4 <- globulos.blancos[1:n,c(7,8)]
+colnames(base1) <- c("Glóbulos","Dosis")
+base1$Grupo <- "Grupo 1"
+colnames(base2) <- c("Glóbulos","Dosis")
+base2$Grupo <- "Grupo 2"
+colnames(base3) <- c("Glóbulos","Dosis")
+base3$Grupo <- "Grupo 3"
+colnames(base4) <- c("Glóbulos","Dosis")
+base4$Grupo <- "Grupo 4"
+globulos <- base1 %>% bind_rows(base2) %>%
+  bind_rows(base3) %>% bind_rows(base4)
+#save(globulos, file = "Anscombe.rda")
+```
+
+Así se ve la base de datos:
+```{r, echo = FALSE}
+kable(head(globulos))
+```
+
+## Análisis con datos no lineales 
+Las base de datos `Datos_Peso.rda` contiene la información de el peso, altura y sexo de una persona. Lee la base de datos:
+
+```{r, echo = FALSE}
+set.seed(62347)
+pesoh = runif(100, 60, 90)
+pesom = runif(100, 60, 85)
+datos_h <- data.frame(peso = pesoh,
+                      talla = 0.2*(pesoh-60)/30 + 1.5 + rnorm(100, sd = 0.019),
+                      sexo = "hombre")
+datos_m <- data.frame(peso = pesom,
+                      talla = 0.2*sqrt((pesom-60)/30) + 1.4 + rnorm(100, sd = 0.014),
+                      sexo = "mujer")
+datos_peso <- rbind(datos_h, datos_m)
+save(datos_peso, file = "Datos_Peso.rda")
+```
+
+```{r, eval = FALSE}
+load("Datos_Peso.rda")
+```
+
+Los datos deberían de verse así:
+```{r, echo = FALSE}
+ggplot(datos_peso, aes(x = talla, y = peso, color = sexo)) + geom_point() +
+  theme_bw() +
+  theme(plot.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8"),
+        legend.background = element_rect(fill = "#fffff8")) +
+  ggtitle("Peso contra talla")
+```
+
+Vamos a ajustar un modelo para los registros de `hombre`. Para ello obtenemos una subbase usando `filter`:
+```{r}
+datos.h <- datos_peso %>% filter(sexo == "hombre")
+```
+
+Podemos correr el modelo sin problema: 
+```{r}
+ggplot(datos.h, aes(x = talla, y = peso, color = "hombre")) + geom_point() +
+  ggtitle("Regresión lineal")
+```
+
+Pero cuando corremos el modelo de mujeres, el ajuste no es muy bueno:
+```{r}
+datos.m  <- datos_peso %>% filter(sexo == "mujer") 
+modelo.m <- lm(peso ~ talla, data = datos.m)
+plot(modelo.m)
+```
+
+No está ajustando bien la curvatura del modelo:
+
+```{r}
+ggplot(datos.m, aes(x = talla, y = peso, color = "mujer")) + 
+  geom_point() +
+  geom_smooth(method = "lm", color = "black") +
+  ggtitle("Regresión lineal")
+```
+
+Para ello necesitamos transformar los datos. Como yo inventé los datos, sé que elevar al cuadrado es justo lo que necesitamos:
+```{r}
+ggplot(datos.m, aes(x = talla, y = peso, color = "mujer")) + 
+  geom_point() +
+  geom_smooth(method = "lm", color = "black", formula = y ~ poly(x, 2)) +
+  ggtitle("Regresión lineal")
+```
+
+Lo podemos ver en el análisis también:
+```{r}
+modelo.m.cuad <- lm(peso ~ poly(talla, 2), data = datos.m)
+plot(modelo.m.cuad)
+```
+
+La pregunta que yo me hice la primera vez que vi que, en general, tenías que transformar tus datos fue ¿y cómo sé transformarlos? La respuesta es simple: _le atinas_ . El problema es que, salvo en los ejemplos de libro de texto, nunca le atinas. 
 ## Idea: Regresión lineal de múltiples variables
+
+
 
 # Regresión logística
 
@@ -310,6 +528,41 @@ Mientras que la ordenada determina por dónde toca el origen
 ## Regresión Poisson 
 
 ## Series de tiempo
+
+```{marginfigure}
+El libro que te recomiendo para esta sección es: [Forecasting: Principles and Practice por Rob J Hyndman and George Athanasopoulos](https://otexts.com/fpp2/)
+```
+
+Vamos a analizar la base de mortalidad generada en los apuntes pasados. Para eso puedes leer: 
+```{r}
+Miocardio <- readRDS(paste0(filedir,"MortalidadAgrupada.rds"))
+```
+
+Recuerda que los datos se ven así:
+```{r}
+ggplot(Miocardio, aes(x = Fecha, y = Defunciones, color = Sexo)) + 
+  geom_point() + ggtitle("Mortalidad por miocardio")
+```
+
+Trabajaremos sólo la base de mujeres:
+```{r}
+Miocardio.m <- Miocardio %>% filter(Sexo == "Mujeres")
+```
+
+Instala los paquetes necesarios:
+```{r, eval = FALSE}
+install.packages("ggseas")
+install.packages("forecast")
+```
+
+¡No olvides llamarlos con la librería!
+```{r, eval = FALSE}
+library(forecast)
+library(ggseas)
+```
+
+Una ves
+
 
 ## Bosques aleatorios
 
