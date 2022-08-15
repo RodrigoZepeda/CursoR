@@ -222,11 +222,12 @@ ggsave("Edad_vs_colesterol.pdf", width = 8, height = 5)
 ggplot(datos_diabetes) + geom_point(aes(x = weight, y = height), color = "orange", size = 0.5) + xlab("Peso (libras)") + ylab("Altura (pulgadas)") + ggtitle("Gráfica de peso contra altura") + theme_classic()
 ```
 
-2. Dentro del `aes` puedes también aplicar funciones a las variables. Por ejemplo si queremos graficar índice de masa corporal ($\text{peso} / (\text{altura}^2)$) podemos calcular el IMC en el mismo `aes` haciendo: `... aes(x = weight/(height^2), ...) ...`. Grafica en la variable x el índice de masa corporal (IMC) y en la variable `y` el radio de colesterol definido como el nivel de colesterol `chol` entre el colesterol de alta densidad `hdl`. Obtén una gráfica como esta:  
+2. Dentro del `aes` puedes también aplicar funciones a las variables. Por ejemplo si queremos graficar índice de masa corporal ($\text{peso (kg)} / (\text{altura (m)}^2)$) podemos calcular el IMC en el mismo `aes` haciendo: `... aes(x = (weight * 0.453592) /(height * 0.0254)^2, ...) ...`. Donde el factor `0.453592` es para convertir de libras a kilos y `0.0254` de pulgadas a metros.  Grafica en la variable x el índice de masa corporal (IMC) y en la variable `y` el radio de colesterol definido como el nivel de colesterol `chol` entre el colesterol de alta densidad `hdl`. Obtén una gráfica como esta:  
 
 
 ```{r, echo = FALSE, warning=FALSE}
-ggplot(datos_diabetes) + geom_point(aes(x = weight/height^2, y = chol/hdl), color = "purple", size = 0.5) + xlab("IMC") + ylab("Radio de colesterol") + ggtitle("Relación entre IMC y colesterol") + theme_bw()
+ggplot(datos_diabetes) + 
+  geom_point(aes(x = (weight * 0.453592) /(height * 0.0254)^2, y = chol/hdl), color = "purple", size = 0.5) + xlab("IMC") + ylab("Radio de colesterol") + ggtitle("Relación entre IMC y colesterol") + theme_bw()
 ```
 
 ### R Intermedio 
