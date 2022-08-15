@@ -34,6 +34,8 @@ knitr::opts_chunk$set(tidy = FALSE, cache.extra = packageVersion('tufte'), error
 options(htmltools.dir.version = FALSE)
 ```
 
+> **DATOS** Todos los datos discutidos aquí se encuentran en la siguiente liga: [https://github.com/RodrigoZepeda/CursoR/tree/master/datasets](https://github.com/RodrigoZepeda/CursoR/tree/master/datasets). Para descargarlos dar clic sobre el nombre de la base, y luego clic derecho en `Raw` y `Guardar vínculo como`.
+
 # ggplot2 
 `R` cuenta con su propia forma de hacer gráficas mediante el comando `plot`. Sin embargo, las gráficas que puedes hacer con plot son, salvo en el caso de regresiones, mucho más sencillas que las producidas por el paquete `ggplot`. Dicho paquete fue desarrollado inicialmente por [Hadley Wickham](http://hadley.nz) y actualmente [continúa en desarrollo](https://github.com/tidyverse/ggplot2) por más de 198 colaboradores distintos. Por su belleza y facilidad, nosotros nos enfocaremos en gráficas con `ggplot2`. Otros excelentes tutoriales los puedes hallar en el [libro de ggplot2](https://ggplot2-book.org) o en [r-statistics.co](http://r-statistics.co/ggplot2-Tutorial-With-R.html). 
 
@@ -820,37 +822,232 @@ Grafiquemos la cantidad de casos totales en México como puntos
 
 ```{r}
 ggplot(sinave) + 
-  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#a8c66c") 
+  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") 
 ```
 
 podemos agregar una línea que una los puntos pero como hay tantos no se ve muy bien:
 
 ```{r}
 ggplot(sinave) + 
-  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#a8c66c") + 
-  geom_spline(aes(x = FECHA_SINTOMAS, y = n), color = "#1b6535") 
+  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") + 
+  geom_spline(aes(x = FECHA_SINTOMAS, y = n), color = "#ffd79d") 
 ```
 
 podemos mejor usar la función `geom_spline` del paquete `ggformula` para usar una línea que se encargue de eliminar el ruido de los datos y descubrir la forma inherente:
 
 
-```{r}
+```{r, message = FALSE, warning = FALSE}
 library(ggformula)
 
 ggplot(sinave) + 
-  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#a8c66c") + 
-  geom_spline(aes(x = FECHA_SINTOMAS, y = n), color = "#1b6535") 
+  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") + 
+  geom_spline(aes(x = FECHA_SINTOMAS, y = n), color = "#ffd79d") 
 ```
 
 nota que el suavizamiento ahora es mucho mejor. Podemos controlar el nivel de suavizamiento con los grados de libertad del spline `df`:
 
 ```{r}
 ggplot(sinave) + 
-  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#a8c66c") + 
-  geom_spline(aes(x = FECHA_SINTOMAS, y = n, color = "df 100"), df = 100) +
+  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") + 
+  geom_spline(aes(x = FECHA_SINTOMAS, y = n, color = "df 900"), df = 900) +
   geom_spline(aes(x = FECHA_SINTOMAS, y = n, color = "df 45"), df = 45) +
   geom_spline(aes(x = FECHA_SINTOMAS, y = n, color = "df 20"), df = 15)  +
-  geom_spline(aes(x = FECHA_SINTOMAS, y = n, color = "df 5"), df = 5) 
+  geom_spline(aes(x = FECHA_SINTOMAS, y = n, color = "df 5"), df = 10) 
 ```
 
+Hay un equlibrio en el nivel de suavizamiento: poner demasiado poco rompe la forma `df = 10` mientras que suavizamiento alto sigue la tendencia de los datos tal cual `df = 900`. Me quedaré con `df = 45` porque me gusta cómo se ve a ese nivel. 
 
+```{r}
+ggplot(sinave) + 
+  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") + 
+  geom_spline(aes(x = FECHA_SINTOMAS, y = n), color = "#ffd79d", df = 45) 
+```
+
+Lo que sigue es personalizar la gráfica poniendo los títulos, el tema y cambiando los ejes a tener notación con comas. Todo esto lo hemos hecho antes: 
+
+```{r}
+ggplot(sinave) + 
+  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") + 
+  geom_spline(aes(x = FECHA_SINTOMAS, y = n), color = "#ffd79d", df = 45) +
+  labs(
+    x        = "",
+    y        = "Casos incidentes",
+    title    = "Enfermedades Respiratorias",
+    subtitle = "Registros del Sistema Nacional de Vigilancia Epidemiológica (SINAVE)",
+    caption  = "Datos Abiertos de la Dirección General de Epidemiología"
+  ) +
+  scale_y_continuous(labels = scales::label_comma())
+```
+
+Agregaré un `scale_x_date` para elegir tener cortes en el eje `x` cada 6 meses y:
+
+```{r}
+ggplot(sinave) + 
+  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") + 
+  geom_spline(aes(x = FECHA_SINTOMAS, y = n), color = "#ffd79d", df = 45) +
+  labs(
+    x        = "",
+    y        = "Casos incidentes",
+    title    = "Enfermedades Respiratorias",
+    subtitle = "Registros del Sistema Nacional de Vigilancia Epidemiológica (SINAVE)",
+    caption  = "Datos Abiertos de la Dirección General de Epidemiología"
+  ) +
+  scale_y_continuous(labels = scales::label_comma()) +
+  scale_x_date(date_breaks = "6 months", date_minor_breaks = "3 months",
+               date_labels = "%b/%Y") +
+  theme_bw()
+```
+
+Utilizaremos `theme` para realizar cambios a cada parte de la gráfica comenzando por cambiar el color de fondo:
+
+```{r}
+ggplot(sinave) + 
+  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") + 
+  geom_spline(aes(x = FECHA_SINTOMAS, y = n), color = "#ffd79d", df = 45) +
+  labs(
+    x        = "",
+    y        = "Casos incidentes",
+    title    = "Enfermedades Respiratorias",
+    subtitle = "Registros del Sistema Nacional de Vigilancia Epidemiológica (SINAVE)",
+    caption  = "Datos Abiertos de la Dirección General de Epidemiología"
+  ) +
+  scale_y_continuous(labels = scales::label_comma()) +
+  scale_x_date(date_breaks = "6 months", date_minor_breaks = "3 months",
+               date_labels = "%b/%Y") +
+  theme_classic() +
+  theme(
+    panel.background = element_rect(fill = "#320d3e")
+  )
+```
+
+`theme` nos permite cambiar las características de cualquier parte del plot. Por ejemplo haciendo una mezcla de colores horribles podemos hacer **la gráfica más fea que hayas visto**:
+
+```{r}
+ggplot(sinave) + 
+  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") + 
+  geom_spline(aes(x = FECHA_SINTOMAS, y = n), color = "#ffd79d", df = 45) +
+  labs(
+    x        = "",
+    y        = "Casos incidentes",
+    title    = "Enfermedades Respiratorias",
+    subtitle = "Registros del Sistema Nacional de Vigilancia Epidemiológica (SINAVE)",
+    caption  = "Datos Abiertos de la Dirección General de Epidemiología"
+  ) +
+  scale_y_continuous(labels = scales::label_comma()) +
+  scale_x_date(date_breaks = "6 months", date_minor_breaks = "3 months",
+               date_labels = "%b/%Y") +
+  theme_classic() +
+  theme(
+    panel.background = element_rect(fill = "#320d3e"),                  #Fondo de la gráfica
+    plot.background  = element_rect(fill = "green"),                    #Fondo de los títulos
+    axis.text.x      = element_text(color = "red", size = 5),           #Letras de los ejes
+    axis.text.y      = element_text(color = "forestgreen"),             #Letras de los ejes
+    axis.ticks       = element_line(color = "red", size = 2),           #Los | abajo de los ejes
+    axis.line.x      = element_line(color = "orange", size = 2),        #Línea del eje
+    axis.line.y      = element_line(color = "yellow", size = 3),        #Otra línea del eje
+    plot.title       = element_text(color = "blue", size = 20),         #Título
+    plot.subtitle    = element_text(color = "gray25", face = "italic"), #Subtítulo
+    plot.caption     = element_text(color = "purple"),                  #Caption
+    axis.title.y     = element_text(color = "pink"),                    #Lo que dice el eje y
+  )
+```
+
+La cual podemos arreglar rápidamente con una mezcla amigable de colores:
+
+```{r}
+ggplot(sinave) + 
+  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#007677") + 
+  geom_spline(aes(x = FECHA_SINTOMAS, y = n), color = "#ffd79d", df = 45) +
+  labs(
+    x        = "",
+    y        = "Casos incidentes",
+    title    = "Enfermedades Respiratorias",
+    subtitle = "Registros del Sistema Nacional de Vigilancia Epidemiológica (SINAVE)",
+    caption  = "Datos Abiertos de la Dirección General de Epidemiología"
+  ) +
+  scale_y_continuous(labels = scales::label_comma()) +
+  scale_x_date(date_breaks = "6 months", date_minor_breaks = "3 months",
+               date_labels = "%b/%Y") +
+  theme_classic() +
+  theme(
+    panel.background = element_rect(fill = "#003f5c"),                   #Fondo de la gráfica
+    plot.background  = element_rect(fill = "#003f5c", color = "black"),  #Fondo de los títulos
+    axis.text.x      = element_text(color = "gray75"),                   #Letras de los ejes
+    axis.text.y      = element_text(color = "gray75"),                   #Letras de los ejes
+    axis.ticks       = element_line(color = "gray75"),                   #Los | abajo de los ejes
+    axis.line.x      = element_line(color = "gray75"),                   #Línea del eje
+    axis.line.y      = element_line(color = "gray75"),                   #Otra línea del eje
+    plot.title       = element_text(color = "gray75", size = 25),        #Título
+    plot.subtitle    = element_text(color = "#62a757", face = "italic"), #Subtítulo
+    plot.caption     = element_text(color = "#62a757"),                  #Caption
+    axis.title.y     = element_text(color = "gray75"),                   #Lo que dice el eje y
+  )
+```
+
+y finalmente podemos agregar anotaciones:
+
+La cual podemos arreglar rápidamente con una mezcla amigable de colores:
+
+```{r}
+ggplot(sinave) + 
+  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#007677") + 
+  geom_spline(aes(x = FECHA_SINTOMAS, y = n), color = "#ffd79d", df = 45) +
+  labs(
+    x        = "",
+    y        = "Casos incidentes",
+    title    = "Enfermedades Respiratorias",
+    subtitle = "Registros del Sistema Nacional de Vigilancia Epidemiológica (SINAVE)",
+    caption  = "Datos Abiertos de la Dirección General de Epidemiología"
+  ) +
+  scale_y_continuous(labels = scales::label_comma()) +
+  scale_x_date(date_breaks = "6 months", date_minor_breaks = "3 months",
+           date_labels = "%b/%Y") +
+  theme_classic() +
+  theme(
+    panel.background = element_rect(fill = "#003f5c"),                   #Fondo de la gráfica
+    plot.background  = element_rect(fill = "#003f5c", color = "black"),  #Fondo de los títulos
+    axis.text.x      = element_text(color = "gray75"),                   #Letras de los ejes
+    axis.text.y      = element_text(color = "gray75"),                   #Letras de los ejes
+    axis.ticks       = element_line(color = "gray75"),                   #Los | abajo de los ejes
+    axis.line.x      = element_line(color = "gray75"),                   #Línea del eje
+    axis.line.y      = element_line(color = "gray75"),                   #Otra línea del eje
+    plot.title       = element_text(color = "gray75", size = 25),        #Título
+    plot.subtitle    = element_text(color = "#62a757", face = "italic"), #Subtítulo
+    plot.caption     = element_text(color = "#62a757"),                  #Caption
+    axis.title.y     = element_text(color = "gray75"),                   #Lo que dice el eje y
+  ) +
+  #Anotaciones
+  geom_point(aes(x = as.Date("2020/02/28"), y = 1), color = "gray75", data = NULL, size = 2) +
+  geom_segment(aes(x = as.Date("2020/02/28"), xend = as.Date("2020/02/28"), y = 1,
+                   yend = 75000), color = "gray75") +
+  geom_point(aes(x = as.Date("2020/02/28"), y = 75000), color = "gray75", data = NULL, size = 2) +
+  annotate("text", x = as.Date("2020/03/15"), y = 75000, hjust = 0,
+           label = "Primer caso de COVID-19", color = "gray75")
+```
+
+## Ejercicios
+
+1. Agrega a la gráfica anterior una anotación el 24 de diciembre del 2022 indicando que ese día ocurrió la primer vacuna. 
+
+2. Cambia el tema de la gráfica anterior por cualquier otra combinación de cuatro colores (en lugar del verde, azul, amarillo y gris)
+
+# Ejercicios de cierre de la sección 
+
+> Para este ejercicio puedes usar cualquier base(s) de datos que tú desees. Si no se te ocurre ninguna te recomendamos usar `ile-2019-2021.csv` que contiene los registros de interrupciones legales del embarazo en Ciudad de México o bien `linea-mujeres.csv` que contiene información sobre las llamadas realizadas a la Línea Mujeres de la Ciudad de México hasta noviembre del 2020. 
+
+El ejercicio consiste en realizar dos gráficas de distinto tipo (_ej_ una de barras y una de tendencia) analizando elementos de tu base de datos. 
+
+  + En la siguiente liga puedes encontrar código de `R` para generar 50 tipos distintos de gráficas: [http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html](http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html)
+  
+  + En esta otra liga puedes encontrar otros paquetes de graficación que se apoyan sobre `ggplot2` para hacer más gráficas: [https://exts.ggplot2.tidyverse.org/gallery/](https://exts.ggplot2.tidyverse.org/gallery/). 
+  
+  + Finalmente checa las paletas de colores prediseñadas en paquetes de `R` como [`wesanderson`](https://github.com/karthik/wesanderson) o  [`MetBrewer`](https://github.com/BlakeRMills/MetBrewer) así como la de [Harry Potter](https://github.com/aljrico/harrypotter).
+
+## Continuación
+¡Felicidades! Ya terminaste esta sección. Puedes ir a:
+
+- [Bases de datos y análisis descriptivo en `R`](Estadística_Descriptiva.html). 
+
+# Para saber más
+
+El [libro de `ggplot2`](https://ggplot2-book.org/) es una excelente referencia para la parte de graficación así como [las notas en español de `rafalab`](https://rafalab.github.io/dslibro/ggplot2.html). Por otro lado el libro de [Fundamentals of Data Visualization](https://clauswilke.com/dataviz/) analiza más a fondo cómo presentar datos de formas que convenzan al público. Para armar historias a partir de los datos ve el libro de [Story-telling with data](https://www.storytellingwithdata.com/books)
