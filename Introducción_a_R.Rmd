@@ -1045,7 +1045,6 @@ Siempre escribe tu código pensando que alguien más ([y ese alguien más puedes
 ¡Felicidades! Ya terminaste esta sección. Puedes ir a:
 
 - [Graficación con `ggplot2`](Graficación_con_gglot2.html).
-- [Bases de datos y análisis descriptivo en `R`](Estadística_Descriptiva.html). 
 
 # Ejercicios de cierre de la sección 
 
