@@ -34,7 +34,7 @@ knitr::opts_chunk$set(tidy = FALSE, cache.extra = packageVersion('tufte'), error
 options(htmltools.dir.version = FALSE)
 ```
 
-> **DATOS** Todos los datos discutidos aquí se encuentran en la siguiente liga: [https://github.com/RodrigoZepeda/CursoR/tree/master/datasets](https://github.com/RodrigoZepeda/CursoR/tree/master/datasets). Para descargarlos dar clic sobre el nombre de la base, y luego clic derecho en `Raw` y `Guardar vínculo como`.
+> **DATOS** Todos los datos discutidos aquí se encuentran en: [https://www.dropbox.com/sh/bm2utmm3r6e3u8q/AADIrjN5yXHd2GW-73lTLkPGa?dl=0](https://www.dropbox.com/sh/bm2utmm3r6e3u8q/AADIrjN5yXHd2GW-73lTLkPGa?dl=0). 
 
 # ggplot2 
 `R` cuenta con su propia forma de hacer gráficas mediante el comando `plot`. Sin embargo, las gráficas que puedes hacer con plot son, salvo en el caso de regresiones, mucho más sencillas que las producidas por el paquete `ggplot`. Dicho paquete fue desarrollado inicialmente por [Hadley Wickham](http://hadley.nz) y actualmente [continúa en desarrollo](https://github.com/tidyverse/ggplot2) por más de 198 colaboradores distintos. Por su belleza y facilidad, nosotros nos enfocaremos en gráficas con `ggplot2`. Otros excelentes tutoriales los puedes hallar en el [libro de ggplot2](https://ggplot2-book.org) o en [r-statistics.co](http://r-statistics.co/ggplot2-Tutorial-With-R.html). 
