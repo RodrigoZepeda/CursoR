@@ -1,0 +1,91 @@
+---
+title: "EJEMPLO"
+author: "Rodrigo Zepeda"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# Titulo
+
+Voy a trabajar con la base de defunciones
+
+```{r warning=FALSE, include=FALSE}
+library(tidyverse)
+defunciones <- read_csv("~/CursoR/datasets/conjunto_de_datos_defunciones_generales_2017.CSV")
+```
+
+OPERACIONES BÀSICAS
+
+```{r echo=FALSE, warning=FALSE}
+defunciones %>%
+  summarise(Promedio = mean(dia_ocurr))
+
+defunciones %>%
+  summarise(Promedio = mean(dia_ocurr),
+            Dia_nac  = mean(dia_nacim))
+
+defunciones %>%
+  group_by(ent_regis) %>%
+  summarise(Median = median(dia_nacim))
+```
+
+## Marginaciòn
+
+Voy a relacionar las defunciones con la poblaciòn y la marginaciòn tambièn aprenderè a leer archivos excel y màs..
+
+### primer paso leer la base de datos
+
+```{r}
+library(readxl)
+IME_2020 <- read_excel("IME_2020.xls", skip = 3)
+
+```
+## FILTRAR NA 
+
+```{r}
+IME_2020<-IME_2020 %>% 
+  filter(!is.na(CVE_ENT),
+         !is.na(POB_TOT))
+```
+
+# Mi primer uniòn de bases
+
+generè un objeto que tiene las defunciones por entidad y al unirè a la poblaciòn y indicadores de marginaciòn
+```{r}
+ent_def<-defunciones %>% 
+  group_by(ent_regis) %>% 
+  tally()
+```
+
+Lo harè a travès de una funciòn llamada "join"
+mi variable se llama ent_regis y de poblaciòn se llama CVE_ENT
+
+```{r}
+def_final<-left_join(ent_def,IME_2020,by=c("ent_regis"="CVE_ENT"))
+```
+
+# agregar columnas
+
+Con mutate voy a crear variables 
+
+```{r}
+def_final %>% 
+  mutate(tasa_100=(n/POB_TOT)*100000) %>% 
+  select(1,2,3,POB_TOT,tasa_100)
+```
+
+```{r}
+grafico <- def_final %>% 
+  mutate(tasa_100=(n/POB_TOT)*100000) %>% 
+  select(1,2,3,POB_TOT,tasa_100) %>% 
+  ggplot()+
+  geom_col(aes(x=NOM_ENT,y=tasa_100,fill=NOM_ENT))
+```
+
+# Gràficoo dinàmico con ayuda de plotly
+```{r}
+library(plotly)
+ggplotly(grafico)
+```
+
+
