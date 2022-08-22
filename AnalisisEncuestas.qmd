@@ -1,0 +1,608 @@
+---
+title: "Análisis de Encuestas (ENSANUT)"
+author: "Rodrigo Zepeda"
+date: "`r Sys.Date()`"
+format: html
+editor: visual
+output:
+  tufte::tufte_html: 
+    tufte_features: ["fonts", "background","italics"]
+    toc: false
+    includes:
+      in_header: javascriptcall.html
+    css: style.css
+  tufte::tufte_handout:
+    citation_package: natbib
+    latex_engine: xelatex
+  tufte::tufte_book:
+    citation_package: natbib
+    latex_engine: xelatex
+bibliography: skeleton.bib
+link-citations: yes
+editor_options: 
+  chunk_output_type: console
+---
+
+## Paquetes y datos a utilizar
+
+A lo largo de esta sección usaremos los siguientes paquetes:
+
+```{r}
+#| warning: false
+library(haven)
+library(wesanderson)
+library(tidyverse)
+library(srvyr)
+library(kableExtra)
+library(survey)
+```
+
+Para los ejercicios usaremos al Encuesta Nacional de Salud y Nutrición 2021 (ENSANUT 2021) disponible en la siguiente liga: <https://ensanut.insp.mx/encuestas/ensanutcontinua2021/descargas.php>
+
+En particular usaremos el cuestionario de salud de adultos `Cuestionario de salud de adultos (20 años o más)` en formato `csv` así como el `Cuestionario de antropometría y tensión arterial` igual en formato `csv`. Acá leeré ambos como `salud_adultos_svy` y `antropometria`:
+
+```{r}
+#| output: false
+#| warning: false
+salud_adultos <- read_csv("datasets/ensadul2021_entrega_w_15_12_2021.csv")
+antropometria <- read_csv("datasets/ensaantro21_entrega_w_17_12_2021.csv")
+```
+
+Finalmente, a modo de práctica y explicación utilizaremos la siguiente base de datos generada por el código de abajo. La base consiste en $12$ individuos con dos grupos de edad (`Menor a 30` y `Mayor o igual a 30`) que viven en distintos hogares numerados del 1 al 5 en la columna (`hogar`). Los hogares se encuentran en diferentes localidades (del 1 al 3) y tienen cierta estatura (`estatura`) y sexo (`sexo`).
+
+```{r}
+#Código para generar un marco muestral imaginario (sencillo)
+#y entender cómo se construye la ENSANUT
+set.seed(2457) 
+datos <- tibble(
+  nombre    = c("René","Alexis","Francis","Andy","Charlie",
+                "Andrea","Sasha","Guadalupe","Akira","Sol",
+                "Paris","Li"),
+  edad      = sample(c("Menor a 30", "Mayor o igual a 30"), 12, T, 
+                     c(0.25, 0.75)),
+  sexo      = sample(c("Masc", "Fem"), 12, T, c(0.49, 0.51)),
+  hogar     = sample(1:5, 12, T, c(0.1, 0.2, 0.3, 0.1, 0.3))
+)
+
+datos <- datos %>%
+  group_by(edad) %>%
+  mutate(estatura = if_else(edad == "Menor a 30",
+                            rnorm(n(), mean = 1.8, sd = 0.1),
+                            rnorm(n(), mean = 1.6, sd = 0.1))) %>%
+  group_by(hogar) %>%
+  mutate(localidad = sample(1:4, 1, T, c(0.25, 0.5, 0.1, 0.15))) %>%
+  ungroup()
+```
+
+La tabla se ve así:
+
+```{r}
+#| echo: false
+datos %>% 
+  kable() %>%
+  kable_styling()
+```
+
+## Breve explicación del muestreo polietápico estratificado
+
+En esta sección discutiremos los tipos de muestreo que existen complicando cada vez un poco más las cosas hasta llegar a un diseño similar al de la ENSANUT.
+
+### Muestreo Aleatorio Simple (uniforme) sin reemplazo
+
+Comenzamos con el tipo de muestreo aleatorio más sencillo: el simple. La idea del muestreo aleatorio simple sin reemplazo es de una población de tamaño $N$ seleccionar $n$ (donde $n \leq N$) individuos (no tienen que ser personas pueden ser animales, árboles, bacterias, piedras) elegidos de manera aleatoria cada uno de ellos.
+
+Podemos pensar que la elección es *paso a paso* en el sentido de que primero se selecciona $1$ de todos luego otro (dentro de los $N-1$ que quedan) y luego otro (dentro de los $N-2$) y así... Esto se puede repetir en `R` en múltiples pasos:
+
+```{r}
+nombres <- datos$nombre
+
+#Extraigo el primer nombre
+primer_nombre <- sample(nombres, size = 1)
+primer_nombre
+
+#Actualizo los nombres que quedan
+nombres <- nombres[which(nombres != primer_nombre)]
+
+#Extraigo el segundo nombre para mi muestra:
+segundo_nombre <- sample(nombres, size = 1)
+segundo_nombre
+
+#El proceso puede continuar según el tamaño de muestra
+```
+
+Sin embargo, como notarás, es un poco engorroso hacer la extracción de uno en uno. No sólo eso sino que tenemos que muestrear un vector de nombres para luego ir a buscarlos en la tabla. ¡Qué poco óptimo! En `R` podemos muestrear de la tabla directamente y especificar cuántos queremos que extraiga sin reemplazo (es decir de uno en uno reduciendo el tamaño de la muestra sin que vuelvan a participar). Para ello existe el comando `sample_n`:
+
+```{r}
+muestra <- datos %>% 
+  sample_n(size = 7, replace = FALSE)
+```
+
+```{r}
+#| echo: false
+muestra %>% 
+  kable() %>%
+  kable_styling()
+```
+
+Si quisiera calcular estadísticas sobre mi muestra puedo usar las funciones clásicas de `dplyr` como `summarise` y `group_by` para por ejemplo determinar la media de estatura, la proporción de cada sexo o la media de estatura por sexo. Recuerda que la fórmula de la media (promedio) consiste en sumar todos y dividirlos entre $n$:
+
+$$
+\text{Media Clásica} = \frac{\cdot \text{Estatura}_1 + \cdot \text{Estatura}_2 + \dots +  \text{Estatura}_n}{n}
+$$
+
+```{r}
+#Media de estatura 
+muestra %>%
+  summarise(
+    Estatura_Promedio = mean(estatura)
+  )
+
+#Proporción de sexos
+muestra %>%
+  group_by(sexo) %>%
+  tally() %>%
+  mutate(Proporcion_sexo = n / sum(n))
+
+#Media de estatura por sexo
+muestra %>%
+  group_by(sexo) %>%
+  summarise(
+    Estatura_Promedio = mean(estatura)
+  )
+```
+
+Compara los resultados previos con las métricas poblacionales:
+
+```{r}
+#Media de estatura 
+datos %>%
+  summarise(
+    Estatura_Promedio = mean(estatura)
+  )
+
+#Proporción de sexos
+datos %>%
+  group_by(sexo) %>%
+  tally() %>%
+  mutate(Proporcion_sexo = n / sum(n))
+
+#Media de estatura por sexo
+datos %>%
+  group_by(sexo) %>%
+  summarise(
+    Estatura_Promedio = mean(estatura)
+  )
+```
+
+### Muestreo Aleatorio Simple (ponderado) sin reemplazo
+
+Complicaremos un poco el muestreo. Supongamos que como ser mayor a 30 incluye más grupos de edad que ser menor, nos interesa que las personas `mayores a 30 años` tengan el doble de probabilidad de aparecer en la muestra que las menores. Para esto, es necesario establecer probabilidades (mal llamadas `weights`) que le indiquen a `R` que extraiga con mayor probabilidad `0.66` a los mayores de 30 años que a los menores (proba `0.33`):
+
+```{r}
+#Agregamos la columna del ponderador a los datos
+#nota que está amañanda para sumar 1
+datos <- datos %>%
+  mutate(probabilidad = 
+           if_else(edad == "Mayor o igual a 30", 0.667, 0.333))
+
+muestra_ponderada <- datos %>%
+  sample_n(size = 7, weight = probabilidad)
+```
+
+```{r}
+#| echo: false
+muestra_ponderada %>% 
+  kable() %>%
+  kable_styling()
+```
+
+En este caso ya vale la pena distinguir **la media muestral** del **estimador de la media poblacional**. Por un lado **la media muestral** corresponde al promedio `clásico` (sumar todos los de la muestra y dividirlos entre el total $n$); sin embargo, ésta no es la mejor representación de cómo está la población pues como hubo gente que por el ponderador tenía más probabilidad de salir, éstas personas sesgan la media. Para corregir y dar una mejor foto de cómo se ve la población está el **estimador de la media poblacional** el cual corresponde al promedio (ponderado) de las estaturas. La fórmula es más o menos así: $$
+\text{Media Ponderada} = \frac{w_1\cdot \text{Estatura}_1 + w_2\cdot \text{Estatura}_2 + \dots + w_n\cdot \text{Estatura}_n}{n}
+$$
+
+En `R` una forma es usar la función `weighted.mean` con el ponderador. Usualmente ([checa acá](https://www.routledge.com/Sampling-Design-and-Analysis/Lohr/p/book/9780367279509)) el ponderador para calcular la media es inversamente proporcional a la probabilidad (*i.e.* $\text{ponderador} = 1/\text{probabilidad}$). Esto viene de teoría de encuestas y no entraremos mucho en ella. Sin embargo, brevemente podemos explicar que la lógica es que para aquellos con probabilidad demasiado alta de salir el ponderador $1/\text{probabilidad}$ da un número más pequeño que para aquellos con probabilidad muy baja de salir (experimenta haciendo $1/0.99$ contra $1/0.001$ y ve cómo ponderan cada uno). De alguna forma el ponderador "corrige" que el muestreo tuviera distintas probabilidades.
+
+En `R` podemos construir el ponderador como sigue:
+
+```{r}
+muestra_ponderada <- muestra_ponderada %>%
+  mutate(ponderador = 1/probabilidad)
+```
+
+Y una forma en la que podemos calcular la media ponderada es con `weighted.mean`
+
+```{r}
+muestra_ponderada %>%
+  summarise(`Media ponderada` = weighted.mean(estatura, ponderador))
+```
+
+Esta es la opción más sencilla pero se queda corta para otros resultados. La opción que nosotros usaremos está dentro del paquete `srvyr` y es un poco más complicada pero valdrá la pena:
+
+```{r}
+muestra_ponderada %>%
+  as_survey_design(1,  weight = ponderador) %>%
+  summarize(`Media ponderada` = survey_mean(estatura, vartype = "ci"))
+```
+
+Nota que ésta nos da incluso un intervalo de confianza (default `95%`). Ésta, por cierto, da un resultado distinto a que si sólo tomamos la media de la muestra:
+
+```{r}
+muestra_ponderada %>%
+  summarize(`Media` = mean(estatura))
+```
+
+### Muestreo Aleatorio Estratificado sin reemplazo
+
+En nuestra encuesta podría interesarnos garantizar que ciertos grupos estén en la encuesta a fuerza. Como es aleatorio el muestreo siempre puede pasar que tengamos mala suerte y nadie de uno de los grupos esté La solución: pensar nuestra muestra como dos (o más) muestras distintas de distintos grupos (llamados estratos). Por ejemplo podríamos garantizar que a fuerza haya hombres y mujeres en nuestra muestra agrupando por `sexo` y obteniendo muestras de tamaño `3` ahí:
+
+```{r}
+datos %>%
+  group_by(sexo) %>%
+  sample_n(size = 3)
+```
+
+Si se quisiera un tamaño distinto (digamos $4$ `Masc` y $3$ `Fem`) puede agregarse una columna de tamaño de muestra y muestrear de acuerdo a esa columna:
+
+```{r}
+#Fuente:
+#https://stackoverflow.com/questions/51671856/dplyr-sample-n-by-group-with-unique-size-argument-per-group
+muestra_estratificada <- datos %>%
+  mutate(tamaño = if_else(sexo == "Fem", 3, 4)) %>%
+  group_by(sexo) %>%
+  sample_n(size = tamaño[1], weight = probabilidad)
+```
+
+```{r}
+#| echo: false
+muestra_ponderada %>% 
+  kable() %>%
+  kable_styling()
+```
+
+En este caso podemos especificar también cuáles fueron los estratos dentro del diseño:
+
+```{r}
+muestra_ponderada %>%
+  as_survey_design(1, strata = sexo, weight = ponderador) %>%
+  summarize(`Media ponderada` = survey_mean(estatura, vartype = "se"))
+```
+
+Aquí la opción `se` representa el error estándar. Nota que el estrato influye en el error estándar (y la varianza) pues de no especificarlo obtenemos un número distinto:
+
+```{r}
+muestra_ponderada %>%
+  as_survey_design(1, weight = ponderador) %>%
+  summarize(`Media ponderada` = survey_mean(estatura, vartype = "se"))
+```
+
+> La idea de una muestra estratificada no sólo es que los estratos representen grupos poblacionales sino que si los estratos se arman "adecuadamente" (como aquí) podemos reducir el error estándar de nuestro estimador y por tanto la longitud de los intervalos de confianza.
+
+Podemos también usar la variable de agrupación para ver las medias por sexo:
+
+```{r}
+muestra_ponderada %>%
+  as_survey_design(1, strata = sexo, weight = ponderador) %>%
+  group_by(sexo) %>%
+  summarize(`Media ponderada` = survey_mean(estatura, vartype = "ci"))
+```
+
+### Muestreo Aleatorio Bietápico
+
+Usualmente en las encuestas existe más de un nivel de aleatoriedad. Por ejemplo, se selecciona aleatoriamente una vivienda (unidad primaria) y luego se selecciona aleatoriamente una persona (unidad secundaria) dentro de la vivienda. Esto porque de inicio se desconocen cuántas personas hay por vivienda. Para muestrear de esta forma en nuestro código en el caso donde haya que muestrear $3$ viviendas y luego máximo dos personas de cada estrato (sexo) por vivienda:
+
+```{r}
+#Primero muestreo n viviendas
+viviendas <- datos %>%
+  distinct(hogar) %>%
+  sample_n(3)
+
+#Luego muestreo personas por vivienda
+muestra_hogar <- datos %>%
+  filter(hogar %in% !!viviendas$hogar) %>%
+  group_by(hogar, sexo) %>%
+  sample_n(min(2, n()), weight = probabilidad)
+```
+
+Nota que en el primer hogar sólo se muestreo una persona pues no vivía nadie más ahí. Esto va a requerir un ajuste dado que el individuo está solitario (no hay uno de los estratos en la unidad). Hay varias [opciones](https://r-survey.r-forge.r-project.org/survey/exmample-lonely.html) en `R` para manejar esto. Para la ENSANUT nosotros pediremos que se ajuste la varianza de dicho estrato (para los intervalos) usando las varianzas de los demás con la siguiente opción:
+
+```{r}
+options(survey.lonely.psu="adjust")
+```
+
+Una vez establecida la opción podemos indicar a `R` el diseño de la encuesta estableciendo cuáles fueron las unidades primarias de muestreo:
+
+```{r}
+#Nota la opción de psu no es necesaria en R ponerla pero
+#si se requieren opciones más avanzadas de Bootstrap/Jacknife sí
+muestra_ponderada %>%
+  as_survey_design(1, strata = sexo, weight = ponderador,  psu = upm) %>%
+  group_by(sexo) %>%
+  summarize(`Media ponderada` = survey_mean(estatura, vartype = "ci"))
+```
+
+Para no tener que estar llamando el diseño de la encuesta cada que operamos podemos guardar el objeto como una tabla tipo encuesta:
+
+```{r}
+#Antes de volverla encuesta
+muestra_ponderada
+
+#Después
+muestra_ponderada <- muestra_ponderada %>%
+  as_survey_design(1, strata = sexo, weight = ponderador,  psu = upm) 
+muestra_ponderada
+```
+
+En general los comandos de `dplyr` tipo `mutate`, `summarise`, `rename` están disponibles para las tablas de encuesta. Sin embargo no todas las funciones que existen en `R` para `tibbles` estàn. La sugerencia es volver tu tabla tipo encuesta una vez hayas limpiado todo y ya sólo falte analizar.
+
+## Análisis de la ENSANUT
+
+La ENSANUT 2021 (ver @romero2021metodologia y @martinez2021metodologia) es una encuesta probabilística polietápica estratificada. La forma de elaborarla fue obteniendo una muestra aleatoria de [Áreas Geoestadísticas Básicas (AGEB)](https://blogdatlas.wordpress.com/2021/08/29/que-es-un-ageb-y-para-que-sirve-investigacion-datlas/). Éstas fueron las Unidades Primarias de Muestreo (UPM) que se seleccionaron con ponderadores de acuerdo a su población. Una vez seleccionada la AGEB, las Unidades Secundarias de Muestreo (USM) fueron las manzanas seleccionadas aleatoriamente. Finalmente, dentro de cada manzana se seleccionaron varias viviendas ($n = 6$). Una vez seleccionadas las viviendas, dentro de cada vivienda se seleccionaron algunas personas de acuerdo a la edad para obtener al menos una por cada grupo etario de interés. Finalmente, para mediciones extras (antropometría / sangre / etc) se obtuvieron submuestras de personas a las que se les aplicó un cuestionario extra.
+
+### Cuestionario de adultos
+
+En nuestro caso para el de adultos se establece así la estructura de encuesta:
+
+```{r}
+#Armamos nuestra tabla con estructura de encuesta
+#Nota la opción de psu no es necesaria en R ponerla pero
+#si se requieren opciones más avanzadas de Bootstrap/Jacknife sí
+options(survey.lonely.psu = "adjust") #singleunit(centered) en Stata
+salud_adultos_svy <- salud_adultos %>%
+  filter(!is.na(ponde_f)) %>%
+  as_survey_design(id = FOLIO_INT, strata = est_sel, 
+                   psu = upm, weights = ponde_f, nest = TRUE)
+```
+
+Una vez armada la estructura podemos empezar a hacerle preguntas a la base. Por ejemplo a qué porcentaje de personas les dijeron que tenían diabetes o niveles de azucar altos:
+
+```{r}
+salud_adultos_svy %>%
+  summarise(
+    Diabetes = survey_mean(a0301 == 1, na.rm = T)
+  )
+```
+
+En hombres y mujeres así se vieron:
+
+```{r}
+salud_adultos_svy %>%
+  mutate(sexo_name = if_else(sexo == 1,"Hombre","Mujer")) %>%
+  group_by(sexo_name) %>%
+  summarise(
+    Diabetes = survey_mean(a0301 == 1, na.rm = T, vartype = "ci")
+  )
+```
+
+Mientras que una tabla por edad y sexo es así:
+
+```{r}
+salud_adultos_svy %>%
+  mutate(sexo_name = if_else(sexo == 1,"Hombre","Mujer")) %>%
+  mutate(edad_name = case_when(
+    edad < 40 ~ "20 a 39",
+    edad >= 40 & edad < 60 ~ "49 a 59",
+    edad >= 60 ~ "60 y más",
+  )) %>%
+  group_by(sexo_name, edad_name) %>%
+  summarise(
+    Diabetes = survey_mean(a0301 == 1, na.rm = T, vartype = "ci")
+  )
+```
+
+Si quisiéramos conteos en lugar de utilizar `survey_mean` podemos usar el `survey_total`:
+
+```{r}
+salud_adultos_svy %>%
+  mutate(sexo_name = if_else(sexo == 1,"Hombre","Mujer")) %>%
+  mutate(edad_name = case_when(
+    edad < 40 ~ "20 a 39",
+    edad >= 40 & edad < 60 ~ "49 a 59",
+    edad >= 60 ~ "60 y más",
+  )) %>%
+  group_by(sexo_name, edad_name) %>%
+  summarise(
+    N = survey_total(a0301 == 1, na.rm = T, vartype = "ci")
+  )
+```
+
+Y si queremos resultados de la muestra hay que usar `unweighted`. ¡Es posible en `summarise` combinar múltiples objetos:
+
+```{r}
+salud_adultos_svy %>%
+  mutate(sexo_name = if_else(sexo == 1,"Hombre","Mujer")) %>%
+  mutate(edad_name = case_when(
+    edad < 40 ~ "20 a 39",
+    edad >= 40 & edad < 60 ~ "49 a 59",
+    edad >= 60 ~ "60 y más",
+  )) %>%
+  group_by(sexo_name, edad_name) %>%
+  summarise(
+    N  = survey_total(a0301 == 1, na.rm = T, vartype = "ci"),
+    n  = unweighted(sum(a0301 == 1, na.rm = T))
+  )
+```
+
+Podemos filtrar para obtener la tabla para una entidad en particular. Por ejemplo para la Ciudad de México (`entidad == "09"`)
+
+```{r}
+salud_adultos_svy %>%
+  filter(entidad == "09") %>%
+  mutate(sexo_name = if_else(sexo == 1,"Hombre","Mujer")) %>%
+  mutate(edad_name = case_when(
+    edad < 40 ~ "20 a 39",
+    edad >= 40 & edad < 60 ~ "49 a 59",
+    edad >= 60 ~ "60 y más",
+  )) %>%
+  group_by(sexo_name, edad_name) %>%
+  summarise(
+    N  = survey_total(a0301 == 1, na.rm = T, vartype = "ci"),
+    n  = unweighted(sum(a0301 == 1, na.rm = T))
+  )
+```
+
+## Ejercicios
+
+Responde las siguientes preguntas:
+
+1.  ¿Qué proporción de personas tienen diagnóstico previo de enfermedad renal? ¿Varía entre hombres y mujeres?
+
+2.  Replica los resultados de la siguiente tabla del **Porcentaje de adultos que reportan medición de colesterol en la sangre, y tenían niveles altos** (`A0604`):
+
+```{r}
+#| echo: false
+salud_adultos_svy %>%
+  mutate(sexo_name = if_else(sexo == 1,"Hombre","Mujer")) %>%
+  mutate(edad_name = case_when(
+    edad < 40 ~ "20 a 39",
+    edad >= 40 & edad < 60 ~ "49 a 59",
+    edad >= 60 ~ "60 y más",
+  )) %>%
+  group_by(sexo_name, edad_name) %>%
+  summarise(
+    prop = survey_mean(a0604 == 1, na.rm = T, vartype = "ci"),
+    N    = survey_total(a0604 == 1, na.rm = T, vartype = "se"),
+    n    = unweighted(sum(a0604 == 1, na.rm = T))
+  ) %>%
+  select(sexo_name, edad_name, starts_with("prop"), N, n) %>%
+  mutate(Proporción = paste0(scales::percent(prop, accuracy = 2),
+                          " [", 
+                          scales::percent(prop_low, accuracy = 2),
+                          ", ",
+                          scales::percent(prop_upp, accuracy = 2),
+                          "]")) %>%
+  select(-prop_low, -prop_upp) %>%
+  mutate(`Total (muestra)` = paste0(scales::comma(N), " (", n, ")")) %>%
+  select(-N, -n) %>%
+  pivot_wider(id_cols = `edad_name`, names_from = sexo_name,
+              values_from = c(Proporción, `Total (muestra)`)) %>%
+  select(edad_name, `Proporción_Hombre`, `Total (muestra)_Hombre`,
+         `Proporción_Mujer`, `Total (muestra)_Mujer`) %>%
+  rename(`Grupo de edad` = edad_name) %>%
+  rename(`Proporción de Hombres` = `Proporción_Hombre`) %>%
+  rename(`Proporción de Mujeres` = `Proporción_Mujer`) %>%
+  rename(`Total (muestra) Hombres` = `Total (muestra)_Hombre`) %>%
+  rename(`Total (muestra) Mujeres` = `Total (muestra)_Mujer`) %>%
+  kable() %>%
+  kable_styling()
+```
+
+3.  ¿En qué entidad federativa más gente tiene una vacuna contra el tétanos (`A0906`)?
+
+4.  De las personas que se accidentaron en vehículos de cuatro o más ruedas (`A1102`), ¿cuántas llevaban puesto el cinturón de seguridad (`A1103`)?
+
+5.  Los pacientes que toman pastillas para controlar su insulina, en promedio, ¿cuánto tiempo tienen tomándolas?
+
+**Nota** Apóyate del paquete `lubridate` para sumar meses más años. Por ejemplo para sumar $3$ meses más $5$ años se haría así:
+
+```{r}
+library(lubridate)
+suma_periodo <- months(3) + years(5) #En meses: 5*12 + 3 = 63
+
+#Para convertir cambia unit a:
+#meses (months) / días (days) / años (years) / semanas (weeks)
+time_length(suma_periodo, unit = "months")
+```
+
+### Cuestionario de antropometría
+
+Armamos el diseño de cuestionaro
+
+```{r}
+antropometria_cuest <- antropometria %>%
+  left_join(salud_adultos, 
+            by = c("FOLIO_INT", "upm","est_sel")) %>%
+  rename(ponde_f = ponde_f.x) #Nos quedamos con el ponderador adecuado
+```
+
+```{r}
+#Armamos nuestra tabla con estructura de encuesta
+options(survey.lonely.psu = "adjust") #singleunit(centered) en Stata
+antropometria_svy <- antropometria_cuest %>%
+  filter(!is.na(ponde_f)) %>%
+  as_survey_design(id = FOLIO_INT, strata = est_sel, 
+                   psu = upm, weights = ponde_f, nest = TRUE)
+```
+
+El promedio de peso en menores de 60 (quitando a las embarazadas) puede calcularse como siempre con `svy_mean`:
+
+```{r}
+antropometria_svy %>%
+  filter(an06 != 1 & an06 != 3) %>% #Embarazadas
+  summarise(Promedio_peso = survey_mean(an01_1, na.rm = T, "ci"))
+```
+
+No sólo podemos calcular la `media` sino también la mediana y los cuantiles (para por ejemplo calcular dónde está el `25%` y el `75%`)
+
+```{r}
+antropometria_svy %>%
+  filter(an06 != 1 & an06 != 3) %>% #Embarazadas
+  summarise(
+    Mediana_peso  = survey_median(an01_1, na.rm = T, "se"),
+    Q_peso        = survey_quantile(an01_1, quantiles = c(0.25, 0.75), 
+                                    na.rm = T, "se")
+  )
+```
+
+Podemos dentro del mismo paquete hacer algunas pruebas estadísticas (por ahora las haremos, luego las explicamos) como una prueba [`t` de `S tudent`](https://en.wikipedia.org/wiki/Student%27s_t-test) para diferencia de medias:
+
+```{r}
+antropometria_svy %>%
+  svyttest(design = ., #Notación para decirle que el diseño ya está
+           formula = an01_1 ~ sexo, #Peso por sexo
+           na.rm = TRUE) 
+```
+
+Podemos crear nuevas variables como en `tidyverse` por ejemplo una del [índice cintura altura](https://es.wikipedia.org/wiki/%C3%8Dndice_cintura-altura) que combina la medida de la cintura (`an08_1`) con la estatura (`an04_1`) en personas de 20 a 60 años:
+
+```{r}
+antropometria_svy <- antropometria_svy %>%
+  mutate(ica = ifelse(edad > 20 & edad < 60, an08_1/an04_1, NA)) %>%
+  mutate(
+    interpreta_ica = case_when(
+      ica < 0.35 ~ "Extremadamente delgado",
+      ica >= 0.35 & ica < 0.43 & sexo == 1 ~ "Delgado sano",
+      ica >= 0.35 & ica < 0.42 & sexo == 2 ~ "Delgado sano",
+      ica >= 0.43 & ica < 0.53 & sexo == 1 ~ "Sano",
+      ica >= 0.42 & ica < 0.49 & sexo == 2 ~ "Sano",
+      ica >= 0.53 & ica < 0.58 & sexo == 1 ~ "Sobrepeso",
+      ica >= 0.49 & ica < 0.54 & sexo == 2 ~ "Sobrepeso",
+      ica >= 0.58 & ica < 0.63 & sexo == 1 ~ "Sobrepeso elevado",
+      ica >= 0.54 & ica < 0.58 & sexo == 2 ~ "Sobrepeso elevado",
+      ica >= 0.63 & sexo == 1 ~ "Obesidad mórbida",
+      ica >= 0.58 & sexo == 2 ~ "Obesidad mórbida",
+      TRUE ~ NA_character_
+    )
+  )
+```
+
+```{r}
+antropometria_svy %>%
+  svychisq(design = ., #Notación para decirle que el diseño ya está
+           formula =~ interpreta_ica + sexo, #Peso por sexo
+           na.rm = TRUE,
+           statistic = "Wald") 
+```
+
+En este caso, por ejemplo, nuestro valor $p < \alpha$ nos indica que [hay una asociación entre las variables](https://support.minitab.com/en-us/minitab/21/help-and-how-to/statistics/tables/how-to/chi-square-test-for-association/interpret-the-results/key-results/).
+
+### Ejercicios
+
+1.  Determine la media, mediana y cuantiles de índice de masa corporal en el cuestionario de antropometría. Recuerda que índice de masa corporal se calcula como: $$
+    \text{IMC} = \frac{Peso (kg)}{(Altura (m))^2}
+    $$
+
+    > No olvides convertir la altura en metros pues está en centímetros.
+
+2.  Clasifique a las personas en normal, sobrepeso, peso bajo y obesidad y determine la proporción de individuos (hombres y mujeres) en cada categoría.
+
+3.  Determine si hay una asociación entre IMC y sexo mediante una prueba `t`.
+
+4.  Determine si hay una asociación entre IMC y entidad mediante una prueba ji cuadrada $\chi^2$.
+
+5.  Averigüe como utilizar `svyglm` para generar una regresión de peso contra altura con las covariables de sexo y edad. Como recomendación cheque el siguiente curso: <https://tidy-survey-r.github.io/tidy-survey-short-course/>
+
+## Sistema
+
+```{r}
+sessionInfo()
+```
