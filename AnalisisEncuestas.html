@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-0.9.649">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Rodrigo Zepeda">
+<meta name="dcterms.date" content="2022-08-21">
+
+<title>Análisis de Encuestas (ENSANUT)</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+
+<script src="AnalisisEncuestas_files/libs/clipboard/clipboard.min.js"></script>
+<script src="AnalisisEncuestas_files/libs/quarto-html/quarto.js"></script>
+<script src="AnalisisEncuestas_files/libs/quarto-html/popper.min.js"></script>
+<script src="AnalisisEncuestas_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="AnalisisEncuestas_files/libs/quarto-html/anchor.min.js"></script>
+<link href="AnalisisEncuestas_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="AnalisisEncuestas_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="AnalisisEncuestas_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="AnalisisEncuestas_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="AnalisisEncuestas_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet">
+
+<script src="AnalisisEncuestas_files/libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="AnalisisEncuestas_files/libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Análisis de Encuestas (ENSANUT)</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Rodrigo Zepeda </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">August 21, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<section id="paquetes-y-datos-a-utilizar" class="level2">
+<h2 class="anchored" data-anchor-id="paquetes-y-datos-a-utilizar">Paquetes y datos a utilizar</h2>
+<p>A lo largo de esta sección usaremos los siguientes paquetes:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(haven)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(wesanderson)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(srvyr)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(survey)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Para los ejercicios usaremos al Encuesta Nacional de Salud y Nutrición 2021 (ENSANUT 2021) disponible en la siguiente liga: <a href="https://ensanut.insp.mx/encuestas/ensanutcontinua2021/descargas.php" class="uri">https://ensanut.insp.mx/encuestas/ensanutcontinua2021/descargas.php</a></p>
+<p>En particular usaremos el cuestionario de salud de adultos <code>Cuestionario de salud de adultos (20 años o más)</code> en formato <code>csv</code> así como el <code>Cuestionario de antropometría y tensión arterial</code> igual en formato <code>csv</code>. Acá leeré ambos como <code>salud_adultos_svy</code> y <code>antropometria</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>salud_adultos <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"datasets/ensadul2021_entrega_w_15_12_2021.csv"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>antropometria <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"datasets/ensaantro21_entrega_w_17_12_2021.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Finalmente, a modo de práctica y explicación utilizaremos la siguiente base de datos generada por el código de abajo. La base consiste en <span class="math inline">\(12\)</span> individuos con dos grupos de edad (<code>Menor a 30</code> y <code>Mayor o igual a 30</code>) que viven en distintos hogares numerados del 1 al 5 en la columna (<code>hogar</code>). Los hogares se encuentran en diferentes localidades (del 1 al 3) y tienen cierta estatura (<code>estatura</code>) y sexo (<code>sexo</code>).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Código para generar un marco muestral imaginario (sencillo)</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">#y entender cómo se construye la ENSANUT</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2457</span>) </span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>datos <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">nombre    =</span> <span class="fu">c</span>(<span class="st">"René"</span>,<span class="st">"Alexis"</span>,<span class="st">"Francis"</span>,<span class="st">"Andy"</span>,<span class="st">"Charlie"</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Andrea"</span>,<span class="st">"Sasha"</span>,<span class="st">"Guadalupe"</span>,<span class="st">"Akira"</span>,<span class="st">"Sol"</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Paris"</span>,<span class="st">"Li"</span>),</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">edad      =</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">"Menor a 30"</span>, <span class="st">"Mayor o igual a 30"</span>), <span class="dv">12</span>, T, </span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>)),</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">sexo      =</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">"Masc"</span>, <span class="st">"Fem"</span>), <span class="dv">12</span>, T, <span class="fu">c</span>(<span class="fl">0.49</span>, <span class="fl">0.51</span>)),</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">hogar     =</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="dv">12</span>, T, <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.3</span>, <span class="fl">0.1</span>, <span class="fl">0.3</span>))</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>datos <span class="ot">&lt;-</span> datos <span class="sc">%&gt;%</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(edad) <span class="sc">%&gt;%</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">estatura =</span> <span class="fu">if_else</span>(edad <span class="sc">==</span> <span class="st">"Menor a 30"</span>,</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>                            <span class="fu">rnorm</span>(<span class="fu">n</span>(), <span class="at">mean =</span> <span class="fl">1.8</span>, <span class="at">sd =</span> <span class="fl">0.1</span>),</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>                            <span class="fu">rnorm</span>(<span class="fu">n</span>(), <span class="at">mean =</span> <span class="fl">1.6</span>, <span class="at">sd =</span> <span class="fl">0.1</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hogar) <span class="sc">%&gt;%</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">localidad =</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, <span class="dv">1</span>, T, <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.1</span>, <span class="fl">0.15</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>La tabla se ve así:</p>
+<div class="cell">
+<div class="cell-output-display">
+
+<table class="table" style="margin-left: auto; margin-right: auto;">
+ <thead>
+  <tr>
+   <th style="text-align:left;"> nombre </th>
+   <th style="text-align:left;"> edad </th>
+   <th style="text-align:left;"> sexo </th>
+   <th style="text-align:right;"> hogar </th>
+   <th style="text-align:right;"> estatura </th>
+   <th style="text-align:right;"> localidad </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> René </td>
+   <td style="text-align:left;"> Mayor o igual a 30 </td>
+   <td style="text-align:left;"> Fem </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 1.600142 </td>
+   <td style="text-align:right;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Alexis </td>
+   <td style="text-align:left;"> Menor a 30 </td>
+   <td style="text-align:left;"> Fem </td>
+   <td style="text-align:right;"> 3 </td>
+   <td style="text-align:right;"> 1.732241 </td>
+   <td style="text-align:right;"> 2 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Francis </td>
+   <td style="text-align:left;"> Menor a 30 </td>
+   <td style="text-align:left;"> Masc </td>
+   <td style="text-align:right;"> 3 </td>
+   <td style="text-align:right;"> 1.998119 </td>
+   <td style="text-align:right;"> 2 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Andy </td>
+   <td style="text-align:left;"> Mayor o igual a 30 </td>
+   <td style="text-align:left;"> Fem </td>
+   <td style="text-align:right;"> 3 </td>
+   <td style="text-align:right;"> 1.580372 </td>
+   <td style="text-align:right;"> 2 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Charlie </td>
+   <td style="text-align:left;"> Mayor o igual a 30 </td>
+   <td style="text-align:left;"> Fem </td>
+   <td style="text-align:right;"> 5 </td>
+   <td style="text-align:right;"> 1.483513 </td>
+   <td style="text-align:right;"> 2 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Andrea </td>
+   <td style="text-align:left;"> Mayor o igual a 30 </td>
+   <td style="text-align:left;"> Fem </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 1.677817 </td>
+   <td style="text-align:right;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Sasha </td>
+   <td style="text-align:left;"> Menor a 30 </td>
+   <td style="text-align:left;"> Masc </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 1.775873 </td>
+   <td style="text-align:right;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Guadalupe </td>
+   <td style="text-align:left;"> Mayor o igual a 30 </td>
+   <td style="text-align:left;"> Fem </td>
+   <td style="text-align:right;"> 3 </td>
+   <td style="text-align:right;"> 1.451104 </td>
+   <td style="text-align:right;"> 2 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Akira </td>
+   <td style="text-align:left;"> Mayor o igual a 30 </td>
+   <td style="text-align:left;"> Fem </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 1.741073 </td>
+   <td style="text-align:right;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Sol </td>
+   <td style="text-align:left;"> Mayor o igual a 30 </td>
+   <td style="text-align:left;"> Masc </td>
+   <td style="text-align:right;"> 5 </td>
+   <td style="text-align:right;"> 1.672928 </td>
+   <td style="text-align:right;"> 2 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Paris </td>
+   <td style="text-align:left;"> Menor a 30 </td>
+   <td style="text-align:left;"> Masc </td>
+   <td style="text-align:right;"> 5 </td>
+   <td style="text-align:right;"> 1.706307 </td>
+   <td style="text-align:right;"> 2 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Li </td>
+   <td style="text-align:left;"> Mayor o igual a 30 </td>
+   <td style="text-align:left;"> Masc </td>
+   <td style="text-align:right;"> 3 </td>
+   <td style="text-align:right;"> 1.643326 </td>
+   <td style="text-align:right;"> 2 </td>
+  </tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</section>
+<section id="breve-explicación-del-muestreo-polietápico-estratificado" class="level2">
+<h2 class="anchored" data-anchor-id="breve-explicación-del-muestreo-polietápico-estratificado">Breve explicación del muestreo polietápico estratificado</h2>
+<p>En esta sección discutiremos los tipos de muestreo que existen complicando cada vez un poco más las cosas hasta llegar a un diseño similar al de la ENSANUT.</p>
+<section id="muestreo-aleatorio-simple-uniforme-sin-reemplazo" class="level3">
+<h3 class="anchored" data-anchor-id="muestreo-aleatorio-simple-uniforme-sin-reemplazo">Muestreo Aleatorio Simple (uniforme) sin reemplazo</h3>
+<p>Comenzamos con el tipo de muestreo aleatorio más sencillo: el simple. La idea del muestreo aleatorio simple sin reemplazo es de una población de tamaño <span class="math inline">\(N\)</span> seleccionar <span class="math inline">\(n\)</span> (donde <span class="math inline">\(n \leq N\)</span>) individuos (no tienen que ser personas pueden ser animales, árboles, bacterias, piedras) elegidos de manera aleatoria cada uno de ellos.</p>
+<p>Podemos pensar que la elección es <em>paso a paso</em> en el sentido de que primero se selecciona <span class="math inline">\(1\)</span> de todos luego otro (dentro de los <span class="math inline">\(N-1\)</span> que quedan) y luego otro (dentro de los <span class="math inline">\(N-2\)</span>) y así… Esto se puede repetir en <code>R</code> en múltiples pasos:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>nombres <span class="ot">&lt;-</span> datos<span class="sc">$</span>nombre</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Extraigo el primer nombre</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>primer_nombre <span class="ot">&lt;-</span> <span class="fu">sample</span>(nombres, <span class="at">size =</span> <span class="dv">1</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>primer_nombre</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Sol"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Actualizo los nombres que quedan</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>nombres <span class="ot">&lt;-</span> nombres[<span class="fu">which</span>(nombres <span class="sc">!=</span> primer_nombre)]</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">#Extraigo el segundo nombre para mi muestra:</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>segundo_nombre <span class="ot">&lt;-</span> <span class="fu">sample</span>(nombres, <span class="at">size =</span> <span class="dv">1</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>segundo_nombre</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Guadalupe"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#El proceso puede continuar según el tamaño de muestra</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Sin embargo, como notarás, es un poco engorroso hacer la extracción de uno en uno. No sólo eso sino que tenemos que muestrear un vector de nombres para luego ir a buscarlos en la tabla. ¡Qué poco óptimo! En <code>R</code> podemos muestrear de la tabla directamente y especificar cuántos queremos que extraiga sin reemplazo (es decir de uno en uno reduciendo el tamaño de la muestra sin que vuelvan a participar). Para ello existe el comando <code>sample_n</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>muestra <span class="ot">&lt;-</span> datos <span class="sc">%&gt;%</span> </span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sample_n</span>(<span class="at">size =</span> <span class="dv">7</span>, <span class="at">replace =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+
+<table class="table" style="margin-left: auto; margin-right: auto;">
+ <thead>
+  <tr>
+   <th style="text-align:left;"> nombre </th>
+   <th style="text-align:left;"> edad </th>
+   <th style="text-align:left;"> sexo </th>
+   <th style="text-align:right;"> hogar </th>
+   <th style="text-align:right;"> estatura </th>
+   <th style="text-align:right;"> localidad </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> René </td>
+   <td style="text-align:left;"> Mayor o igual a 30 </td>
+   <td style="text-align:left;"> Fem </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 1.600142 </td>
+   <td style="text-align:right;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Sasha </td>
+   <td style="text-align:left;"> Menor a 30 </td>
+   <td style="text-align:left;"> Masc </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 1.775873 </td>
+   <td style="text-align:right;"> 1 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Guadalupe </td>
+   <td style="text-align:left;"> Mayor o igual a 30 </td>
+   <td style="text-align:left;"> Fem </td>
+   <td style="text-align:right;"> 3 </td>
+   <td style="text-align:right;"> 1.451104 </td>
+   <td style="text-align:right;"> 2 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Li </td>
+   <td style="text-align:left;"> Mayor o igual a 30 </td>
+   <td style="text-align:left;"> Masc </td>
+   <td style="text-align:right;"> 3 </td>
+   <td style="text-align:right;"> 1.643326 </td>
+   <td style="text-align:right;"> 2 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Charlie </td>
+   <td style="text-align:left;"> Mayor o igual a 30 </td>
+   <td style="text-align:left;"> Fem </td>
+   <td style="text-align:right;"> 5 </td>
+   <td style="text-align:right;"> 1.483513 </td>
+   <td style="text-align:right;"> 2 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Andy </td>
+   <td style="text-align:left;"> Mayor o igual a 30 </td>
+   <td style="text-align:left;"> Fem </td>
+   <td style="text-align:right;"> 3 </td>
+   <td style="text-align:right;"> 1.580372 </td>
+   <td style="text-align:right;"> 2 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Alexis </td>
+   <td style="text-align:left;"> Menor a 30 </td>
+   <td style="text-align:left;"> Fem </td>
+   <td style="text-align:right;"> 3 </td>
+   <td style="text-align:right;"> 1.732241 </td>
+   <td style="text-align:right;"> 2 </td>
+  </tr>
+</tbody>
+</table>
+
+</div>
+</div>
+<p>Si quisiera calcular estadísticas sobre mi muestra puedo usar las funciones clásicas de <code>dplyr</code> como <code>summarise</code> y <code>group_by</code> para por ejemplo determinar la media de estatura, la proporción de cada sexo o la media de estatura por sexo. Recuerda que la fórmula de la media (promedio) consiste en sumar todos y dividirlos entre <span class="math inline">\(n\)</span>:</p>
+<p><span class="math display">\[
+\text{Media Clásica} = \frac{\cdot \text{Estatura}_1 + \cdot \text{Estatura}_2 + \dots +  \text{Estatura}_n}{n}
+\]</span></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Media de estatura </span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>muestra <span class="sc">%&gt;%</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">Estatura_Promedio =</span> <span class="fu">mean</span>(estatura)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 1
+  Estatura_Promedio
+              &lt;dbl&gt;
+1              1.61</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Proporción de sexos</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>muestra <span class="sc">%&gt;%</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(sexo) <span class="sc">%&gt;%</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tally</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Proporcion_sexo =</span> n <span class="sc">/</span> <span class="fu">sum</span>(n))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 3
+  sexo      n Proporcion_sexo
+  &lt;chr&gt; &lt;int&gt;           &lt;dbl&gt;
+1 Fem       5           0.714
+2 Masc      2           0.286</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Media de estatura por sexo</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>muestra <span class="sc">%&gt;%</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(sexo) <span class="sc">%&gt;%</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Estatura_Promedio =</span> <span class="fu">mean</span>(estatura)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 2
+  sexo  Estatura_Promedio
+  &lt;chr&gt;             &lt;dbl&gt;
+1 Fem                1.57
+2 Masc               1.71</code></pre>
+</div>
+</div>
+<p>Compara los resultados previos con las métricas poblacionales:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Media de estatura </span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>datos <span class="sc">%&gt;%</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">Estatura_Promedio =</span> <span class="fu">mean</span>(estatura)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 1
+  Estatura_Promedio
+              &lt;dbl&gt;
+1              1.67</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Proporción de sexos</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>datos <span class="sc">%&gt;%</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(sexo) <span class="sc">%&gt;%</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tally</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Proporcion_sexo =</span> n <span class="sc">/</span> <span class="fu">sum</span>(n))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 3
+  sexo      n Proporcion_sexo
+  &lt;chr&gt; &lt;int&gt;           &lt;dbl&gt;
+1 Fem       7           0.583
+2 Masc      5           0.417</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Media de estatura por sexo</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>datos <span class="sc">%&gt;%</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(sexo) <span class="sc">%&gt;%</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Estatura_Promedio =</span> <span class="fu">mean</span>(estatura)</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 2
+  sexo  Estatura_Promedio
+  &lt;chr&gt;             &lt;dbl&gt;
+1 Fem                1.61
+2 Masc               1.76</code></pre>
+</div>
+</div>
+</section>
+<section id="muestreo-aleatorio-simple-ponderado-sin-reemplazo" class="level3">
+<h3 class="anchored" data-anchor-id="muestreo-aleatorio-simple-ponderado-sin-reemplazo">Muestreo Aleatorio Simple (ponderado) sin reemplazo</h3>
+<p>Complicaremos un poco el muestreo. Supongamos que como ser mayor a 30 incluye más grupos de edad que ser menor, nos interesa que las personas <code>mayores a 30 años</code> tengan el doble de probabilidad de aparecer en la muestra que las menores. Para esto, es necesario establecer probabilidades (mal llamadas <code>weights</code>) que le indiquen a <code>R</code> que extraiga con mayor probabilidad <code>0.66</code> a los mayores de 30 años que a los menores (proba <code>0.33</code>):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Agregamos la columna del ponderador a los datos</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="co">#nota que está amañanda para sumar 1</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>datos <span class="ot">&lt;-</span> datos <span class="sc">%&gt;%</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">probabilidad =</span> </span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>           <span class="fu">if_else</span>(edad <span class="sc">==</span> <span class="st">"Mayor o igual a 30"</span>, <span class="fl">0.667</span>, <span class="fl">0.333</span>))</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>muestra_ponderada <span class="ot">&lt;-</span> datos <span class="sc">%&gt;%</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sample_n</span>(<span class="at">size =</span> <span class="dv">7</span>, <span class="at">weight =</span> probabilidad)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+
+<table class="table" style="margin-left: auto; margin-right: auto;">
+ <thead>
+  <tr>
+   <th style="text-align:left;"> nombre </th>
+   <th style="text-align:left;"> edad </th>
+   <th style="text-align:left;"> sexo </th>
+   <th style="text-align:right;"> hogar </th>
+   <th style="text-align:right;"> estatura </th>
+   <th style="text-align:right;"> localidad </th>
+   <th style="text-align:right;"> probabilidad </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> René </td>
+   <td style="text-align:left;"> Mayor o igual a 30 </td>
+   <td style="text-align:left;"> Fem </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 1.600142 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 0.667 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Charlie </td>
+   <td style="text-align:left;"> Mayor o igual a 30 </td>
+   <td style="text-align:left;"> Fem </td>
+   <td style="text-align:right;"> 5 </td>
+   <td style="text-align:right;"> 1.483513 </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 0.667 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Akira </td>
+   <td style="text-align:left;"> Mayor o igual a 30 </td>
+   <td style="text-align:left;"> Fem </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 1.741073 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 0.667 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Sol </td>
+   <td style="text-align:left;"> Mayor o igual a 30 </td>
+   <td style="text-align:left;"> Masc </td>
+   <td style="text-align:right;"> 5 </td>
+   <td style="text-align:right;"> 1.672928 </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 0.667 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Paris </td>
+   <td style="text-align:left;"> Menor a 30 </td>
+   <td style="text-align:left;"> Masc </td>
+   <td style="text-align:right;"> 5 </td>
+   <td style="text-align:right;"> 1.706307 </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 0.333 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Andy </td>
+   <td style="text-align:left;"> Mayor o igual a 30 </td>
+   <td style="text-align:left;"> Fem </td>
+   <td style="text-align:right;"> 3 </td>
+   <td style="text-align:right;"> 1.580372 </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 0.667 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Guadalupe </td>
+   <td style="text-align:left;"> Mayor o igual a 30 </td>
+   <td style="text-align:left;"> Fem </td>
+   <td style="text-align:right;"> 3 </td>
+   <td style="text-align:right;"> 1.451104 </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 0.667 </td>
+  </tr>
+</tbody>
+</table>
+
+</div>
+</div>
+<p>En este caso ya vale la pena distinguir <strong>la media muestral</strong> del <strong>estimador de la media poblacional</strong>. Por un lado <strong>la media muestral</strong> corresponde al promedio <code>clásico</code> (sumar todos los de la muestra y dividirlos entre el total <span class="math inline">\(n\)</span>); sin embargo, ésta no es la mejor representación de cómo está la población pues como hubo gente que por el ponderador tenía más probabilidad de salir, éstas personas sesgan la media. Para corregir y dar una mejor foto de cómo se ve la población está el <strong>estimador de la media poblacional</strong> el cual corresponde al promedio (ponderado) de las estaturas. La fórmula es más o menos así: $$ = </p>
+<p>$$</p>
+<p>En <code>R</code> una forma es usar la función <code>weighted.mean</code> con el ponderador. Usualmente (<a href="https://www.routledge.com/Sampling-Design-and-Analysis/Lohr/p/book/9780367279509">checa acá</a>) el ponderador para calcular la media es inversamente proporcional a la probabilidad (<em>i.e.</em> <span class="math inline">\(\text{ponderador} = 1/\text{probabilidad}\)</span>). Esto viene de teoría de encuestas y no entraremos mucho en ella. Sin embargo, brevemente podemos explicar que la lógica es que para aquellos con probabilidad demasiado alta de salir el ponderador <span class="math inline">\(1/\text{probabilidad}\)</span> da un número más pequeño que para aquellos con probabilidad muy baja de salir (experimenta haciendo <span class="math inline">\(1/0.99\)</span> contra <span class="math inline">\(1/0.001\)</span> y ve cómo ponderan cada uno). De alguna forma el ponderador “corrige” que el muestreo tuviera distintas probabilidades.</p>
+<p>En <code>R</code> podemos construir el ponderador como sigue:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>muestra_ponderada <span class="ot">&lt;-</span> muestra_ponderada <span class="sc">%&gt;%</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ponderador =</span> <span class="dv">1</span><span class="sc">/</span>probabilidad)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Y una forma en la que podemos calcular la media ponderada es con <code>weighted.mean</code></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>muestra_ponderada <span class="sc">%&gt;%</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="st">`</span><span class="at">Media ponderada</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">weighted.mean</span>(estatura, ponderador))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 1
+  `Media ponderada`
+              &lt;dbl&gt;
+1              1.62</code></pre>
+</div>
+</div>
+<p>Esta es la opción más sencilla pero se queda corta para otros resultados. La opción que nosotros usaremos está dentro del paquete <code>srvyr</code> y es un poco más complicada pero valdrá la pena:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>muestra_ponderada <span class="sc">%&gt;%</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="dv">1</span>,  <span class="at">weight =</span> ponderador) <span class="sc">%&gt;%</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="st">`</span><span class="at">Media ponderada</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">survey_mean</span>(estatura, <span class="at">vartype =</span> <span class="st">"ci"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 3
+  `Media ponderada` `Media ponderada_low` `Media ponderada_upp`
+              &lt;dbl&gt;                 &lt;dbl&gt;                 &lt;dbl&gt;
+1              1.62                  1.51                  1.72</code></pre>
+</div>
+</div>
+<p>Nota que ésta nos da incluso un intervalo de confianza (default <code>95%</code>). Ésta, por cierto, da un resultado distinto a que si sólo tomamos la media de la muestra:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>muestra_ponderada <span class="sc">%&gt;%</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="st">`</span><span class="at">Media</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">mean</span>(estatura))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 1
+  Media
+  &lt;dbl&gt;
+1  1.61</code></pre>
+</div>
+</div>
+</section>
+<section id="muestreo-aleatorio-estratificado-sin-reemplazo" class="level3">
+<h3 class="anchored" data-anchor-id="muestreo-aleatorio-estratificado-sin-reemplazo">Muestreo Aleatorio Estratificado sin reemplazo</h3>
+<p>En nuestra encuesta podría interesarnos garantizar que ciertos grupos estén en la encuesta a fuerza. Como es aleatorio el muestreo siempre puede pasar que tengamos mala suerte y nadie de uno de los grupos esté La solución: pensar nuestra muestra como dos (o más) muestras distintas de distintos grupos (llamados estratos). Por ejemplo podríamos garantizar que a fuerza haya hombres y mujeres en nuestra muestra agrupando por <code>sexo</code> y obteniendo muestras de tamaño <code>3</code> ahí:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>datos <span class="sc">%&gt;%</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(sexo) <span class="sc">%&gt;%</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sample_n</span>(<span class="at">size =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 7
+# Groups:   sexo [2]
+  nombre    edad               sexo  hogar estatura localidad probabilidad
+  &lt;chr&gt;     &lt;chr&gt;              &lt;chr&gt; &lt;int&gt;    &lt;dbl&gt;     &lt;int&gt;        &lt;dbl&gt;
+1 Guadalupe Mayor o igual a 30 Fem       3     1.45         2        0.667
+2 Andy      Mayor o igual a 30 Fem       3     1.58         2        0.667
+3 Akira     Mayor o igual a 30 Fem       1     1.74         1        0.667
+4 Sasha     Menor a 30         Masc      2     1.78         1        0.333
+5 Sol       Mayor o igual a 30 Masc      5     1.67         2        0.667
+6 Paris     Menor a 30         Masc      5     1.71         2        0.333</code></pre>
+</div>
+</div>
+<p>Si se quisiera un tamaño distinto (digamos <span class="math inline">\(4\)</span> <code>Masc</code> y <span class="math inline">\(3\)</span> <code>Fem</code>) puede agregarse una columna de tamaño de muestra y muestrear de acuerdo a esa columna:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Fuente:</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="co">#https://stackoverflow.com/questions/51671856/dplyr-sample-n-by-group-with-unique-size-argument-per-group</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>muestra_estratificada <span class="ot">&lt;-</span> datos <span class="sc">%&gt;%</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(tamaño <span class="ot">=</span> <span class="fu">if_else</span>(sexo <span class="sc">==</span> <span class="st">"Fem"</span>, <span class="dv">3</span>, <span class="dv">4</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(sexo) <span class="sc">%&gt;%</span></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sample_n</span>(<span class="at">size =</span> tamaño[<span class="dv">1</span>], <span class="at">weight =</span> probabilidad)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+
+<table class="table" style="margin-left: auto; margin-right: auto;">
+ <thead>
+  <tr>
+   <th style="text-align:left;"> nombre </th>
+   <th style="text-align:left;"> edad </th>
+   <th style="text-align:left;"> sexo </th>
+   <th style="text-align:right;"> hogar </th>
+   <th style="text-align:right;"> estatura </th>
+   <th style="text-align:right;"> localidad </th>
+   <th style="text-align:right;"> probabilidad </th>
+   <th style="text-align:right;"> ponderador </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> René </td>
+   <td style="text-align:left;"> Mayor o igual a 30 </td>
+   <td style="text-align:left;"> Fem </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 1.600142 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 0.667 </td>
+   <td style="text-align:right;"> 1.499250 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Charlie </td>
+   <td style="text-align:left;"> Mayor o igual a 30 </td>
+   <td style="text-align:left;"> Fem </td>
+   <td style="text-align:right;"> 5 </td>
+   <td style="text-align:right;"> 1.483513 </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 0.667 </td>
+   <td style="text-align:right;"> 1.499250 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Akira </td>
+   <td style="text-align:left;"> Mayor o igual a 30 </td>
+   <td style="text-align:left;"> Fem </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 1.741073 </td>
+   <td style="text-align:right;"> 1 </td>
+   <td style="text-align:right;"> 0.667 </td>
+   <td style="text-align:right;"> 1.499250 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Sol </td>
+   <td style="text-align:left;"> Mayor o igual a 30 </td>
+   <td style="text-align:left;"> Masc </td>
+   <td style="text-align:right;"> 5 </td>
+   <td style="text-align:right;"> 1.672928 </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 0.667 </td>
+   <td style="text-align:right;"> 1.499250 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Paris </td>
+   <td style="text-align:left;"> Menor a 30 </td>
+   <td style="text-align:left;"> Masc </td>
+   <td style="text-align:right;"> 5 </td>
+   <td style="text-align:right;"> 1.706307 </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 0.333 </td>
+   <td style="text-align:right;"> 3.003003 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Andy </td>
+   <td style="text-align:left;"> Mayor o igual a 30 </td>
+   <td style="text-align:left;"> Fem </td>
+   <td style="text-align:right;"> 3 </td>
+   <td style="text-align:right;"> 1.580372 </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 0.667 </td>
+   <td style="text-align:right;"> 1.499250 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Guadalupe </td>
+   <td style="text-align:left;"> Mayor o igual a 30 </td>
+   <td style="text-align:left;"> Fem </td>
+   <td style="text-align:right;"> 3 </td>
+   <td style="text-align:right;"> 1.451104 </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 0.667 </td>
+   <td style="text-align:right;"> 1.499250 </td>
+  </tr>
+</tbody>
+</table>
+
+</div>
+</div>
+<p>En este caso podemos especificar también cuáles fueron los estratos dentro del diseño:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>muestra_ponderada <span class="sc">%&gt;%</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="dv">1</span>, <span class="at">strata =</span> sexo, <span class="at">weight =</span> ponderador) <span class="sc">%&gt;%</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="st">`</span><span class="at">Media ponderada</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">survey_mean</span>(estatura, <span class="at">vartype =</span> <span class="st">"se"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 2
+  `Media ponderada` `Media ponderada_se`
+              &lt;dbl&gt;                &lt;dbl&gt;
+1              1.62               0.0353</code></pre>
+</div>
+</div>
+<p>Aquí la opción <code>se</code> representa el error estándar. Nota que el estrato influye en el error estándar (y la varianza) pues de no especificarlo obtenemos un número distinto:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>muestra_ponderada <span class="sc">%&gt;%</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="dv">1</span>, <span class="at">weight =</span> ponderador) <span class="sc">%&gt;%</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="st">`</span><span class="at">Media ponderada</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">survey_mean</span>(estatura, <span class="at">vartype =</span> <span class="st">"se"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 2
+  `Media ponderada` `Media ponderada_se`
+              &lt;dbl&gt;                &lt;dbl&gt;
+1              1.62               0.0421</code></pre>
+</div>
+</div>
+<blockquote class="blockquote">
+<p>La idea de una muestra estratificada no sólo es que los estratos representen grupos poblacionales sino que si los estratos se arman “adecuadamente” (como aquí) podemos reducir el error estándar de nuestro estimador y por tanto la longitud de los intervalos de confianza.</p>
+</blockquote>
+<p>Podemos también usar la variable de agrupación para ver las medias por sexo:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>muestra_ponderada <span class="sc">%&gt;%</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="dv">1</span>, <span class="at">strata =</span> sexo, <span class="at">weight =</span> ponderador) <span class="sc">%&gt;%</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(sexo) <span class="sc">%&gt;%</span></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="st">`</span><span class="at">Media ponderada</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">survey_mean</span>(estatura, <span class="at">vartype =</span> <span class="st">"ci"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 4
+  sexo  `Media ponderada` `Media ponderada_low` `Media ponderada_upp`
+  &lt;chr&gt;             &lt;dbl&gt;                 &lt;dbl&gt;                 &lt;dbl&gt;
+1 Fem                1.57                  1.44                  1.70
+2 Masc               1.70                  1.66                  1.73</code></pre>
+</div>
+</div>
+</section>
+<section id="muestreo-aleatorio-bietápico" class="level3">
+<h3 class="anchored" data-anchor-id="muestreo-aleatorio-bietápico">Muestreo Aleatorio Bietápico</h3>
+<p>Usualmente en las encuestas existe más de un nivel de aleatoriedad. Por ejemplo, se selecciona aleatoriamente una vivienda (unidad primaria) y luego se selecciona aleatoriamente una persona (unidad secundaria) dentro de la vivienda. Esto porque de inicio se desconocen cuántas personas hay por vivienda. Para muestrear de esta forma en nuestro código en el caso donde haya que muestrear <span class="math inline">\(3\)</span> viviendas y luego máximo dos personas de cada estrato (sexo) por vivienda:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Primero muestreo n viviendas</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>viviendas <span class="ot">&lt;-</span> datos <span class="sc">%&gt;%</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(hogar) <span class="sc">%&gt;%</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sample_n</span>(<span class="dv">3</span>)</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a><span class="co">#Luego muestreo personas por vivienda</span></span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>muestra_hogar <span class="ot">&lt;-</span> datos <span class="sc">%&gt;%</span></span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(hogar <span class="sc">%in%</span> <span class="sc">!!</span>viviendas<span class="sc">$</span>hogar) <span class="sc">%&gt;%</span></span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hogar, sexo) <span class="sc">%&gt;%</span></span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sample_n</span>(<span class="fu">min</span>(<span class="dv">2</span>, <span class="fu">n</span>()), <span class="at">weight =</span> probabilidad)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Nota que en el primer hogar sólo se muestreo una persona pues no vivía nadie más ahí. Esto va a requerir un ajuste dado que el individuo está solitario (no hay uno de los estratos en la unidad). Hay varias <a href="https://r-survey.r-forge.r-project.org/survey/exmample-lonely.html">opciones</a> en <code>R</code> para manejar esto. Para la ENSANUT nosotros pediremos que se ajuste la varianza de dicho estrato (para los intervalos) usando las varianzas de los demás con la siguiente opción:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">survey.lonely.psu=</span><span class="st">"adjust"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Una vez establecida la opción podemos indicar a <code>R</code> el diseño de la encuesta estableciendo cuáles fueron las unidades primarias de muestreo:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Nota la opción de psu no es necesaria en R ponerla pero</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="co">#si se requieren opciones más avanzadas de Bootstrap/Jacknife sí</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>muestra_ponderada <span class="sc">%&gt;%</span></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="dv">1</span>, <span class="at">strata =</span> sexo, <span class="at">weight =</span> ponderador,  <span class="at">psu =</span> upm) <span class="sc">%&gt;%</span></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(sexo) <span class="sc">%&gt;%</span></span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="st">`</span><span class="at">Media ponderada</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">survey_mean</span>(estatura, <span class="at">vartype =</span> <span class="st">"ci"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 4
+  sexo  `Media ponderada` `Media ponderada_low` `Media ponderada_upp`
+  &lt;chr&gt;             &lt;dbl&gt;                 &lt;dbl&gt;                 &lt;dbl&gt;
+1 Fem                1.57                  1.44                  1.70
+2 Masc               1.70                  1.66                  1.73</code></pre>
+</div>
+</div>
+<p>Para no tener que estar llamando el diseño de la encuesta cada que operamos podemos guardar el objeto como una tabla tipo encuesta:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Antes de volverla encuesta</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>muestra_ponderada</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 7 × 8
+  nombre    edad               sexo  hogar estatura localidad probabil…¹ ponde…²
+  &lt;chr&gt;     &lt;chr&gt;              &lt;chr&gt; &lt;int&gt;    &lt;dbl&gt;     &lt;int&gt;      &lt;dbl&gt;   &lt;dbl&gt;
+1 René      Mayor o igual a 30 Fem       2     1.60         1      0.667    1.50
+2 Charlie   Mayor o igual a 30 Fem       5     1.48         2      0.667    1.50
+3 Akira     Mayor o igual a 30 Fem       1     1.74         1      0.667    1.50
+4 Sol       Mayor o igual a 30 Masc      5     1.67         2      0.667    1.50
+5 Paris     Menor a 30         Masc      5     1.71         2      0.333    3.00
+6 Andy      Mayor o igual a 30 Fem       3     1.58         2      0.667    1.50
+7 Guadalupe Mayor o igual a 30 Fem       3     1.45         2      0.667    1.50
+# … with abbreviated variable names ¹​probabilidad, ²​ponderador</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Después</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>muestra_ponderada <span class="ot">&lt;-</span> muestra_ponderada <span class="sc">%&gt;%</span></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="dv">1</span>, <span class="at">strata =</span> sexo, <span class="at">weight =</span> ponderador,  <span class="at">psu =</span> upm) </span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>muestra_ponderada</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Stratified Independent Sampling design (with replacement)
+Called via srvyr
+Sampling variables:
+ - ids: `1`
+ - strata: sexo
+ - weights: ponderador
+Data variables: nombre (chr), edad (chr), sexo (chr), hogar (int), estatura
+  (dbl), localidad (int), probabilidad (dbl), ponderador (dbl)</code></pre>
+</div>
+</div>
+<p>En general los comandos de <code>dplyr</code> tipo <code>mutate</code>, <code>summarise</code>, <code>rename</code> están disponibles para las tablas de encuesta. Sin embargo no todas las funciones que existen en <code>R</code> para <code>tibbles</code> estàn. La sugerencia es volver tu tabla tipo encuesta una vez hayas limpiado todo y ya sólo falte analizar.</p>
+</section>
+</section>
+<section id="análisis-de-la-ensanut" class="level2">
+<h2 class="anchored" data-anchor-id="análisis-de-la-ensanut">Análisis de la ENSANUT</h2>
+<p>La ENSANUT 2021 (ver <span class="citation" data-cites="romero2021metodologia">Romero-Martı́nez et al. (<a href="#ref-romero2021metodologia" role="doc-biblioref">2021</a>)</span> y <span class="citation" data-cites="martinez2021metodologia">Martı́nez et al. (<a href="#ref-martinez2021metodologia" role="doc-biblioref">2021</a>)</span>) es una encuesta probabilística polietápica estratificada. La forma de elaborarla fue obteniendo una muestra aleatoria de <a href="https://blogdatlas.wordpress.com/2021/08/29/que-es-un-ageb-y-para-que-sirve-investigacion-datlas/">Áreas Geoestadísticas Básicas (AGEB)</a>. Éstas fueron las Unidades Primarias de Muestreo (UPM) que se seleccionaron con ponderadores de acuerdo a su población. Una vez seleccionada la AGEB, las Unidades Secundarias de Muestreo (USM) fueron las manzanas seleccionadas aleatoriamente. Finalmente, dentro de cada manzana se seleccionaron varias viviendas (<span class="math inline">\(n = 6\)</span>). Una vez seleccionadas las viviendas, dentro de cada vivienda se seleccionaron algunas personas de acuerdo a la edad para obtener al menos una por cada grupo etario de interés. Finalmente, para mediciones extras (antropometría / sangre / etc) se obtuvieron submuestras de personas a las que se les aplicó un cuestionario extra.</p>
+<section id="cuestionario-de-adultos" class="level3">
+<h3 class="anchored" data-anchor-id="cuestionario-de-adultos">Cuestionario de adultos</h3>
+<p>En nuestro caso para el de adultos se establece así la estructura de encuesta:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Armamos nuestra tabla con estructura de encuesta</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="co">#Nota la opción de psu no es necesaria en R ponerla pero</span></span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a><span class="co">#si se requieren opciones más avanzadas de Bootstrap/Jacknife sí</span></span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">survey.lonely.psu =</span> <span class="st">"adjust"</span>) <span class="co">#singleunit(centered) en Stata</span></span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>salud_adultos_svy <span class="ot">&lt;-</span> salud_adultos <span class="sc">%&gt;%</span></span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(ponde_f)) <span class="sc">%&gt;%</span></span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">id =</span> FOLIO_INT, <span class="at">strata =</span> est_sel, </span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>                   <span class="at">psu =</span> upm, <span class="at">weights =</span> ponde_f, <span class="at">nest =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Una vez armada la estructura podemos empezar a hacerle preguntas a la base. Por ejemplo a qué porcentaje de personas les dijeron que tenían diabetes o niveles de azucar altos:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>salud_adultos_svy <span class="sc">%&gt;%</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Diabetes =</span> <span class="fu">survey_mean</span>(a0301 <span class="sc">==</span> <span class="dv">1</span>, <span class="at">na.rm =</span> T)</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 2
+  Diabetes Diabetes_se
+     &lt;dbl&gt;       &lt;dbl&gt;
+1    0.102     0.00359</code></pre>
+</div>
+</div>
+<p>En hombres y mujeres así se vieron:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>salud_adultos_svy <span class="sc">%&gt;%</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">sexo_name =</span> <span class="fu">if_else</span>(sexo <span class="sc">==</span> <span class="dv">1</span>,<span class="st">"Hombre"</span>,<span class="st">"Mujer"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(sexo_name) <span class="sc">%&gt;%</span></span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Diabetes =</span> <span class="fu">survey_mean</span>(a0301 <span class="sc">==</span> <span class="dv">1</span>, <span class="at">na.rm =</span> T, <span class="at">vartype =</span> <span class="st">"ci"</span>)</span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 4
+  sexo_name Diabetes Diabetes_low Diabetes_upp
+  &lt;chr&gt;        &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;
+1 Hombre      0.0903       0.0793        0.101
+2 Mujer       0.113        0.104         0.122</code></pre>
+</div>
+</div>
+<p>Mientras que una tabla por edad y sexo es así:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>salud_adultos_svy <span class="sc">%&gt;%</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">sexo_name =</span> <span class="fu">if_else</span>(sexo <span class="sc">==</span> <span class="dv">1</span>,<span class="st">"Hombre"</span>,<span class="st">"Mujer"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">edad_name =</span> <span class="fu">case_when</span>(</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>    edad <span class="sc">&lt;</span> <span class="dv">40</span> <span class="sc">~</span> <span class="st">"20 a 39"</span>,</span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>    edad <span class="sc">&gt;=</span> <span class="dv">40</span> <span class="sc">&amp;</span> edad <span class="sc">&lt;</span> <span class="dv">60</span> <span class="sc">~</span> <span class="st">"49 a 59"</span>,</span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>    edad <span class="sc">&gt;=</span> <span class="dv">60</span> <span class="sc">~</span> <span class="st">"60 y más"</span>,</span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">%&gt;%</span></span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(sexo_name, edad_name) <span class="sc">%&gt;%</span></span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb52-10"><a href="#cb52-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">Diabetes =</span> <span class="fu">survey_mean</span>(a0301 <span class="sc">==</span> <span class="dv">1</span>, <span class="at">na.rm =</span> T, <span class="at">vartype =</span> <span class="st">"ci"</span>)</span>
+<span id="cb52-11"><a href="#cb52-11" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 5
+# Groups:   sexo_name [2]
+  sexo_name edad_name Diabetes Diabetes_low Diabetes_upp
+  &lt;chr&gt;     &lt;chr&gt;        &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;
+1 Hombre    20 a 39     0.0218       0.0103       0.0333
+2 Hombre    49 a 59     0.103        0.0851       0.121 
+3 Hombre    60 y más    0.229        0.195        0.264 
+4 Mujer     20 a 39     0.0196       0.0139       0.0253
+5 Mujer     49 a 59     0.149        0.132        0.167 
+6 Mujer     60 y más    0.281        0.252        0.310 </code></pre>
+</div>
+</div>
+<p>Si quisiéramos conteos en lugar de utilizar <code>survey_mean</code> podemos usar el <code>survey_total</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>salud_adultos_svy <span class="sc">%&gt;%</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">sexo_name =</span> <span class="fu">if_else</span>(sexo <span class="sc">==</span> <span class="dv">1</span>,<span class="st">"Hombre"</span>,<span class="st">"Mujer"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">edad_name =</span> <span class="fu">case_when</span>(</span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>    edad <span class="sc">&lt;</span> <span class="dv">40</span> <span class="sc">~</span> <span class="st">"20 a 39"</span>,</span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>    edad <span class="sc">&gt;=</span> <span class="dv">40</span> <span class="sc">&amp;</span> edad <span class="sc">&lt;</span> <span class="dv">60</span> <span class="sc">~</span> <span class="st">"49 a 59"</span>,</span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>    edad <span class="sc">&gt;=</span> <span class="dv">60</span> <span class="sc">~</span> <span class="st">"60 y más"</span>,</span>
+<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">%&gt;%</span></span>
+<span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(sexo_name, edad_name) <span class="sc">%&gt;%</span></span>
+<span id="cb54-9"><a href="#cb54-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb54-10"><a href="#cb54-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">N =</span> <span class="fu">survey_total</span>(a0301 <span class="sc">==</span> <span class="dv">1</span>, <span class="at">na.rm =</span> T, <span class="at">vartype =</span> <span class="st">"ci"</span>)</span>
+<span id="cb54-11"><a href="#cb54-11" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 5
+# Groups:   sexo_name [2]
+  sexo_name edad_name        N    N_low    N_upp
+  &lt;chr&gt;     &lt;chr&gt;        &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+1 Hombre    20 a 39    412720.  191303.  634136.
+2 Hombre    49 a 59   1400260. 1145975. 1654544.
+3 Hombre    60 y más  1850151. 1530672. 2169630.
+4 Mujer     20 a 39    399334.  282878.  515790.
+5 Mujer     49 a 59   2374376. 2078941. 2669812.
+6 Mujer     60 y más  2233392. 1971571. 2495213.</code></pre>
+</div>
+</div>
+<p>Y si queremos resultados de la muestra hay que usar <code>unweighted</code>. ¡Es posible en <code>summarise</code> combinar múltiples objetos:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>salud_adultos_svy <span class="sc">%&gt;%</span></span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">sexo_name =</span> <span class="fu">if_else</span>(sexo <span class="sc">==</span> <span class="dv">1</span>,<span class="st">"Hombre"</span>,<span class="st">"Mujer"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">edad_name =</span> <span class="fu">case_when</span>(</span>
+<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a>    edad <span class="sc">&lt;</span> <span class="dv">40</span> <span class="sc">~</span> <span class="st">"20 a 39"</span>,</span>
+<span id="cb56-5"><a href="#cb56-5" aria-hidden="true" tabindex="-1"></a>    edad <span class="sc">&gt;=</span> <span class="dv">40</span> <span class="sc">&amp;</span> edad <span class="sc">&lt;</span> <span class="dv">60</span> <span class="sc">~</span> <span class="st">"49 a 59"</span>,</span>
+<span id="cb56-6"><a href="#cb56-6" aria-hidden="true" tabindex="-1"></a>    edad <span class="sc">&gt;=</span> <span class="dv">60</span> <span class="sc">~</span> <span class="st">"60 y más"</span>,</span>
+<span id="cb56-7"><a href="#cb56-7" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">%&gt;%</span></span>
+<span id="cb56-8"><a href="#cb56-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(sexo_name, edad_name) <span class="sc">%&gt;%</span></span>
+<span id="cb56-9"><a href="#cb56-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb56-10"><a href="#cb56-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">N  =</span> <span class="fu">survey_total</span>(a0301 <span class="sc">==</span> <span class="dv">1</span>, <span class="at">na.rm =</span> T, <span class="at">vartype =</span> <span class="st">"ci"</span>),</span>
+<span id="cb56-11"><a href="#cb56-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">n  =</span> <span class="fu">unweighted</span>(<span class="fu">sum</span>(a0301 <span class="sc">==</span> <span class="dv">1</span>, <span class="at">na.rm =</span> T))</span>
+<span id="cb56-12"><a href="#cb56-12" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 6
+# Groups:   sexo_name [2]
+  sexo_name edad_name        N    N_low    N_upp     n
+  &lt;chr&gt;     &lt;chr&gt;        &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt; &lt;int&gt;
+1 Hombre    20 a 39    412720.  191303.  634136.    41
+2 Hombre    49 a 59   1400260. 1145975. 1654544.   212
+3 Hombre    60 y más  1850151. 1530672. 2169630.   261
+4 Mujer     20 a 39    399334.  282878.  515790.    72
+5 Mujer     49 a 59   2374376. 2078941. 2669812.   485
+6 Mujer     60 y más  2233392. 1971571. 2495213.   519</code></pre>
+</div>
+</div>
+<p>Podemos filtrar para obtener la tabla para una entidad en particular. Por ejemplo para la Ciudad de México (<code>entidad == "09"</code>)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>salud_adultos_svy <span class="sc">%&gt;%</span></span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(entidad <span class="sc">==</span> <span class="st">"09"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">sexo_name =</span> <span class="fu">if_else</span>(sexo <span class="sc">==</span> <span class="dv">1</span>,<span class="st">"Hombre"</span>,<span class="st">"Mujer"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">edad_name =</span> <span class="fu">case_when</span>(</span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a>    edad <span class="sc">&lt;</span> <span class="dv">40</span> <span class="sc">~</span> <span class="st">"20 a 39"</span>,</span>
+<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a>    edad <span class="sc">&gt;=</span> <span class="dv">40</span> <span class="sc">&amp;</span> edad <span class="sc">&lt;</span> <span class="dv">60</span> <span class="sc">~</span> <span class="st">"49 a 59"</span>,</span>
+<span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a>    edad <span class="sc">&gt;=</span> <span class="dv">60</span> <span class="sc">~</span> <span class="st">"60 y más"</span>,</span>
+<span id="cb58-8"><a href="#cb58-8" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">%&gt;%</span></span>
+<span id="cb58-9"><a href="#cb58-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(sexo_name, edad_name) <span class="sc">%&gt;%</span></span>
+<span id="cb58-10"><a href="#cb58-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb58-11"><a href="#cb58-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">N  =</span> <span class="fu">survey_total</span>(a0301 <span class="sc">==</span> <span class="dv">1</span>, <span class="at">na.rm =</span> T, <span class="at">vartype =</span> <span class="st">"ci"</span>),</span>
+<span id="cb58-12"><a href="#cb58-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">n  =</span> <span class="fu">unweighted</span>(<span class="fu">sum</span>(a0301 <span class="sc">==</span> <span class="dv">1</span>, <span class="at">na.rm =</span> T))</span>
+<span id="cb58-13"><a href="#cb58-13" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 6
+# Groups:   sexo_name [2]
+  sexo_name edad_name       N   N_low   N_upp     n
+  &lt;chr&gt;     &lt;chr&gt;       &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;int&gt;
+1 Hombre    20 a 39    12860.  -3471.  29191.     3
+2 Hombre    49 a 59   132681.  76513. 188849.    26
+3 Hombre    60 y más  189190. 119159. 259221.    38
+4 Mujer     20 a 39    20803.   3596.  38010.     6
+5 Mujer     49 a 59   169581. 109481. 229682.    41
+6 Mujer     60 y más  220766. 154535. 286998.    59</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="ejercicios" class="level2">
+<h2 class="anchored" data-anchor-id="ejercicios">Ejercicios</h2>
+<p>Responde las siguientes preguntas:</p>
+<ol type="1">
+<li><p>¿Qué proporción de personas tienen diagnóstico previo de enfermedad renal? ¿Varía entre hombres y mujeres?</p></li>
+<li><p>Replica los resultados de la siguiente tabla del <strong>Porcentaje de adultos que reportan medición de colesterol en la sangre, y tenían niveles altos</strong> (<code>A0604</code>):</p></li>
+</ol>
+<div class="cell">
+<div class="cell-output-display">
+
+<table class="table" style="margin-left: auto; margin-right: auto;">
+ <thead>
+  <tr>
+   <th style="text-align:left;"> Grupo de edad </th>
+   <th style="text-align:left;"> Proporción de Hombres </th>
+   <th style="text-align:left;"> Total (muestra) Hombres </th>
+   <th style="text-align:left;"> Proporción de Mujeres </th>
+   <th style="text-align:left;"> Total (muestra) Mujeres </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> 20 a 39 </td>
+   <td style="text-align:left;"> 6% [6%, 8%] </td>
+   <td style="text-align:left;"> 1,316,391 (149) </td>
+   <td style="text-align:left;"> 8% [6%, 10%] </td>
+   <td style="text-align:left;"> 1,603,452 (261) </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 49 a 59 </td>
+   <td style="text-align:left;"> 18% [14%, 20%] </td>
+   <td style="text-align:left;"> 2,324,265 (308) </td>
+   <td style="text-align:left;"> 22% [20%, 24%] </td>
+   <td style="text-align:left;"> 3,503,055 (682) </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 60 y más </td>
+   <td style="text-align:left;"> 16% [14%, 20%] </td>
+   <td style="text-align:left;"> 1,349,788 (194) </td>
+   <td style="text-align:left;"> 24% [22%, 28%] </td>
+   <td style="text-align:left;"> 1,951,682 (431) </td>
+  </tr>
+</tbody>
+</table>
+
+</div>
+</div>
+<ol start="3" type="1">
+<li><p>¿En qué entidad federativa más gente tiene una vacuna contra el tétanos (<code>A0906</code>)?</p></li>
+<li><p>De las personas que se accidentaron en vehículos de cuatro o más ruedas (<code>A1102</code>), ¿cuántas llevaban puesto el cinturón de seguridad (<code>A1103</code>)?</p></li>
+<li><p>Los pacientes que toman pastillas para controlar su insulina, en promedio, ¿cuánto tiempo tienen tomándolas?</p></li>
+</ol>
+<p><strong>Nota</strong> Apóyate del paquete <code>lubridate</code> para sumar meses más años. Por ejemplo para sumar <span class="math inline">\(3\)</span> meses más <span class="math inline">\(5\)</span> años se haría así:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'lubridate'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:base':
+
+    date, intersect, setdiff, union</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>suma_periodo <span class="ot">&lt;-</span> <span class="fu">months</span>(<span class="dv">3</span>) <span class="sc">+</span> <span class="fu">years</span>(<span class="dv">5</span>) <span class="co">#En meses: 5*12 + 3 = 63</span></span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Para convertir cambia unit a:</span></span>
+<span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a><span class="co">#meses (months) / días (days) / años (years) / semanas (weeks)</span></span>
+<span id="cb63-5"><a href="#cb63-5" aria-hidden="true" tabindex="-1"></a><span class="fu">time_length</span>(suma_periodo, <span class="at">unit =</span> <span class="st">"months"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 63</code></pre>
+</div>
+</div>
+<section id="cuestionario-de-antropometría" class="level3">
+<h3 class="anchored" data-anchor-id="cuestionario-de-antropometría">Cuestionario de antropometría</h3>
+<p>Armamos el diseño de cuestionaro</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>antropometria_cuest <span class="ot">&lt;-</span> antropometria <span class="sc">%&gt;%</span></span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(salud_adultos, </span>
+<span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"FOLIO_INT"</span>, <span class="st">"upm"</span>,<span class="st">"est_sel"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb65-4"><a href="#cb65-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">ponde_f =</span> ponde_f.x) <span class="co">#Nos quedamos con el ponderador adecuado</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Armamos nuestra tabla con estructura de encuesta</span></span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">survey.lonely.psu =</span> <span class="st">"adjust"</span>) <span class="co">#singleunit(centered) en Stata</span></span>
+<span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a>antropometria_svy <span class="ot">&lt;-</span> antropometria_cuest <span class="sc">%&gt;%</span></span>
+<span id="cb66-4"><a href="#cb66-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(ponde_f)) <span class="sc">%&gt;%</span></span>
+<span id="cb66-5"><a href="#cb66-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_survey_design</span>(<span class="at">id =</span> FOLIO_INT, <span class="at">strata =</span> est_sel, </span>
+<span id="cb66-6"><a href="#cb66-6" aria-hidden="true" tabindex="-1"></a>                   <span class="at">psu =</span> upm, <span class="at">weights =</span> ponde_f, <span class="at">nest =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>El promedio de peso en menores de 60 (quitando a las embarazadas) puede calcularse como siempre con <code>svy_mean</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>antropometria_svy <span class="sc">%&gt;%</span></span>
+<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(an06 <span class="sc">!=</span> <span class="dv">1</span> <span class="sc">&amp;</span> an06 <span class="sc">!=</span> <span class="dv">3</span>) <span class="sc">%&gt;%</span> <span class="co">#Embarazadas</span></span>
+<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Promedio_peso =</span> <span class="fu">survey_mean</span>(an01_1, <span class="at">na.rm =</span> T, <span class="st">"ci"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 3
+  Promedio_peso Promedio_peso_low Promedio_peso_upp
+          &lt;dbl&gt;             &lt;dbl&gt;             &lt;dbl&gt;
+1          67.1              66.4              67.9</code></pre>
+</div>
+</div>
+<p>No sólo podemos calcular la <code>media</code> sino también la mediana y los cuantiles (para por ejemplo calcular dónde está el <code>25%</code> y el <code>75%</code>)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>antropometria_svy <span class="sc">%&gt;%</span></span>
+<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(an06 <span class="sc">!=</span> <span class="dv">1</span> <span class="sc">&amp;</span> an06 <span class="sc">!=</span> <span class="dv">3</span>) <span class="sc">%&gt;%</span> <span class="co">#Embarazadas</span></span>
+<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb69-4"><a href="#cb69-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">Mediana_peso  =</span> <span class="fu">survey_median</span>(an01_1, <span class="at">na.rm =</span> T, <span class="st">"se"</span>),</span>
+<span id="cb69-5"><a href="#cb69-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Q_peso        =</span> <span class="fu">survey_quantile</span>(an01_1, <span class="at">quantiles =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>), </span>
+<span id="cb69-6"><a href="#cb69-6" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">na.rm =</span> T, <span class="st">"se"</span>)</span>
+<span id="cb69-7"><a href="#cb69-7" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 6
+  Mediana_peso Mediana_peso_se Q_peso_q25 Q_peso_q75 Q_peso_q25_se Q_peso_q75_se
+         &lt;dbl&gt;           &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;         &lt;dbl&gt;         &lt;dbl&gt;
+1         65.0           0.395       55.2       75.8         0.434         0.472</code></pre>
+</div>
+</div>
+<p>Podemos dentro del mismo paquete hacer algunas pruebas estadísticas (por ahora las haremos, luego las explicamos) como una prueba <a href="https://en.wikipedia.org/wiki/Student%27s_t-test"><code>t</code> de <code>S tudent</code></a> para diferencia de medias:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>antropometria_svy <span class="sc">%&gt;%</span></span>
+<span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">svyttest</span>(<span class="at">design =</span> ., <span class="co">#Notación para decirle que el diseño ya está</span></span>
+<span id="cb71-3"><a href="#cb71-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">formula =</span> an01_1 <span class="sc">~</span> sexo, <span class="co">#Peso por sexo</span></span>
+<span id="cb71-4"><a href="#cb71-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">na.rm =</span> <span class="cn">TRUE</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Design-based t-test
+
+data:  an01_1 ~ sexo
+t = -13.244, df = 6180, p-value &lt; 2.2e-16
+alternative hypothesis: true difference in mean is not equal to 0
+95 percent confidence interval:
+ -12.561163  -9.321981
+sample estimates:
+difference in mean 
+         -10.94157 </code></pre>
+</div>
+</div>
+<p>Podemos crear nuevas variables como en <code>tidyverse</code> por ejemplo una del <a href="https://es.wikipedia.org/wiki/%C3%8Dndice_cintura-altura">índice cintura altura</a> que combina la medida de la cintura (<code>an08_1</code>) con la estatura (<code>an04_1</code>) en personas de 20 a 60 años:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>antropometria_svy <span class="ot">&lt;-</span> antropometria_svy <span class="sc">%&gt;%</span></span>
+<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ica =</span> <span class="fu">ifelse</span>(edad <span class="sc">&gt;</span> <span class="dv">20</span> <span class="sc">&amp;</span> edad <span class="sc">&lt;</span> <span class="dv">60</span>, an08_1<span class="sc">/</span>an04_1, <span class="cn">NA</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb73-4"><a href="#cb73-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">interpreta_ica =</span> <span class="fu">case_when</span>(</span>
+<span id="cb73-5"><a href="#cb73-5" aria-hidden="true" tabindex="-1"></a>      ica <span class="sc">&lt;</span> <span class="fl">0.35</span> <span class="sc">~</span> <span class="st">"Extremadamente delgado"</span>,</span>
+<span id="cb73-6"><a href="#cb73-6" aria-hidden="true" tabindex="-1"></a>      ica <span class="sc">&gt;=</span> <span class="fl">0.35</span> <span class="sc">&amp;</span> ica <span class="sc">&lt;</span> <span class="fl">0.43</span> <span class="sc">&amp;</span> sexo <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"Delgado sano"</span>,</span>
+<span id="cb73-7"><a href="#cb73-7" aria-hidden="true" tabindex="-1"></a>      ica <span class="sc">&gt;=</span> <span class="fl">0.35</span> <span class="sc">&amp;</span> ica <span class="sc">&lt;</span> <span class="fl">0.42</span> <span class="sc">&amp;</span> sexo <span class="sc">==</span> <span class="dv">2</span> <span class="sc">~</span> <span class="st">"Delgado sano"</span>,</span>
+<span id="cb73-8"><a href="#cb73-8" aria-hidden="true" tabindex="-1"></a>      ica <span class="sc">&gt;=</span> <span class="fl">0.43</span> <span class="sc">&amp;</span> ica <span class="sc">&lt;</span> <span class="fl">0.53</span> <span class="sc">&amp;</span> sexo <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"Sano"</span>,</span>
+<span id="cb73-9"><a href="#cb73-9" aria-hidden="true" tabindex="-1"></a>      ica <span class="sc">&gt;=</span> <span class="fl">0.42</span> <span class="sc">&amp;</span> ica <span class="sc">&lt;</span> <span class="fl">0.49</span> <span class="sc">&amp;</span> sexo <span class="sc">==</span> <span class="dv">2</span> <span class="sc">~</span> <span class="st">"Sano"</span>,</span>
+<span id="cb73-10"><a href="#cb73-10" aria-hidden="true" tabindex="-1"></a>      ica <span class="sc">&gt;=</span> <span class="fl">0.53</span> <span class="sc">&amp;</span> ica <span class="sc">&lt;</span> <span class="fl">0.58</span> <span class="sc">&amp;</span> sexo <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"Sobrepeso"</span>,</span>
+<span id="cb73-11"><a href="#cb73-11" aria-hidden="true" tabindex="-1"></a>      ica <span class="sc">&gt;=</span> <span class="fl">0.49</span> <span class="sc">&amp;</span> ica <span class="sc">&lt;</span> <span class="fl">0.54</span> <span class="sc">&amp;</span> sexo <span class="sc">==</span> <span class="dv">2</span> <span class="sc">~</span> <span class="st">"Sobrepeso"</span>,</span>
+<span id="cb73-12"><a href="#cb73-12" aria-hidden="true" tabindex="-1"></a>      ica <span class="sc">&gt;=</span> <span class="fl">0.58</span> <span class="sc">&amp;</span> ica <span class="sc">&lt;</span> <span class="fl">0.63</span> <span class="sc">&amp;</span> sexo <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"Sobrepeso elevado"</span>,</span>
+<span id="cb73-13"><a href="#cb73-13" aria-hidden="true" tabindex="-1"></a>      ica <span class="sc">&gt;=</span> <span class="fl">0.54</span> <span class="sc">&amp;</span> ica <span class="sc">&lt;</span> <span class="fl">0.58</span> <span class="sc">&amp;</span> sexo <span class="sc">==</span> <span class="dv">2</span> <span class="sc">~</span> <span class="st">"Sobrepeso elevado"</span>,</span>
+<span id="cb73-14"><a href="#cb73-14" aria-hidden="true" tabindex="-1"></a>      ica <span class="sc">&gt;=</span> <span class="fl">0.63</span> <span class="sc">&amp;</span> sexo <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"Obesidad mórbida"</span>,</span>
+<span id="cb73-15"><a href="#cb73-15" aria-hidden="true" tabindex="-1"></a>      ica <span class="sc">&gt;=</span> <span class="fl">0.58</span> <span class="sc">&amp;</span> sexo <span class="sc">==</span> <span class="dv">2</span> <span class="sc">~</span> <span class="st">"Obesidad mórbida"</span>,</span>
+<span id="cb73-16"><a href="#cb73-16" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="cn">NA_character_</span></span>
+<span id="cb73-17"><a href="#cb73-17" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb73-18"><a href="#cb73-18" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a>antropometria_svy <span class="sc">%&gt;%</span></span>
+<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">svychisq</span>(<span class="at">design =</span> ., <span class="co">#Notación para decirle que el diseño ya está</span></span>
+<span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">formula =</span><span class="sc">~</span> interpreta_ica <span class="sc">+</span> sexo, <span class="co">#Peso por sexo</span></span>
+<span id="cb74-4"><a href="#cb74-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">na.rm =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb74-5"><a href="#cb74-5" aria-hidden="true" tabindex="-1"></a>           <span class="at">statistic =</span> <span class="st">"Wald"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Design-based Wald test of association
+
+data:  NextMethod()
+F = 81.34, ndf = 5, ddf = 15835, p-value &lt; 2.2e-16</code></pre>
+</div>
+</div>
+<p>En este caso, por ejemplo, nuestro valor <span class="math inline">\(p &lt; \alpha\)</span> nos indica que <a href="https://support.minitab.com/en-us/minitab/21/help-and-how-to/statistics/tables/how-to/chi-square-test-for-association/interpret-the-results/key-results/">hay una asociación entre las variables</a>.</p>
+</section>
+<section id="ejercicios-1" class="level3">
+<h3 class="anchored" data-anchor-id="ejercicios-1">Ejercicios</h3>
+<ol type="1">
+<li><p>Determine la media, mediana y cuantiles de índice de masa corporal en el cuestionario de antropometría. Recuerda que índice de masa corporal se calcula como: <span class="math display">\[
+\text{IMC} = \frac{Peso (kg)}{(Altura (m))^2}
+\]</span></p>
+<blockquote class="blockquote">
+<p>No olvides convertir la altura en metros pues está en centímetros.</p>
+</blockquote></li>
+<li><p>Clasifique a las personas en normal, sobrepeso, peso bajo y obesidad y determine la proporción de individuos (hombres y mujeres) en cada categoría.</p></li>
+<li><p>Determine si hay una asociación entre IMC y sexo mediante una prueba <code>t</code>.</p></li>
+<li><p>Determine si hay una asociación entre IMC y entidad mediante una prueba ji cuadrada <span class="math inline">\(\chi^2\)</span>.</p></li>
+<li><p>Averigüe como utilizar <code>svyglm</code> para generar una regresión de peso contra altura con las covariables de sexo y edad. Como recomendación cheque el siguiente curso: <a href="https://tidy-survey-r.github.io/tidy-survey-short-course/" class="uri">https://tidy-survey-r.github.io/tidy-survey-short-course/</a></p></li>
+</ol>
+</section>
+</section>
+<section id="sistema" class="level2">
+<h2 class="anchored" data-anchor-id="sistema">Sistema</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>R version 4.2.0 (2022-04-22)
+Platform: x86_64-apple-darwin17.0 (64-bit)
+Running under: macOS Big Sur/Monterey 10.16
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.2/Resources/lib/libRblas.0.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.2/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] grid      stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+ [1] lubridate_1.8.0   survey_4.1-1      survival_3.4-0    Matrix_1.4-1     
+ [5] kableExtra_1.3.4  srvyr_1.1.1       forcats_0.5.1     stringr_1.4.0    
+ [9] dplyr_1.0.9       purrr_0.3.4       readr_2.1.2       tidyr_1.2.0      
+[13] tibble_3.1.8      ggplot2_3.3.6     tidyverse_1.3.2   wesanderson_0.3.6
+[17] haven_2.5.0      
+
+loaded via a namespace (and not attached):
+ [1] httr_1.4.4          bit64_4.0.5         vroom_1.5.7        
+ [4] jsonlite_1.8.0      viridisLite_0.4.0   splines_4.2.0      
+ [7] modelr_0.1.8        assertthat_0.2.1    highr_0.9          
+[10] googlesheets4_1.0.1 cellranger_1.1.0    yaml_2.3.5         
+[13] pillar_1.8.0        backports_1.4.1     lattice_0.20-45    
+[16] glue_1.6.2          digest_0.6.29       rvest_1.0.2        
+[19] colorspace_2.0-3    htmltools_0.5.3     pkgconfig_2.0.3    
+[22] broom_1.0.0         scales_1.2.0        webshot_0.5.3      
+[25] svglite_2.1.0       tzdb_0.3.0          googledrive_2.0.0  
+[28] generics_0.1.3      ellipsis_0.3.2      withr_2.5.0        
+[31] cli_3.3.0           magrittr_2.0.3      crayon_1.5.1       
+[34] readxl_1.4.0        evaluate_0.16       fs_1.5.2           
+[37] fansi_1.0.3         xml2_1.3.3          tools_4.2.0        
+[40] hms_1.1.1           mitools_2.4         gargle_1.2.0       
+[43] lifecycle_1.0.1     munsell_0.5.0       reprex_2.0.2       
+[46] compiler_4.2.0      systemfonts_1.0.4   rlang_1.0.4        
+[49] rstudioapi_0.13     htmlwidgets_1.5.4   rmarkdown_2.15     
+[52] gtable_0.3.0        DBI_1.1.3           R6_2.5.1           
+[55] knitr_1.39          fastmap_1.1.0       bit_4.0.4          
+[58] utf8_1.2.2          stringi_1.7.8       parallel_4.2.0     
+[61] vctrs_0.4.1         dbplyr_2.2.1        tidyselect_1.1.2   
+[64] xfun_0.32          </code></pre>
+</div>
+</div>
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography">
+<div id="ref-martinez2021metodologia" class="csl-entry" role="doc-biblioentry">
+Martı́nez, Martı́n Romero, Tonatiuh Barrientos-Gutiérrez, Lucia Cuevas-Nasu, Sergio Bautista-Arredondo, M Arantxa Colchero, Elsa Berenice Gaona-Pineda, Jesús Martı́nez-Barnetche, et al. 2021. <span>“Metodolog<span>ı́</span>a de La Encuesta Nacional de Salud y Nutrici<span>ó</span>n 2021.”</span> <em>Salud P<span>ú</span>blica de M<span>é</span>xico</em> 63 (6, Nov-Dic): 813–18.
+</div>
+<div id="ref-romero2021metodologia" class="csl-entry" role="doc-biblioentry">
+Romero-Martı́nez, Martı́n, Tonatiuh Barrientos-Gutiérrez, Lucı́a Cuevas-Nasu, Sergio Bautista-Arredondo, Arantxa Colchero, Elsa Berenice Gaona-Pineda, Eduardo Lazcano-Ponce, et al. 2021. <span>“Metodolog<span>ı́</span>a de La Encuesta Nacional de Salud y Nutrici<span>ó</span>n 2020 Sobre Covid-19.”</span> <em>Salud p<span>ú</span>blica de m<span>é</span>xico</em> 63 (3 May-Jun): 444–51.
+</div>
+</div></section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
