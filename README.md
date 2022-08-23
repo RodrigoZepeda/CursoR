@@ -1,7 +1,8 @@
 # CursoR
 Notas para un curso de R.
 
-> Link a las notas en vivo del PASPE 2022: [https://rstudio.cloud/content/4374072](https://rstudio.cloud/content/4374072)
+> Link a las notas en vivo del PASPE 2022 intermedio: [https://www.dropbox.com/sh/53wjmvvdy76tegi/AADuDs_B8_QoJQmW8_2Yc9Pra?dl=0](https://www.dropbox.com/sh/53wjmvvdy76tegi/AADuDs_B8_QoJQmW8_2Yc9Pra?dl=0)
+
 
 
 ## Índice:
