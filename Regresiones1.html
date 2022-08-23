@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-0.9.649">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Rodrigo Zepeda">
+<meta name="dcterms.date" content="2022-08-23">
+
+<title>Regresiones (parte 1)</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="Regresiones1_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Regresiones1_files/libs/quarto-html/quarto.js"></script>
+<script src="Regresiones1_files/libs/quarto-html/popper.min.js"></script>
+<script src="Regresiones1_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Regresiones1_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Regresiones1_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Regresiones1_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Regresiones1_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Regresiones1_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Regresiones1_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Regresiones (parte 1)</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Rodrigo Zepeda </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">August 23, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<section id="paquetes-y-datos-a-utilizar" class="level2">
+<h2 class="anchored" data-anchor-id="paquetes-y-datos-a-utilizar">Paquetes y datos a utilizar</h2>
+<p>A lo largo de esta sección usaremos los siguientes paquetes:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidymodels)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggfortify) <span class="co">#autoplot para diagnósticos</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rstanarm) <span class="co">#para bayesiana</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(poissonreg) <span class="co">#modelo Poisson</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">#Siempre que uses tidymodels</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">tidymodels_prefer</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>En general usaremos la filosofía <code>tidymodels</code> para combinar los resultados con el <code>tidyverse</code>. Si quieres saber más de <code>tidymodels</code> te recomiendo checar <a href="https://www.tmwr.org">su libro</a> o <a href="https://www.tidymodels.org/learn/">su página web</a>.</p>
+<section id="embarazo-adolescente-y-pobreza" class="level3">
+<h3 class="anchored" data-anchor-id="embarazo-adolescente-y-pobreza">Embarazo adolescente y pobreza</h3>
+<p>Para los datos usaremos la información de <a href="https://online.stat.psu.edu/stat462/sites/onlinecourses.science.psu.edu.stat462/files/data/poverty/index.txt"><em>Utts y Heckard</em></a> para determinar si hay una relación entre embarazo adolescente y pobreza.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>emb_pob <span class="ot">&lt;-</span> <span class="fu">read_delim</span>(<span class="st">"https://online.stat.psu.edu/stat462/sites/onlinecourses.science.psu.edu.stat462/files/data/poverty/index.txt"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 51 Columns: 6
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: "\t"
+chr (1): Location
+dbl (5): PovPct, Brth15to17, Brth18to19, ViolCrime, TeenBrth
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+</div>
+<p>Las variables <code>Brth15to17</code> y <code>Brth18to19</code> son las tasas brutas de natalidad por cada 1000 mujeres (en el año 2002) en adolescentes de 15 a 17 años y de 18 a 19 respectivamente. La variable <code>PovPct</code> representa la proporción (%) de la población que vive bajo la línea de pobreza en cada una de las entidades de EEUU (<code>Location</code>). Las variables <code>ViolCrime</code> y <code>TeenBrth</code> no se explican por lo que no las usaremos.</p>
+</section>
+</section>
+<section id="regresiones-lineales" class="level1">
+<h1>Regresiones lineales</h1>
+<p>Usaremos <code>Brth15to17</code> y <code>PovPct</code> para estudiar si hay una relación entre la tasa de natalidad en adolescentes y el porcentaje de la población en pobreza. Para ello comenzaremos con graficar:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(emb_pob) <span class="sc">+</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> PovPct, <span class="at">y =</span> Brth15to17), <span class="at">color =</span> <span class="st">"#bc5090"</span>, <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Porcentaje en pobreza"</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Tasa bruta de natalidad (por cada 1,000 mujeres adolescentes)"</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Relación entre tasa bruta de natalidad en adolescentes</span><span class="sc">\n</span><span class="st">de 15 a 19 años y porcentaje en pobreza"</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Regresiones1_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Parece que a mayor porcentaje de pobreza, mayor tasa bruta de natalidad en adolescentes. ## Planteamiento clásico</p>
+<p>Si la relación fuera perfecta todos los casos caerían <em>exactamente</em> en una línea recta como sigue:</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Regresiones1_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>donde es necesario especificar dos parámetros: el intercepto (el valor que toma cuando la <span class="math inline">\(x\)</span> en este caso <code>PovPct</code> vale cero) y la pendiente (el valor que relaciona por cada unidad de aumento en <code>PovPct</code> cuánto aumenta <code>Brth15to17</code>).</p>
+<p>La ecuación de la línea está dada por:</p>
+<p><span class="math display">\[
+y = \beta_0 + \beta_1 x
+\]</span></p>
+<p>donde <span class="math inline">\(\beta_0\)</span> es el intercepto y <span class="math inline">\(\beta_1\)</span> la pendiente. Usando la terminología de arriba:</p>
+<p><span class="math display">\[
+\text{Brth15to17} = \text{Intercepto} + \text{Pendiente}\times \text{PovPct}
+\]</span> en particular en ese ejemplo:</p>
+<p><span class="math display">\[
+\text{Brth15to17} = 5 + 3\cdot \text{PovPct}
+\]</span></p>
+<p>La idea es que el intercepto (<span class="math inline">\(\beta_0\)</span> ó <span class="math inline">\(5\)</span>) te indica dónde comienza tu línea cuando no tienes <span class="math inline">\(x\)</span>’s (es decir cuando <span class="math inline">\(\text{PovPct} = 0\)</span>). El intercepto controla la altura de la línea como puedes ver en la siguiente gráfica donde puse varios interceptos distintos:</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Regresiones1_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>por otro lado la idea de la pendiente (<span class="math inline">\(\beta_1\)</span> ó <span class="math inline">\(3\)</span>) es retratar cómo cambia la <span class="math inline">\(y\)</span> (en este caso <span class="math inline">\(\text{Brth15to17}\)</span>) por cada unidad que cambia la <span class="math inline">\(x\)</span> (en este caso <span class="math inline">\(\text{PovPct}\)</span>). El valor de <span class="math inline">\(3\)</span> por ejemplo indica que por cada aumento en 1 en <span class="math inline">\(\text{PovPct}\)</span> la variable <span class="math inline">\(\text{Brth15to17}\)</span> aumenta en <span class="math inline">\(3\)</span>. Este cambio es proporcional; es decir si ahora <span class="math inline">\(\text{PovPct}\)</span> aumenta 4 (por decir algo) <span class="math inline">\(\text{Brth15to17}\)</span> aumenta <span class="math inline">\(3\times 4 = 12\)</span> unidades. La siguiente gráfica muestra varias líneas todas comenzando en el mismo intercepto de <span class="math inline">\(5\)</span>:</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Regresiones1_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Como ya vimos en la primer figura el mundo no es tan perfecto que todo sea una línea recta. Hay un poco de aleatoriedad involucrada (sea por variables no medidas, por errores de medición o porque el mundo no sea determinista). Por lo cual se plantea que en lugar de que la <span class="math inline">\(y\)</span> sea <em>exactamente</em> <span class="math inline">\(\beta_0 + \beta_1 x\)</span> planteamos que la <span class="math inline">\(y\)</span> proviene de una variable aleatoria normal donde la media de esa normal <strong>es</strong> <span class="math inline">\(\beta_0 + \beta_1 x\)</span>; es decir:</p>
+<p><span class="math display">\[
+y \sim \textrm{Normal}( \beta_0 + \beta_1 x, \sigma^2)
+\]</span></p>
+<p>o dicho de otra manera:</p>
+<p><span class="math display">\[
+\text{Brth15to17}  \sim \textrm{Normal}(\text{Intercepto} + \text{Pendiente}\times \text{PovPct}, \sigma^2)
+\]</span></p>
+<p>donde la <span class="math inline">\(\sigma^2\)</span> es la varianza de dicha normal. Puesto gráficamente lo que esto quiere decir es que si, por ejemplo, el intercepto es <span class="math inline">\(5\)</span> y la pendiente <span class="math inline">\(3\)</span> entonces cada medición de <span class="math inline">\(y\)</span> viene de una normal ligeramente distinta:</p>
+<p><span class="math display">\[
+\text{Brth15to17}  \sim \textrm{Normal}(5 + 3\times \text{PovPct}, \sigma^2)
+\]</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Regresiones1_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Dicho de otra forma, suponemos que en un mundo perfecto los valores de <span class="math inline">\(y\)</span> (<code>Brth15to17</code>) estarían completamente determinados por los de <span class="math inline">\(x\)</span> (<code>PovPct</code>) mediante la ecuación de la recta. <strong>Pero</strong> como el mundo no es perfecto entonces la <span class="math inline">\(y\)</span> proviene de una normal con promedio dado por la recta. Los puntos (como puedes ver an la siguiente gráfica) se centran más en torno a los promedios de las normales sin embargo están colocados aleatoriamente pues corresponden a distintas realizaciones de <span class="math inline">\(y\)</span>.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Regresiones1_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Por ejemplo si el porcentaje de pobreza (<code>PovPct</code>) es <span class="math inline">\(10\)</span> entonces la normal de la que provienen estos datos es:</p>
+<p><span class="math display">\[
+\text{Brth15to17}  \sim \textrm{Normal}(\underbrace{5 + 3\times 10}_{35}, \sigma^2)
+\]</span></p>
+<p>mientras que si el porcentaje en pobreza es <span class="math inline">\(20\)</span> entonces la normal es:</p>
+<p><span class="math display">\[
+\text{Brth15to17}  \sim \textrm{Normal}(\underbrace{5 + 3\times 20}_{65}, \sigma^2)
+\]</span></p>
+<p>Por supuesto que no hay nada de especial con el modelo normal y alguien podría elegir otra distribución (por ejemplo una Gamma) y establecer que:</p>
+<p><span class="math display">\[
+\text{Brth15to17}  \sim \textrm{Gamma}(\text{Intercepto} + \text{Pendiente}\times \text{PovPct}, \beta)
+\]</span></p>
+<p>Estos modelos son algunos de los lineales generalizados y los discutiremos más adelante. Por ahora nos quedaremos con la idea del modelo dado por:</p>
+<p><span class="math display">\[
+\text{Brth15to17}  \sim \textrm{Normal}(\text{Intercepto} + \text{Pendiente}\times \text{PovPct}, \sigma^2)
+\]</span></p>
+<blockquote class="blockquote">
+<p><strong>Nota</strong> quizá conoces la regresión lineal bajo la idea clásica de que <span class="math display">\[
+y = \beta_0 + \beta_1 x + \epsilon
+\]</span> donde <span class="math inline">\(\epsilon\sim\text{Normal}(0,\sigma^2)\)</span> son los errores normales. Esta definición es equivalente a la que damos aquí pues por <a href="https://en.wikipedia.org/wiki/Normal_distribution#Properties">propiedades aditivas de la normal</a> <span class="math inline">\(\epsilon + \beta_0 + \beta_1 x\)</span> se sigue distribuyendo normal pero con la media ahora dada por lo agregado (<span class="math inline">\(\beta_0 + \beta_1 x\)</span>). Las ventajas de esta notación es que un modelo para regresión Poisson es simplemente: <span class="math display">\[
+y \sim \textrm{Poisson}(\beta_0 + \beta_1 x)
+\]</span> y un modelo para regresión logística es: <span class="math display">\[
+y \sim \textrm{Bernoulli}\big(\textrm{logit}(\beta_0 + \beta_1 x)\big)
+\]</span></p>
+</blockquote>
+<section id="planteamiento-en-r" class="level2">
+<h2 class="anchored" data-anchor-id="planteamiento-en-r">Planteamiento en <code>R</code></h2>
+<p>Lo que nos toca ahora es programar nuestro modelo para ello seguiremos la filosofía de tidymodels que pretende unificar bajo la misma notación todos los modelos. La notación básica es como sigue:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>modelo <span class="sc">%&gt;%</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"tipo de ajuste"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(<span class="st">"formula a ajustar"</span>, <span class="at">data =</span> tus_datos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>A partir del ajuste se pueden predecir cosas con <code>predict</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>modelo <span class="sc">%&gt;%</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"tipo de ajuste"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(<span class="st">"formula a ajustar"</span>, <span class="at">data =</span> tus_datos) <span class="sc">%&gt;%</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">predict</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>o extraer nuevos datos con <code>extract_fit_engine</code> y <code>tidy</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>modelo <span class="sc">%&gt;%</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"tipo de ajuste"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(<span class="st">"formula a ajustar"</span>, <span class="at">data =</span> tus_datos) <span class="sc">%&gt;%</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_fit_engine</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tidy</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Comencemos con nuestro primer modelo: una regresión lineal clásica dada por:</p>
+<p><span class="math display">\[
+\text{Brth15to17}  \sim \textrm{Normal}(\text{Intercepto} + \text{Pendiente}\times \text{PovPct}, \sigma^2)
+\]</span></p>
+<p>En <code>R</code> el <code>engine</code> que necesitamos es “lm” que es el clásico:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Ajusta un modelo lineal </span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co">#Brth15to17 = intercepto + pendiente*PovPct</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>modelo_ajustado <span class="ot">&lt;-</span> <span class="fu">linear_reg</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"lm"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(Brth15to17 <span class="sc">~</span> PovPct, <span class="at">data =</span> emb_pob) <span class="co">#Notación y ~ x</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Nota que a diferencia de <code>Stata</code>, <code>R</code> no arroja demasiados resultados. Podemos usar <code>extract_fit_engine</code> combinado con <code>summary</code> para obtenerlos:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Ajusta un modelo lineal </span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co">#Brth15to17 = intercepto + pendiente*PovPct</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>modelo_ajustado <span class="sc">%&gt;%</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_fit_engine</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+stats::lm(formula = Brth15to17 ~ PovPct, data = data)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-11.2275  -3.6554  -0.0407   2.4972  10.5152 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)   4.2673     2.5297   1.687    0.098 .  
+PovPct        1.3733     0.1835   7.483 1.19e-09 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 5.551 on 49 degrees of freedom
+Multiple R-squared:  0.5333,    Adjusted R-squared:  0.5238 
+F-statistic:    56 on 1 and 49 DF,  p-value: 1.188e-09</code></pre>
+</div>
+</div>
+<p>o bien con <code>tidy</code> si deseamos nos devuelva una tabla de resultados:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Ajusta un modelo lineal </span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co">#Brth15to17 = intercepto + pendiente*PovPct</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>modelo_ajustado <span class="sc">%&gt;%</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_fit_engine</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tidy</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 5
+  term        estimate std.error statistic       p.value
+  &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;         &lt;dbl&gt;
+1 (Intercept)     4.27     2.53       1.69 0.0980       
+2 PovPct          1.37     0.184      7.48 0.00000000119</code></pre>
+</div>
+</div>
+<p>Según el tipo de regresión que estemos haciendo es el tipo de tabla que regresa <code>tidy</code> (ver <code>?tidy</code>). En particular, por ejemplo, podemos modificar para que devuelva intervalos de confianza al 90%:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Ajusta un modelo lineal </span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co">#Brth15to17 = intercepto + pendiente*PovPct</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>modelo_ajustado <span class="sc">%&gt;%</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tidy</span>(<span class="at">conf.int =</span> T, <span class="at">conf.level =</span> <span class="fl">0.90</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 7
+  term        estimate std.error statistic       p.value conf.low conf.high
+  &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;         &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
+1 (Intercept)     4.27     2.53       1.69 0.0980          0.0260      8.51
+2 PovPct          1.37     0.184      7.48 0.00000000119   1.07        1.68</code></pre>
+</div>
+</div>
+<p>En este caso, el modelo estima que el intercepto (<span class="math inline">\(\beta_0\)</span>) es <span class="math inline">\(4.27\)</span> y la pendiente (<span class="math inline">\(\beta_1\)</span>) es <span class="math inline">\(1.37\)</span>. Como son <em>estimadores</em> del verdadero valor se denotan con <em>gorrito</em>: <span class="math inline">\(\hat\beta_0 = 4.27\)</span> y <span class="math inline">\(\hat\beta_1 = 1.37\)</span>.</p>
+<p>Podemos utilizar la función de <code>predict</code> para que el modelo nos muestre cómo cree que son los verdaderos valores en relación a los ajustados:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Ajusta un modelo lineal </span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co">#Brth15to17 = intercepto + pendiente*PovPct</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>predichos <span class="ot">&lt;-</span> modelo_ajustado <span class="sc">%&gt;%</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">predict</span>(<span class="at">new_data =</span> emb_pob)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>intervalo_predichos <span class="ot">&lt;-</span> modelo_ajustado <span class="sc">%&gt;%</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">predict</span>(<span class="at">new_data =</span> emb_pob, <span class="at">type =</span> <span class="st">"pred_int"</span>, <span class="at">level =</span> <span class="fl">0.95</span>)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="co">#Juntamos los predichos con los observados</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>obs_y_modelo <span class="ot">&lt;-</span> emb_pob <span class="sc">%&gt;%</span> </span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(predichos) <span class="sc">%&gt;%</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(intervalo_predichos)</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a><span class="co">#Graficamos</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(obs_y_modelo) <span class="sc">+</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_ribbon</span>(<span class="fu">aes</span>(<span class="at">x =</span> PovPct, <span class="at">ymin =</span> .pred_lower, <span class="at">ymax =</span> .pred_upper), </span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>              <span class="at">fill =</span> <span class="st">"#003f5c"</span>, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> PovPct, <span class="at">y =</span> Brth15to17), <span class="at">color =</span> <span class="st">"#bc5090"</span>, <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> PovPct, <span class="at">y =</span> .pred), </span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>            <span class="at">color =</span> <span class="st">"#003f5c"</span>, <span class="at">size =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Porcentaje en pobreza"</span>,</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Tasa bruta de natalidad (por cada 1,000 mujeres adolescentes)"</span>,</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Relación entre tasa bruta de natalidad en adolescentes</span><span class="sc">\n</span><span class="st">de 15 a 19 años y porcentaje en pobreza"</span></span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Regresiones1_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Nada más a ojo no parece que el modelo sea el mejor pues puedes ver que no explica bien la variabilidad (los observados varían mucho respecto al intervalo). La <span class="math inline">\(R^2\)</span>, una métrica que explica cuánto de la varianza captura el modelo tampoco es muy buena:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>resumen_ajuste <span class="ot">&lt;-</span> modelo_ajustado <span class="sc">%&gt;%</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_fit_engine</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>()</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co">#R^2 clásica</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>resumen_ajuste<span class="sc">$</span>r.squared</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.533328</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">#R^2 ajustada</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>resumen_ajuste<span class="sc">$</span>adj.r.squared</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.523804</code></pre>
+</div>
+</div>
+<p>Podemos checar las diferentes gráficas de diagnóstico:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggfortify)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(modelo_ajustado, <span class="at">which =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Regresiones1_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Veamos qué significa cada una de ellas y juguemos un poco con <code>R</code> para irlas modificando.</p>
+<section id="residuales-contra-ajustados" class="level3">
+<h3 class="anchored" data-anchor-id="residuales-contra-ajustados">Residuales contra ajustados</h3>
+<p>Los <strong>residuales</strong> son la diferencia entre el modelo (<span class="math inline">\(\hat{y}\)</span>) y lo real <span class="math inline">\(y\)</span>. En el caso que estábamos trabajando tenemos que con nuestro modelo podemos predecir los valores de <code>Brth15to17</code> a partir del porcentaje en pobreza <code>PovPct</code>. A los valores predichos por el modelo de <code>Brth15to17</code> les ponemos un gorro encima y los llamamos: <span class="math inline">\(\widehat{\text{Brth15to17}}\)</span>. Estos están dados por la siguiente función:</p>
+<p><span class="math display">\[
+\widehat{\text{Brth15to17}} = 4.26 + 1.37 \cdot \text{PovPct}
+\]</span></p>
+<p>por ejemplo para el porcentaje en pobreza de <span class="math inline">\(20.1\)</span> obtendríamos:</p>
+<p><span class="math display">\[
+\widehat{\text{Brth15to17}} = 4.26 + 1.37 \cdot \text{PovPct} = 31.797
+\]</span></p>
+<p>por otro lado el verdadero valor de cuando el <code>PovPct</code> es <span class="math inline">\(20.1\)</span> (estado de <code>Alabama</code>) es <span class="math inline">\(\text{Brth15to17} = 31.5\)</span>. La diferencia entre el verdadero valor (<span class="math inline">\(\text{Brth15to17} = 31.5\)</span>) y el predicho por el modelo (<span class="math inline">\(\widehat{\text{Brth15to17}} = 31.797\)</span>) se conoce como el residual. La idea es que en un modelo bueno no debe haber patrones en los residuales (todos deben de flotar en torno al cero pero no mostrar un patrón).</p>
+<p>Veamoslo en nuestra base:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>obs_y_modelo <span class="ot">&lt;-</span> obs_y_modelo <span class="sc">%&gt;%</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">residuales =</span> Brth15to17 <span class="sc">-</span> .pred)</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(obs_y_modelo) <span class="sc">+</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> .pred, <span class="at">y =</span> residuales), <span class="at">color =</span> <span class="st">"#ff6361"</span>) <span class="sc">+</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Valores ajustados (predichos)"</span>,</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Residuales"</span>,</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Residuales vs ajustados"</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="fu">aes</span>(<span class="at">yintercept =</span> <span class="dv">0</span>), <span class="at">linetype =</span> <span class="st">"dashed"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Regresiones1_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>En esta gráfica el modelo predice mejor rumbo al final que en medio y esto parece estar corroborado por la gráfica del modelo (previa). Nada más para darnos una idea veamos una gráfica de <em>malos</em> residuales y una de <em>buenos</em></p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Regresiones1_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="escala-locación" class="level3">
+<h3 class="anchored" data-anchor-id="escala-locación">Escala locación</h3>
+<p>Representa la escala locación contra los residuales estandarizados. La idea de la gráfica es ver que la varianza <span class="math inline">\(\sigma^2\)</span> del modelo no cambie conforme cambia la <span class="math inline">\(x\)</span> (propiedad de <em>homoscedasticidad</em>). Para ello graficamos los residuales estandarizados dados por los residuales mismos dividos entre su desviación estándar:</p>
+<p><span class="math display">\[
+r_{\text{Std}} = \frac{\hat{y} - y}{\text{sd}(\hat{y} - y)} = \frac{\text{Residuales}}{\text{sd}\big(\text{Residuales}\big)}
+\]</span></p>
+<p>estos residuales estandarizados los podemos calcular en <code>R</code> como sigue:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>obs_y_modelo <span class="ot">&lt;-</span> obs_y_modelo <span class="sc">%&gt;%</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">residuales_std =</span> residuales<span class="sc">/</span><span class="fu">sd</span>(residuales))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Si los graficamos contra los valores ajustados no deberíamos de ver ningún patrón:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(obs_y_modelo) <span class="sc">+</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> .pred, <span class="at">y =</span> residuales_std), <span class="at">color =</span> <span class="st">"#ff6361"</span>) <span class="sc">+</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Valores ajustados (predichos)"</span>,</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Residuales estandarizados"</span>,</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Escala Locación"</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="fu">aes</span>(<span class="at">yintercept =</span> <span class="dv">0</span>), <span class="at">linetype =</span> <span class="st">"dashed"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Regresiones1_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Podemos ver cómo se ven estos puntos en el modelo ideal vs en un modelo donde la <span class="math inline">\(\sigma^2\)</span> depende de la <span class="math inline">\(x\)</span>:</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Regresiones1_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="normal-cuantil-cuantil" class="level3">
+<h3 class="anchored" data-anchor-id="normal-cuantil-cuantil">Normal cuantil cuantil</h3>
+<p>La segunda gráfica corresponde a una gráfica cuantil cuantil. Esta la utilizamos para verificar la hipótesis de normalidad. En una gráfica cuantil cuantil se grafican los cuantiles de los residuales contra los cuantiles teóricos de la normal. Por ejemplo si la hacemos con sólo 4 puntos se vería algo así:</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Regresiones1_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Podemos armar una gráfica cuantil cuantil con <code>ggplot2</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(obs_y_modelo, <span class="fu">aes</span>(<span class="at">sample =</span> residuales)) <span class="sc">+</span> </span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_qq</span>(<span class="at">color =</span> <span class="st">"#ff6361"</span>) <span class="sc">+</span> </span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_qq_line</span>(<span class="at">color =</span> <span class="st">"#58508d"</span>) <span class="sc">+</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Cuantiles teóricos de la normal"</span>,</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Cuantiles observados de los residuales"</span>,</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Gráfica qq"</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Regresiones1_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>La idea de la gráfica cuantil cuantil es que los puntos sigan la línea lo más posible. Veamos cómo se ve con los datos bien (y los mal)</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Regresiones1_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="residuales-contra-apalancamiento" class="level3">
+<h3 class="anchored" data-anchor-id="residuales-contra-apalancamiento">Residuales contra apalancamiento</h3>
+<p>El apalancamiento representa qué tanto cambia el modelo al quitar una sola observación. Para poner un ejemplo considera los siguientes datos donde hay un valor atípico y selecciono dos puntos de interés en dos colores:</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Regresiones1_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Veamos cómo cambia la regresión si dejo todos los puntos, si quito el normal y si quito el influyente:</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Regresiones1_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Nota que el modelo no cambia prácticamente nada cuando hago la regresión sin el dato que marqué como <code>normal</code> pero cambia mucho cuando quito el que marqué como <code>influyente</code>. La gráfica de residuales contra apalancamiento muestra también el valor extraño:</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Regresiones1_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>El apalancamiento mide la influencia de un dato y en <code>R</code> se puede calcular con <code>hatvalues</code>. Los datos con mayor <strong>apalancamiento</strong> siempre valen la pena checarlos para verificar que todo opera en orden.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>apalancamiento <span class="ot">&lt;-</span> modelo_ajustado <span class="sc">%&gt;%</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_fit_engine</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hatvalues</span>()</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>obs_y_modelo <span class="ot">&lt;-</span> obs_y_modelo <span class="sc">%&gt;%</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(apalancamiento)</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a><span class="co">#Graficamos residuales contra apalancamiento</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(obs_y_modelo) <span class="sc">+</span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> apalancamiento, <span class="at">y =</span> residuales), <span class="at">color =</span> <span class="st">"#ff6361"</span>) <span class="sc">+</span></span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Apalancamiento"</span>,</span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Residuales"</span>,</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Residuales vs ajustados"</span></span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="fu">aes</span>(<span class="at">yintercept =</span> <span class="dv">0</span>), <span class="at">linetype =</span> <span class="st">"dashed"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Regresiones1_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="distancia-de-cook" class="level3">
+<h3 class="anchored" data-anchor-id="distancia-de-cook">Distancia de Cook</h3>
+<p>La distancia de Cook es un concepto similar al apalancamiento que identifica observaciones influyentes. Aquellos valores con distancia de Cook alta vale la pena revisar. En <code>R</code> podemos usar <code>cooks.distance</code> para calcular la distancia de Cook.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>distanciaCook <span class="ot">&lt;-</span> modelo_ajustado <span class="sc">%&gt;%</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_fit_engine</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cooks.distance</span>()</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>obs_y_modelo <span class="ot">&lt;-</span> obs_y_modelo <span class="sc">%&gt;%</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(distanciaCook)</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a><span class="co">#Graficamos residuales contra apalancamiento</span></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(obs_y_modelo) <span class="sc">+</span></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(obs_y_modelo), <span class="at">y =</span> distanciaCook), <span class="at">fill =</span> <span class="st">"#ff6361"</span>) <span class="sc">+</span></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Observación (número de entrada en la base)"</span>,</span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Distancia de Cook"</span>,</span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Distancia de Cook"</span></span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Regresiones1_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>podemos ver que en el ejemplo anterior (el de la observación influyente) la distancia de Cook es exagerada, tan exagerada que ni se alcanzan a ver los otros:</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Regresiones1_files/figure-html/unnamed-chunk-32-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+</section>
+<section id="ejercicio" class="level2">
+<h2 class="anchored" data-anchor-id="ejercicio">Ejercicio</h2>
+<ol type="1">
+<li>Corre el siguiente código para generar una base de datos de nombre <code>datLong</code> que contiene <span class="math inline">\(4\)</span> grupos. Para cada grupo genere una regresión lineal de la forma:</li>
+</ol>
+<p><span class="math display">\[
+y = \beta_0 + \beta_1 x
+\]</span></p>
+<p>Identifica cuáles regresiones sí ajustan bien y cuáles no mediante los gráficos de diagnóstico. Finalmente grafica tus datos <span class="math inline">\(x\)</span> contra <span class="math inline">\(y\)</span> y la regresión para ver que lo hayas hecho bien. ¿Hay alguna forma de corregir alguna de las que no ajusta bien?</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> datasets<span class="sc">::</span>anscombe</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>datLong <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">grupo  =</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, <span class="at">each =</span> <span class="dv">11</span>),</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="fu">unlist</span>(dat[,<span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>)]),</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="fu">unlist</span>(dat[,<span class="fu">c</span>(<span class="dv">5</span><span class="sc">:</span><span class="dv">8</span>)])</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(datLong) <span class="ot">&lt;-</span> <span class="cn">NULL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ol start="2" type="1">
+<li>Lee la base de datos de <span class="math inline">\(n = 345\)</span> niños entre <span class="math inline">\(6\)</span> y <span class="math inline">\(10\)</span> años de Kahn, Michael (2005). Las variables de interés son <span class="math inline">\(y = \text{FEV}\)</span> el volumen de expiración forzada y <span class="math inline">\(x = \text{edad}\)</span> en años. Realiza una regresión lineal. Justifica que no se cumple la homocedasticidad mediante una gráfica de escala locación.</li>
+</ol>
+</section>
+<section id="y-si-lo-hacemos-bayesiano" class="level2">
+<h2 class="anchored" data-anchor-id="y-si-lo-hacemos-bayesiano">¿Y si lo hacemos bayesiano?</h2>
+<p>Para hacer la misma regresión lineal pero con estadística bayesiana podemos nada más cambiar el <code>engine</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Ajusta un modelo lineal </span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="co">#Brth15to17 = intercepto + pendiente*PovPct</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>modelo_bayesiano <span class="ot">&lt;-</span> <span class="fu">linear_reg</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"stan"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(Brth15to17 <span class="sc">~</span> PovPct, <span class="at">data =</span> emb_pob) <span class="co">#Notación y ~ x</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Y podemos ver el ajuste:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>modelo_bayesiano <span class="sc">%&gt;%</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_fit_engine</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Model Info:
+ function:     stan_glm
+ family:       gaussian [identity]
+ formula:      Brth15to17 ~ PovPct
+ algorithm:    sampling
+ sample:       4000 (posterior sample size)
+ priors:       see help('prior_summary')
+ observations: 51
+ predictors:   2
+
+Estimates:
+              mean   sd   10%   50%   90%
+(Intercept) 4.3    2.6  1.0   4.3   7.5  
+PovPct      1.4    0.2  1.1   1.4   1.6  
+sigma       5.7    0.6  5.0   5.6   6.4  
+
+Fit Diagnostics:
+           mean   sd   10%   50%   90%
+mean_PPD 22.3    1.1 20.8  22.2  23.6 
+
+The mean_ppd is the sample average posterior predictive distribution of the outcome variable (for details see help('summary.stanreg')).
+
+MCMC diagnostics
+              mcse Rhat n_eff
+(Intercept)   0.0  1.0  3643 
+PovPct        0.0  1.0  3574 
+sigma         0.0  1.0  3075 
+mean_PPD      0.0  1.0  3919 
+log-posterior 0.0  1.0  1560 
+
+For each parameter, mcse is Monte Carlo standard error, n_eff is a crude measure of effective sample size, and Rhat is the potential scale reduction factor on split chains (at convergence Rhat=1).</code></pre>
+</div>
+</div>
+<p>o realizar predicciones:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>predichos <span class="ot">&lt;-</span> modelo_bayesiano <span class="sc">%&gt;%</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_fit_engine</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">predict</span>(<span class="at">new_data =</span> emb_pob)</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>ic <span class="ot">&lt;-</span> modelo_bayesiano <span class="sc">%&gt;%</span></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_fit_engine</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">predictive_interval</span>(<span class="at">newdata =</span> emb_pob, <span class="at">prob =</span> <span class="fl">0.95</span>) <span class="co">#Para bayesiana</span></span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a><span class="co">#Juntamos los predichos con los observados</span></span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>obs_y_modelo <span class="ot">&lt;-</span> emb_pob <span class="sc">%&gt;%</span> </span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(predichos) <span class="sc">%&gt;%</span></span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(ic)</span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a><span class="co">#Graficamos</span></span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(obs_y_modelo) <span class="sc">+</span></span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_ribbon</span>(<span class="fu">aes</span>(<span class="at">x =</span> PovPct, <span class="at">ymin =</span> <span class="st">`</span><span class="at">2.5%</span><span class="st">`</span>, <span class="at">ymax =</span> <span class="st">`</span><span class="at">97.5%</span><span class="st">`</span>), </span>
+<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a>              <span class="at">fill =</span> <span class="st">"#003f5c"</span>, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> PovPct, <span class="at">y =</span> Brth15to17), <span class="at">color =</span> <span class="st">"#ffa600"</span>, <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb31-19"><a href="#cb31-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> PovPct, <span class="at">y =</span> predichos), </span>
+<span id="cb31-20"><a href="#cb31-20" aria-hidden="true" tabindex="-1"></a>            <span class="at">color =</span> <span class="st">"#003f5c"</span>, <span class="at">size =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb31-21"><a href="#cb31-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb31-22"><a href="#cb31-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Porcentaje en pobreza"</span>,</span>
+<span id="cb31-23"><a href="#cb31-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Tasa bruta de natalidad (por cada 1,000 mujeres adolescentes)"</span>,</span>
+<span id="cb31-24"><a href="#cb31-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Relación entre tasa bruta de natalidad en adolescentes</span><span class="sc">\n</span><span class="st">de 15 a 19 años y porcentaje en pobreza"</span></span>
+<span id="cb31-25"><a href="#cb31-25" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb31-26"><a href="#cb31-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Regresiones1_files/figure-html/unnamed-chunk-36-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Para validación del modelo puedes checar <a href="https://mc-stan.org/rstanarm/articles/rstanarm.html#step-3-criticize-the-model-1">esta página</a>.</p>
+</section>
+<section id="ejercicio-1" class="level2">
+<h2 class="anchored" data-anchor-id="ejercicio-1">Ejercicio</h2>
+<ol type="1">
+<li>Utilice las opciones de <code>engine</code> para cambiar el <code>prior_intercept</code> del intercepto a una <code>t</code> de Student y el <code>prior</code> de los coeficientes a una <code>Laplace</code>. ¿Cambia mucho el resultado?</li>
+</ol>
+</section>
+</section>
+<section id="modelos-lineales-generalizados" class="level1">
+<h1>Modelos lineales generalizados</h1>
+<section id="regresión-poisson-conteo" class="level2">
+<h2 class="anchored" data-anchor-id="regresión-poisson-conteo">Regresión Poisson (conteo)</h2>
+<p>Anteriormente planteamos el modelo</p>
+<p><span class="math display">\[
+y \sim \textrm{Normal}(\beta_0 + \beta_1 x, \sigma^2)
+\]</span></p>
+<p>podemos cambiar la distribución normal por una Poisson si tenemos datos de conteo, por ejemplo:</p>
+<p><span class="math display">\[
+y \sim \textrm{Poisson}(\beta_0 + \beta_1 x)
+\]</span></p>
+<p>¡Y ya tenemos una regresión Poisson! Ésta no es la clásica pues es bien difícil de controlar numéricamente. La Poisson clásica tiene una exponencial adentro:</p>
+<p><span class="math display">\[
+y \sim \textrm{Poisson}\big(\exp(\beta_0 + \beta_1 x)\big)
+\]</span></p>
+<p>Usaremos esta última para los modelos. Para ello nos apoyaremos del <code>engine</code> de <code>glm</code> (por generalized linear model)</p>
+<p>Para los datos usaremos la información de <em>Generalized Linear Models for Cross-Classified Data from the WFS. World Fertility Survey Technical Bulletins</em> . Podemos leerlos como sigue:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>niños <span class="ot">&lt;-</span> <span class="fu">read_table</span>(<span class="st">"https://data.princeton.edu/wws509/datasets/ceb.dat"</span>,</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>                        <span class="at">skip =</span> <span class="dv">1</span>, <span class="at">col_names =</span> F) </span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(niños) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Fila"</span>,  <span class="st">"dur"</span>, <span class="st">"res"</span>, <span class="st">"educ"</span>, <span class="st">"mean"</span>, <span class="st">"var"</span>, <span class="st">"n"</span>, <span class="st">"y"</span>)</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>niños <span class="ot">&lt;-</span> niños <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">y =</span> <span class="fu">round</span>(y))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>La base contiene la <code>dur</code> la duración del matrimonio, <code>res</code> la residencia (suva, urbano y rural), el nivel educativo <code>educ</code>, la media y la varianza del número de niños nacidos y <code>n</code> la cantidad de mujeres en cada grupo. La variable <code>y</code> contiene el producto de <code>mean*n</code> para obtener el total de niños nacidos para todas las mujeres en cada grupo.</p>
+<p>Podemos especificar fácilmente un modelo Poisson para los conteos:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>modelo_poisson <span class="ot">&lt;-</span> <span class="fu">poisson_reg</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"glm"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(y <span class="sc">~</span> educ, <span class="at">data =</span> niños)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>podemos obtener el summary:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>modelo_poisson <span class="sc">%&gt;%</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_fit_engine</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+stats::glm(formula = y ~ educ, family = stats::poisson, data = data)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-21.757   -8.364   -2.780    3.087   51.573  
+
+Coefficients:
+            Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)  5.38780    0.01594  338.06  &lt; 2e-16 ***
+educnone     0.16257    0.02168    7.50 6.39e-14 ***
+educsec+    -2.13937    0.05178  -41.32  &lt; 2e-16 ***
+educupper   -0.88738    0.02951  -30.07  &lt; 2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for poisson family taken to be 1)
+
+    Null deviance: 13735.6  on 69  degrees of freedom
+Residual deviance:  9076.8  on 66  degrees of freedom
+AIC: 9514.3
+
+Number of Fisher Scoring iterations: 5</code></pre>
+</div>
+</div>
+<p>o crear un <code>tibble</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>modelo_poisson <span class="sc">%&gt;%</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_fit_engine</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tidy</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 5
+  term        estimate std.error statistic   p.value
+  &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+1 (Intercept)    5.39     0.0159    338.   0        
+2 educnone       0.163    0.0217      7.50 6.39e- 14
+3 educsec+      -2.14     0.0518    -41.3  0        
+4 educupper     -0.887    0.0295    -30.1  1.22e-198</code></pre>
+</div>
+</div>
+<p>o también podemos ajustarlo de manera bayesiana:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">poisson_reg</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"stan"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(y <span class="sc">~</span> educ, <span class="at">data =</span> niños) <span class="sc">%&gt;%</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_fit_engine</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+SAMPLING FOR MODEL 'count' NOW (CHAIN 1).
+Chain 1: 
+Chain 1: Gradient evaluation took 3.7e-05 seconds
+Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.37 seconds.
+Chain 1: Adjust your expectations accordingly!
+Chain 1: 
+Chain 1: 
+Chain 1: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 1: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 1: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 1: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 1: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 1: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 1: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 1: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 1: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 1: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 1: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 1: 
+Chain 1:  Elapsed Time: 0.06073 seconds (Warm-up)
+Chain 1:                0.077589 seconds (Sampling)
+Chain 1:                0.138319 seconds (Total)
+Chain 1: 
+
+SAMPLING FOR MODEL 'count' NOW (CHAIN 2).
+Chain 2: 
+Chain 2: Gradient evaluation took 1.6e-05 seconds
+Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.16 seconds.
+Chain 2: Adjust your expectations accordingly!
+Chain 2: 
+Chain 2: 
+Chain 2: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 2: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 2: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 2: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 2: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 2: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 2: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 2: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 2: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 2: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 2: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 2: 
+Chain 2:  Elapsed Time: 0.079696 seconds (Warm-up)
+Chain 2:                0.078048 seconds (Sampling)
+Chain 2:                0.157744 seconds (Total)
+Chain 2: 
+
+SAMPLING FOR MODEL 'count' NOW (CHAIN 3).
+Chain 3: 
+Chain 3: Gradient evaluation took 2e-05 seconds
+Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.2 seconds.
+Chain 3: Adjust your expectations accordingly!
+Chain 3: 
+Chain 3: 
+Chain 3: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 3: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 3: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 3: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 3: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 3: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 3: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 3: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 3: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 3: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 3: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 3: 
+Chain 3:  Elapsed Time: 0.092542 seconds (Warm-up)
+Chain 3:                0.105155 seconds (Sampling)
+Chain 3:                0.197697 seconds (Total)
+Chain 3: 
+
+SAMPLING FOR MODEL 'count' NOW (CHAIN 4).
+Chain 4: 
+Chain 4: Gradient evaluation took 3.2e-05 seconds
+Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.32 seconds.
+Chain 4: Adjust your expectations accordingly!
+Chain 4: 
+Chain 4: 
+Chain 4: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 4: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 4: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 4: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 4: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 4: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 4: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 4: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 4: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 4: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 4: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 4: 
+Chain 4:  Elapsed Time: 0.115597 seconds (Warm-up)
+Chain 4:                0.081339 seconds (Sampling)
+Chain 4:                0.196936 seconds (Total)
+Chain 4: </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Model Info:
+ function:     stan_glm
+ family:       poisson [log]
+ formula:      y ~ educ
+ algorithm:    sampling
+ sample:       4000 (posterior sample size)
+ priors:       see help('prior_summary')
+ observations: 70
+ predictors:   4
+
+Estimates:
+              mean   sd   10%   50%   90%
+(Intercept)  5.4    0.0  5.4   5.4   5.4 
+educnone     0.2    0.0  0.1   0.2   0.2 
+educsec+    -2.1    0.1 -2.2  -2.1  -2.1 
+educupper   -0.9    0.0 -0.9  -0.9  -0.9 
+
+Fit Diagnostics:
+           mean   sd    10%   50%   90%
+mean_PPD 151.4    2.1 148.7 151.4 154.1
+
+The mean_ppd is the sample average posterior predictive distribution of the outcome variable (for details see help('summary.stanreg')).
+
+MCMC diagnostics
+              mcse Rhat n_eff
+(Intercept)   0.0  1.0  3022 
+educnone      0.0  1.0  2675 
+educsec+      0.0  1.0  1622 
+educupper     0.0  1.0  2480 
+mean_PPD      0.0  1.0  4265 
+log-posterior 0.0  1.0  1916 
+
+For each parameter, mcse is Monte Carlo standard error, n_eff is a crude measure of effective sample size, and Rhat is the potential scale reduction factor on split chains (at convergence Rhat=1).</code></pre>
+</div>
+</div>
+<p>Podemos agregar más factores a nuestra regresión. Para ello vale la pena recordar las fórmulas de <code>R</code>:</p>
+<table class="table">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 88%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Fórmula</th>
+<th>Significado</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>1</code></td>
+<td>El intercepto</td>
+</tr>
+<tr class="even">
+<td><code>+x</code></td>
+<td>Agregar la variable <code>x</code> a la regresión</td>
+</tr>
+<tr class="odd">
+<td><code>-x</code></td>
+<td>Quitar la variable <code>x</code> de la regresión</td>
+</tr>
+<tr class="even">
+<td><code>x1:x2</code></td>
+<td>Interacción entre <code>x1</code> y <code>x2</code></td>
+</tr>
+<tr class="odd">
+<td><code>x1*x2</code></td>
+<td>Cruzamiento es lo mismo que poner <code>x1 + x2 + x1:x2</code></td>
+</tr>
+<tr class="even">
+<td><code>I()</code></td>
+<td>Se utiliza para realizar operaciones aritméticas adentro. Por ejemplo generar una variable que sea <code>x1+ x2 haciendo I(x1 + x2)</code></td>
+</tr>
+<tr class="odd">
+<td><code>(x | grupo)</code></td>
+<td>Modelos mixtos donde la pendiente de <code>x</code> depende del grupo (efectos aleatorios)</td>
+</tr>
+</tbody>
+</table>
+<p>En nuestro modelo podemos incluir otras variables (digamos la residencia) agregándolas con suma:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">poisson_reg</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"glm"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(y <span class="sc">~</span> educ <span class="sc">+</span> res, <span class="at">data =</span> niños) <span class="sc">%&gt;%</span></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_fit_engine</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+stats::glm(formula = y ~ educ + res, family = stats::poisson, 
+    data = data)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-24.513   -5.069    0.064    3.826   35.524  
+
+Coefficients:
+            Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)  6.02352    0.01759  342.40  &lt; 2e-16 ***
+educnone     0.16257    0.02168    7.50  6.4e-14 ***
+educsec+    -2.10440    0.05178  -40.64  &lt; 2e-16 ***
+educupper   -0.88738    0.02951  -30.07  &lt; 2e-16 ***
+resSuva     -1.43392    0.02783  -51.52  &lt; 2e-16 ***
+resurban    -1.04901    0.02405  -43.62  &lt; 2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for poisson family taken to be 1)
+
+    Null deviance: 13735.6  on 69  degrees of freedom
+Residual deviance:  5058.4  on 64  degrees of freedom
+AIC: 5499.9
+
+Number of Fisher Scoring iterations: 5</code></pre>
+</div>
+</div>
+<p>La educación, sin embargo, es una variable ordinal donde <code>No educación</code> es menor que <code>Sec+</code> y es menor que <code>Upper</code>. Para ello podemos convertir la variable a factor y especificar el orden:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>niños <span class="ot">&lt;-</span> niños <span class="sc">%&gt;%</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">edf =</span> <span class="fu">factor</span>(educ, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"none"</span>,<span class="st">"lower"</span>, <span class="st">"sec+"</span>,<span class="st">"upper"</span>),</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>                            <span class="at">ordered =</span> T))</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a><span class="fu">poisson_reg</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"glm"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(y <span class="sc">~</span> edf <span class="sc">+</span> res, <span class="at">data =</span> niños) <span class="sc">%&gt;%</span></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_fit_engine</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+stats::glm(formula = y ~ edf + res, family = stats::poisson, 
+    data = data)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-24.513   -5.069    0.064    3.826   35.524  
+
+Coefficients:
+            Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)  5.31622    0.01663  319.71   &lt;2e-16 ***
+edf.L       -1.17488    0.02256  -52.08   &lt;2e-16 ***
+edf.Q        0.68980    0.02964   23.27   &lt;2e-16 ***
+edf.C        1.17690    0.03533   33.31   &lt;2e-16 ***
+resSuva     -1.43392    0.02783  -51.52   &lt;2e-16 ***
+resurban    -1.04901    0.02405  -43.62   &lt;2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for poisson family taken to be 1)
+
+    Null deviance: 13735.6  on 69  degrees of freedom
+Residual deviance:  5058.4  on 64  degrees of freedom
+AIC: 5499.9
+
+Number of Fisher Scoring iterations: 5</code></pre>
+</div>
+</div>
+<p>Podemos agregar también la interacción entre educación y residencia:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">poisson_reg</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"glm"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(y <span class="sc">~</span> edf <span class="sc">+</span> res <span class="sc">+</span> edf<span class="sc">:</span>res, <span class="at">data =</span> niños) <span class="sc">%&gt;%</span></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_fit_engine</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+stats::glm(formula = y ~ edf + res + edf:res, family = stats::poisson, 
+    data = data)
+
+Deviance Residuals: 
+     Min        1Q    Median        3Q       Max  
+-27.2031   -3.9356   -0.4294    2.5603   31.3342  
+
+Coefficients:
+               Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)     5.09851    0.02542 200.582  &lt; 2e-16 ***
+edf.L          -1.57133    0.03346 -46.968  &lt; 2e-16 ***
+edf.Q           1.06376    0.05084  20.925  &lt; 2e-16 ***
+edf.C           1.55867    0.06364  24.493  &lt; 2e-16 ***
+resSuva        -1.08021    0.03977 -27.164  &lt; 2e-16 ***
+resurban       -0.65206    0.03599 -18.117  &lt; 2e-16 ***
+edf.L:resSuva   0.72235    0.06338  11.397  &lt; 2e-16 ***
+edf.Q:resSuva  -0.71608    0.07953  -9.004  &lt; 2e-16 ***
+edf.C:resSuva  -0.63730    0.09292  -6.859 6.94e-12 ***
+edf.L:resurban  1.04382    0.05480  19.048  &lt; 2e-16 ***
+edf.Q:resurban -0.77504    0.07198 -10.767  &lt; 2e-16 ***
+edf.C:resurban -0.56048    0.08579  -6.533 6.46e-11 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for poisson family taken to be 1)
+
+    Null deviance: 13735.6  on 69  degrees of freedom
+Residual deviance:  4520.8  on 58  degrees of freedom
+AIC: 4974.2
+
+Number of Fisher Scoring iterations: 5</code></pre>
+</div>
+</div>
+<p>que es lo mismo que el operador de cruzamiento <code>*</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">poisson_reg</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"glm"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(y <span class="sc">~</span> edf <span class="sc">*</span> res, <span class="at">data =</span> niños) <span class="sc">%&gt;%</span></span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_fit_engine</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+stats::glm(formula = y ~ edf * res, family = stats::poisson, 
+    data = data)
+
+Deviance Residuals: 
+     Min        1Q    Median        3Q       Max  
+-27.2031   -3.9356   -0.4294    2.5603   31.3342  
+
+Coefficients:
+               Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)     5.09851    0.02542 200.582  &lt; 2e-16 ***
+edf.L          -1.57133    0.03346 -46.968  &lt; 2e-16 ***
+edf.Q           1.06376    0.05084  20.925  &lt; 2e-16 ***
+edf.C           1.55867    0.06364  24.493  &lt; 2e-16 ***
+resSuva        -1.08021    0.03977 -27.164  &lt; 2e-16 ***
+resurban       -0.65206    0.03599 -18.117  &lt; 2e-16 ***
+edf.L:resSuva   0.72235    0.06338  11.397  &lt; 2e-16 ***
+edf.Q:resSuva  -0.71608    0.07953  -9.004  &lt; 2e-16 ***
+edf.C:resSuva  -0.63730    0.09292  -6.859 6.94e-12 ***
+edf.L:resurban  1.04382    0.05480  19.048  &lt; 2e-16 ***
+edf.Q:resurban -0.77504    0.07198 -10.767  &lt; 2e-16 ***
+edf.C:resurban -0.56048    0.08579  -6.533 6.46e-11 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for poisson family taken to be 1)
+
+    Null deviance: 13735.6  on 69  degrees of freedom
+Residual deviance:  4520.8  on 58  degrees of freedom
+AIC: 4974.2
+
+Number of Fisher Scoring iterations: 5</code></pre>
+</div>
+</div>
+<p>En los modelos de Poisson es usual usar un <code>offset</code> dado por el tamaño de la población. Si el <code>offset</code> es <span class="math inline">\(\lambda\)</span> el modelo se ve como:</p>
+<p><span class="math display">\[
+y \sim \textrm{Poisson}\big(\lambda\cdot \exp(\beta_0 + \beta_1 x)\big)
+\]</span></p>
+<p>Usualmente el <code>offset</code> es <code>log(n)</code> donde <code>n</code> es el tamaño de la población. Esto se escribe como:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>niños <span class="ot">&lt;-</span> niños <span class="sc">%&gt;%</span></span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">logn =</span> <span class="fu">log</span>(n))</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a><span class="fu">poisson_reg</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"glm"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(y <span class="sc">~</span> edf <span class="sc">*</span> res <span class="sc">+</span> <span class="fu">offset</span>(logn), <span class="at">data =</span> niños) <span class="sc">%&gt;%</span></span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_fit_engine</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+stats::glm(formula = y ~ edf * res + offset(logn), family = stats::poisson, 
+    data = data)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-19.026   -3.495    1.054    3.626   12.824  
+
+Coefficients:
+               Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)     1.12094    0.02542  44.099  &lt; 2e-16 ***
+edf.L          -0.66309    0.03346 -19.820  &lt; 2e-16 ***
+edf.Q           0.42450    0.05084   8.350  &lt; 2e-16 ***
+edf.C           0.54161    0.06364   8.511  &lt; 2e-16 ***
+resSuva        -0.08300    0.03977  -2.087  0.03688 *  
+resurban        0.09584    0.03599   2.663  0.00775 ** 
+edf.L:resSuva  -0.11854    0.06338  -1.870  0.06144 .  
+edf.Q:resSuva  -0.03023    0.07953  -0.380  0.70392    
+edf.C:resSuva   0.04214    0.09292   0.454  0.65016    
+edf.L:resurban  0.17105    0.05480   3.121  0.00180 ** 
+edf.Q:resurban -0.05337    0.07198  -0.741  0.45849    
+edf.C:resurban -0.01822    0.08579  -0.212  0.83184    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for poisson family taken to be 1)
+
+    Null deviance: 3731.9  on 69  degrees of freedom
+Residual deviance: 2625.9  on 58  degrees of freedom
+AIC: 3079.4
+
+Number of Fisher Scoring iterations: 5</code></pre>
+</div>
+</div>
+<section id="ejercicios" class="level3">
+<h3 class="anchored" data-anchor-id="ejercicios">Ejercicios</h3>
+<ol type="1">
+<li><p>Utilice los datos en la <a href="https://data.princeton.edu/wws509/datasets/#smoking">siguiente página</a>. Determine si hay una asociación entre el consumo de cigarros, pipas y puros y la muerte.</p></li>
+<li><p>Utilice los datos en la <a href="https://data.princeton.edu/wws509/datasets/#cancer">siguiente página</a>. Determine si la edad influye en la supervivencia de los tuomores.</p></li>
+<li><p>Plantee una regresión lineal usando <a href="https://data.princeton.edu/wws509/datasets/#salary">los datos de esta liga</a> para determinar si el sexo influye en el salario. <strong>Ojo</strong> en la regresión es necesario incluir otras covariables.</p></li>
+</ol>
+</section>
+</section>
+<section id="regresión-logística-y-probit" class="level2">
+<h2 class="anchored" data-anchor-id="regresión-logística-y-probit">Regresión logística y probit</h2>
+<p>En las regresiones logística y probit el planteamiento es similar sólo que se utilizan para respuestas binarias (0 ó 1). En este caso los modelos son:</p>
+<p><span class="math display">\[
+y \sim \textrm{Bernoulli}\big(\textrm{logit}(\beta_0 + \beta_1 x)\big)
+\]</span></p>
+<p>con</p>
+<p><span class="math display">\[
+\textrm{logit}(p) = \frac{p}{1-p}
+\]</span></p>
+<p>y</p>
+<p><span class="math display">\[
+y \sim \textrm{Bernoulli}\big(\Phi(\beta_0 + \beta_1 x)\big)
+\]</span></p>
+<p>donde <span class="math inline">\(\Phi\)</span> es la función de distribución acumulada de una normal. En ambos casos la especificación es similar:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>anticonceptivos <span class="ot">&lt;-</span> <span class="fu">read_table</span>(<span class="st">"https://data.princeton.edu/wws509/datasets/cuse.raw"</span>,</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>                              <span class="at">skip =</span> <span class="dv">0</span>, <span class="at">col_names =</span> F) <span class="sc">%&gt;%</span> <span class="fu">uncount</span>(X5)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+── Column specification ────────────────────────────────────────────────────────
+cols(
+  X1 = col_double(),
+  X2 = col_double(),
+  X3 = col_double(),
+  X4 = col_double(),
+  X5 = col_double()
+)</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(anticonceptivos) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"age"</span>, <span class="st">"education"</span>, <span class="st">"wants_more_children"</span>,</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"using_contraceptive"</span>)</span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>anticonceptivos <span class="ot">&lt;-</span> anticonceptivos <span class="sc">%&gt;%</span></span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">age =</span> <span class="fu">case_when</span>(</span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>      age <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"&lt;25"</span>,</span>
+<span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a>      age <span class="sc">==</span> <span class="dv">2</span> <span class="sc">~</span> <span class="st">"25-29"</span>, </span>
+<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a>      age <span class="sc">==</span> <span class="dv">3</span> <span class="sc">~</span> <span class="st">"30-39"</span>, </span>
+<span id="cb53-10"><a href="#cb53-10" aria-hidden="true" tabindex="-1"></a>      age <span class="sc">==</span> <span class="dv">4</span> <span class="sc">~</span> <span class="st">"40-49"</span></span>
+<span id="cb53-11"><a href="#cb53-11" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb53-12"><a href="#cb53-12" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb53-13"><a href="#cb53-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">education =</span> <span class="fu">if_else</span>(education <span class="sc">==</span> <span class="dv">0</span>, <span class="st">"None"</span>, <span class="st">"Some"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb53-14"><a href="#cb53-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">wants_more_children =</span> <span class="fu">if_else</span>(wants_more_children <span class="sc">==</span> <span class="dv">0</span>, <span class="st">"No"</span>, <span class="st">"More"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb53-15"><a href="#cb53-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">usa_anticonceptivo =</span> <span class="fu">factor</span>(using_contraceptive, </span>
+<span id="cb53-16"><a href="#cb53-16" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"No"</span>,<span class="st">"Yes"</span>))) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Podemos checar si la gente está usando o no anticonceptivos en función del grupo de edad con una regresión logística:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="fu">logistic_reg</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"glm"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(usa_anticonceptivo <span class="sc">~</span> age <span class="sc">+</span> education, <span class="at">data =</span> anticonceptivos) <span class="sc">%&gt;%</span></span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_fit_engine</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+stats::glm(formula = usa_anticonceptivo ~ age + education, family = stats::binomial, 
+    data = data)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-1.2313  -0.9304  -0.6474   1.3131   1.9573  
+
+Coefficients:
+              Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)    -1.7562     0.1660 -10.582  &lt; 2e-16 ***
+age25-29        0.4821     0.1731   2.784  0.00536 ** 
+age30-39        1.1428     0.1595   7.165 7.77e-13 ***
+age40-49        1.5822     0.2051   7.716 1.20e-14 ***
+educationSome   0.2999     0.1216   2.465  0.01368 *  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 2003.7  on 1606  degrees of freedom
+Residual deviance: 1918.3  on 1602  degrees of freedom
+AIC: 1928.3
+
+Number of Fisher Scoring iterations: 4</code></pre>
+</div>
+</div>
+<p>De hecho la logística es sólo un tipo de lineal por lo cual puede hacerse así:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="fu">linear_reg</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"glm"</span>, <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(using_contraceptive <span class="sc">~</span> age <span class="sc">+</span> education, <span class="at">data =</span> anticonceptivos) <span class="sc">%&gt;%</span></span>
+<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_fit_engine</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb56-5"><a href="#cb56-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+stats::glm(formula = using_contraceptive ~ age + education, family = ~binomial(link = "logit"), 
+    data = data)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-1.2313  -0.9304  -0.6474   1.3131   1.9573  
+
+Coefficients:
+              Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)    -1.7562     0.1660 -10.582  &lt; 2e-16 ***
+age25-29        0.4821     0.1731   2.784  0.00536 ** 
+age30-39        1.1428     0.1595   7.165 7.77e-13 ***
+age40-49        1.5822     0.2051   7.716 1.20e-14 ***
+educationSome   0.2999     0.1216   2.465  0.01368 *  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 2003.7  on 1606  degrees of freedom
+Residual deviance: 1918.3  on 1602  degrees of freedom
+AIC: 1928.3
+
+Number of Fisher Scoring iterations: 4</code></pre>
+</div>
+</div>
+<p>O bien una probit sólo cambiando el modelo:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="fu">linear_reg</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"glm"</span>, <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"probit"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(using_contraceptive <span class="sc">~</span> age <span class="sc">+</span> education, <span class="at">data =</span> anticonceptivos) <span class="sc">%&gt;%</span></span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_fit_engine</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+stats::glm(formula = using_contraceptive ~ age + education, family = ~binomial(link = "probit"), 
+    data = data)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-1.2279  -0.9322  -0.6484   1.3145   1.9668  
+
+Coefficients:
+              Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)   -1.06014    0.09566 -11.082  &lt; 2e-16 ***
+age25-29       0.28020    0.09980   2.808  0.00499 ** 
+age30-39       0.68135    0.09271   7.349 1.99e-13 ***
+age40-49       0.95330    0.12262   7.774 7.58e-15 ***
+educationSome  0.18071    0.07339   2.462  0.01380 *  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 2003.7  on 1606  degrees of freedom
+Residual deviance: 1918.4  on 1602  degrees of freedom
+AIC: 1928.4
+
+Number of Fisher Scoring iterations: 4</code></pre>
+</div>
+</div>
+<section id="ejercicio-2" class="level3">
+<h3 class="anchored" data-anchor-id="ejercicio-2">Ejercicio</h3>
+<ol type="1">
+<li>Descargue la base de datos disponible <a href="https://github.com/jenineharris/logistic-regression-tutorial/blob/main/lab%202%20data.dta">en este link</a>. La codificación de <code>imc</code> es <code>0</code> si normal o bajo y <code>1</code> si sobrepeso u obesidad. La variable <code>yearsSmoke</code> son los años que lleva la persona fumando cigarrillos y <code>lungCancer</code> es <code>1</code> si ha tenido un diagnóstico de cáncer de pulmón y <code>0</code> si no. Determine si los años que lleva fumando la persona influyen en el diagnóstico. ¿Qué dice la <span class="math inline">\(R^2\)</span> del ajuste?</li>
+</ol>
+</section>
+</section>
+</section>
+<section id="sistema" class="level1">
+<h1>Sistema</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>R version 4.2.0 (2022-04-22)
+Platform: x86_64-apple-darwin17.0 (64-bit)
+Running under: macOS Big Sur/Monterey 10.16
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.2/Resources/lib/libRblas.0.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.2/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] cowplot_1.1.1      ggridges_0.5.3     poissonreg_1.0.1   rstanarm_2.21.3   
+ [5] Rcpp_1.0.9         ggfortify_0.4.14   yardstick_1.0.0    workflowsets_1.0.0
+ [9] workflows_1.0.0    tune_1.0.0         rsample_1.1.0      recipes_1.0.1     
+[13] parsnip_1.0.1      modeldata_1.0.0    infer_1.0.3        dials_1.0.0       
+[17] scales_1.2.0       broom_1.0.0        tidymodels_1.0.0   forcats_0.5.1     
+[21] stringr_1.4.0      dplyr_1.0.9        purrr_0.3.4        readr_2.1.2       
+[25] tidyr_1.2.0        tibble_3.1.8       ggplot2_3.3.6      tidyverse_1.3.2   
+
+loaded via a namespace (and not attached):
+  [1] readxl_1.4.0         backports_1.4.1      plyr_1.8.7          
+  [4] igraph_1.3.4         splines_4.2.0        crosstalk_1.2.0     
+  [7] listenv_0.8.0        inline_0.3.19        rstantools_2.2.0    
+ [10] digest_0.6.29        foreach_1.5.2        htmltools_0.5.3     
+ [13] fansi_1.0.3          memoise_2.0.1        magrittr_2.0.3      
+ [16] googlesheets4_1.0.1  tzdb_0.3.0           globals_0.16.0      
+ [19] modelr_0.1.8         gower_1.0.0          matrixStats_0.62.0  
+ [22] RcppParallel_5.1.5   vroom_1.5.7          xts_0.12.1          
+ [25] hardhat_1.2.0        prettyunits_1.1.1    colorspace_2.0-3    
+ [28] rvest_1.0.2          haven_2.5.0          xfun_0.32           
+ [31] callr_3.7.1          crayon_1.5.1         jsonlite_1.8.0      
+ [34] lme4_1.1-30          survival_3.4-0       zoo_1.8-10          
+ [37] iterators_1.0.14     glue_1.6.2           gtable_0.3.0        
+ [40] gargle_1.2.0         ipred_0.9-13         pkgbuild_1.3.1      
+ [43] rstan_2.21.5         future.apply_1.9.0   DBI_1.1.3           
+ [46] miniUI_0.1.1.1       xtable_1.8-4         bit_4.0.4           
+ [49] GPfit_1.0-8          StanHeaders_2.21.0-7 stats4_4.2.0        
+ [52] lava_1.6.10          prodlim_2019.11.13   DT_0.24             
+ [55] htmlwidgets_1.5.4    httr_1.4.4           threejs_0.3.3       
+ [58] ellipsis_0.3.2       farver_2.1.1         loo_2.5.1           
+ [61] pkgconfig_2.0.3      nnet_7.3-17          dbplyr_2.2.1        
+ [64] utf8_1.2.2           labeling_0.4.2       tidyselect_1.1.2    
+ [67] rlang_1.0.4          DiceDesign_1.9       reshape2_1.4.4      
+ [70] later_1.3.0          cachem_1.0.6         munsell_0.5.0       
+ [73] cellranger_1.1.0     tools_4.2.0          cli_3.3.0           
+ [76] generics_0.1.3       evaluate_0.16        fastmap_1.1.0       
+ [79] yaml_2.3.5           bit64_4.0.5          processx_3.7.0      
+ [82] knitr_1.39           fs_1.5.2             nlme_3.1-159        
+ [85] future_1.27.0        mime_0.12            xml2_1.3.3          
+ [88] compiler_4.2.0       bayesplot_1.9.0      shinythemes_1.2.0   
+ [91] rstudioapi_0.13      curl_4.3.2           reprex_2.0.2        
+ [94] lhs_1.1.5            stringi_1.7.8        ps_1.7.1            
+ [97] lattice_0.20-45      Matrix_1.4-1         nloptr_2.0.3        
+[100] markdown_1.1         conflicted_1.1.0     shinyjs_2.1.0       
+[103] vctrs_0.4.1          pillar_1.8.0         lifecycle_1.0.1     
+[106] furrr_0.3.1          httpuv_1.6.5         R6_2.5.1            
+[109] promises_1.2.0.1     gridExtra_2.3        parallelly_1.32.1   
+[112] codetools_0.2-18     boot_1.3-28          colourpicker_1.1.1  
+[115] MASS_7.3-58.1        gtools_3.9.3         assertthat_0.2.1    
+[118] withr_2.5.0          shinystan_2.6.0      mgcv_1.8-40         
+[121] parallel_4.2.0       hms_1.1.1            grid_4.2.0          
+[124] rpart_4.1.16         timeDate_4021.104    minqa_1.2.4         
+[127] class_7.3-20         rmarkdown_2.15       googledrive_2.0.0   
+[130] shiny_1.7.2          lubridate_1.8.0      base64enc_0.1-3     
+[133] dygraphs_1.1.1.6    </code></pre>
+</div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

@@ -1,0 +1,1200 @@
+---
+title: "Regresiones (parte 1)"
+author: "Rodrigo Zepeda"
+date: "`r Sys.Date()`"
+format: html
+editor: visual
+output:
+  tufte::tufte_html: 
+    tufte_features: ["fonts", "background","italics"]
+    toc: false
+    includes:
+      in_header: javascriptcall.html
+    css: style.css
+  tufte::tufte_handout:
+    citation_package: natbib
+    latex_engine: xelatex
+  tufte::tufte_book:
+    citation_package: natbib
+    latex_engine: xelatex
+bibliography: skeleton.bib
+link-citations: yes
+editor_options: 
+  chunk_output_type: console
+---
+
+## Paquetes y datos a utilizar
+
+A lo largo de esta sección usaremos los siguientes paquetes:
+
+```{r}
+#| warning: false
+#| output: false
+library(tidyverse)
+library(tidymodels)
+library(ggfortify) #autoplot para diagnósticos
+library(rstanarm) #para bayesiana
+library(poissonreg) #modelo Poisson
+
+#Siempre que uses tidymodels
+tidymodels_prefer()
+```
+
+En general usaremos la filosofía `tidymodels` para combinar los resultados con el `tidyverse`. Si quieres saber más de `tidymodels` te recomiendo checar [su libro](https://www.tmwr.org) o [su página web](https://www.tidymodels.org/learn/).
+
+### Embarazo adolescente y pobreza
+
+Para los datos usaremos la información de [*Utts y Heckard*](https://online.stat.psu.edu/stat462/sites/onlinecourses.science.psu.edu.stat462/files/data/poverty/index.txt) para determinar si hay una relación entre embarazo adolescente y pobreza.
+
+```{r}
+emb_pob <- read_delim("https://online.stat.psu.edu/stat462/sites/onlinecourses.science.psu.edu.stat462/files/data/poverty/index.txt")
+```
+
+Las variables `Brth15to17` y `Brth18to19` son las tasas brutas de natalidad por cada 1000 mujeres (en el año 2002) en adolescentes de 15 a 17 años y de 18 a 19 respectivamente. La variable `PovPct` representa la proporción (%) de la población que vive bajo la línea de pobreza en cada una de las entidades de EEUU (`Location`). Las variables `ViolCrime` y `TeenBrth` no se explican por lo que no las usaremos.
+
+# Regresiones lineales
+
+Usaremos `Brth15to17` y `PovPct` para estudiar si hay una relación entre la tasa de natalidad en adolescentes y el porcentaje de la población en pobreza. Para ello comenzaremos con graficar:
+
+```{r}
+ggplot(emb_pob) +
+  geom_point(aes(x = PovPct, y = Brth15to17), color = "#bc5090", size = 3) +
+  labs(
+    x = "Porcentaje en pobreza",
+    y = "Tasa bruta de natalidad (por cada 1,000 mujeres adolescentes)",
+    title = "Relación entre tasa bruta de natalidad en adolescentes\nde 15 a 19 años y porcentaje en pobreza"
+  ) +
+  theme_bw()
+```
+
+Parece que a mayor porcentaje de pobreza, mayor tasa bruta de natalidad en adolescentes. \## Planteamiento clásico
+
+Si la relación fuera perfecta todos los casos caerían *exactamente* en una línea recta como sigue:
+
+```{r}
+#| echo: false
+tibble(
+  PovPct = seq(0, 25, length.out = 51),
+) %>%
+  mutate(Brth15to17 = 3*PovPct + 5) %>%
+  ggplot() +
+  geom_segment(aes(x = 10, xend = 15, y = 35, yend = 50)) +
+  geom_point(aes(x = PovPct, y = Brth15to17), color = "#bc5090", size = 3) +
+  geom_segment(aes(x = 10, xend = 15, y = 35, yend = 35)) +
+  geom_segment(aes(x = 15, xend = 15, y = 35, yend = 50)) +
+  annotate("label", x = 0, y = 30, label = "Intercepto = 5", hjust = 0) +
+  annotate("label", x = 12.5, y = 30, label = "Δ Pobreza = 5") +
+  annotate("label", x = 16, y = 40, label = "Δ Natalidad = 15", hjust = 0) +
+  annotate("label", x = 12.5, y = 45, label = "Pendiente = Δ Natalidad / Δ Pobreza = 3", hjust = 1) +
+  geom_segment(aes(x = 0, xend = 0, y = 29, yend = 6),
+               arrow = arrow(length = unit(0.2,"inches"))) +
+  geom_point(aes(x = 0, y = 5), color = "#ff6361", size = 3,
+             data = NULL) +
+  geom_point(aes(x = 10, y = 35), color = "#ff6361", size = 3,
+             data = NULL) +
+  geom_point(aes(x = 15, y = 50), color = "#ff6361", size = 3,
+             data = NULL) +
+  labs(
+    x = "Porcentaje en pobreza",
+    y = "Tasa bruta de natalidad (por cada 1,000 mujeres adolescentes)",
+    title = "Si el mundo fuera como el modelo de línea se vería así:"
+  ) +
+  theme_bw()
+```
+
+donde es necesario especificar dos parámetros: el intercepto (el valor que toma cuando la $x$ en este caso `PovPct` vale cero) y la pendiente (el valor que relaciona por cada unidad de aumento en `PovPct` cuánto aumenta `Brth15to17`).
+
+La ecuación de la línea está dada por:
+
+$$
+y = \beta_0 + \beta_1 x
+$$
+
+donde $\beta_0$ es el intercepto y $\beta_1$ la pendiente. Usando la terminología de arriba:
+
+$$
+\text{Brth15to17} = \text{Intercepto} + \text{Pendiente}\times \text{PovPct}
+$$ en particular en ese ejemplo:
+
+$$
+\text{Brth15to17} = 5 + 3\cdot \text{PovPct}
+$$
+
+La idea es que el intercepto ($\beta_0$ ó $5$) te indica dónde comienza tu línea cuando no tienes $x$'s (es decir cuando $\text{PovPct} = 0$). El intercepto controla la altura de la línea como puedes ver en la siguiente gráfica donde puse varios interceptos distintos:
+
+```{r}
+#| echo: false
+tibble(
+  x = 0:25,
+) %>%
+  mutate(y1 = 5 + 3*x) %>%
+  mutate(y2 = 10 + 3*x) %>%
+  mutate(y3 = 0 + 3*x) %>%
+  mutate(y4 = -5 + 3*x) %>%
+  mutate(y5 = 15 + 3*x) %>%
+  pivot_longer(cols = y1:y5) %>%
+  mutate(intercepto = case_when(
+    name == "y1" ~ 5,
+    name == "y2" ~ 10,
+    name == "y3" ~ 0,
+    name == "y4" ~ -5,
+    name == "y5" ~ 15
+  )) %>%
+  ggplot() +
+  geom_line(aes(x = x, y = value, color = as.character(intercepto))) +
+  scale_color_manual("Interceptos", 
+                     values = c("#003f5c","#58508d","#bc5090","#ff6361","#ffa600")) +
+  labs(
+    x = "Porcentaje en pobreza",
+    y = "Tasa bruta de natalidad (por cada 1,000 mujeres adolescentes)",
+    title = "Diferentes interceptos:"
+  ) +
+  theme_bw()
+```
+
+por otro lado la idea de la pendiente ($\beta_1$ ó $3$) es retratar cómo cambia la $y$ (en este caso $\text{Brth15to17}$) por cada unidad que cambia la $x$ (en este caso $\text{PovPct}$). El valor de $3$ por ejemplo indica que por cada aumento en 1 en $\text{PovPct}$ la variable $\text{Brth15to17}$ aumenta en $3$. Este cambio es proporcional; es decir si ahora $\text{PovPct}$ aumenta 4 (por decir algo) $\text{Brth15to17}$ aumenta $3\times 4 = 12$ unidades. La siguiente gráfica muestra varias líneas todas comenzando en el mismo intercepto de $5$:
+
+```{r}
+#| echo: false
+tibble(
+  x = 0:25,
+) %>%
+  mutate(y1 = 5 + 3*x) %>%
+  mutate(y2 = 5 + 6*x) %>%
+  mutate(y3 = 5 + 0*x) %>%
+  mutate(y4 = 5 + -3*x) %>%
+  mutate(y5 = 5 + -6*x) %>%
+  pivot_longer(cols = y1:y5) %>%
+  mutate(pendiente = case_when(
+    name == "y1" ~ 3,
+    name == "y2" ~ 6,
+    name == "y3" ~ 0,
+    name == "y4" ~ -3,
+    name == "y5" ~ -6
+  )) %>%
+  ggplot() +
+  geom_line(aes(x = x, y = value, color = as.character(pendiente))) +
+  scale_color_manual("Pendientes", 
+                     values = c("#003f5c","#58508d","#bc5090","#ff6361","#ffa600")) +
+  labs(
+    x = "Porcentaje en pobreza",
+    y = "Tasa bruta de natalidad (por cada 1,000 mujeres adolescentes)",
+    title = "Diferentes pendientes:"
+  ) +
+  theme_bw()
+```
+
+Como ya vimos en la primer figura el mundo no es tan perfecto que todo sea una línea recta. Hay un poco de aleatoriedad involucrada (sea por variables no medidas, por errores de medición o porque el mundo no sea determinista). Por lo cual se plantea que en lugar de que la $y$ sea *exactamente* $\beta_0 + \beta_1 x$ planteamos que la $y$ proviene de una variable aleatoria normal donde la media de esa normal **es** $\beta_0 + \beta_1 x$; es decir:
+
+$$
+y \sim \textrm{Normal}( \beta_0 + \beta_1 x, \sigma^2)
+$$
+
+o dicho de otra manera:
+
+$$
+\text{Brth15to17}  \sim \textrm{Normal}(\text{Intercepto} + \text{Pendiente}\times \text{PovPct}, \sigma^2)
+$$
+
+donde la $\sigma^2$ es la varianza de dicha normal. Puesto gráficamente lo que esto quiere decir es que si, por ejemplo, el intercepto es $5$ y la pendiente $3$ entonces cada medición de $y$ viene de una normal ligeramente distinta:
+
+$$
+\text{Brth15to17}  \sim \textrm{Normal}(5 + 3\times \text{PovPct}, \sigma^2)
+$$
+
+```{r}
+#| echo: false
+library(ggridges)
+x    <- c(0, 5, 10, 15)
+vals <- seq(-5, 5, length.out = 1000)
+tibble(
+  y1 = rnorm(1000000, mean = 5 + 3*x[1], 4),
+  y2 = rnorm(1000000, mean = 5 + 3*x[2], 4),
+  y3 = rnorm(1000000, mean = 5 + 3*x[3], 4),
+  y4 = rnorm(1000000, mean = 5 + 3*x[4], 4),
+) %>%
+  pivot_longer(cols = everything()) %>%
+  mutate(xvals = case_when(
+    name == "y1" ~ x[1],
+    name == "y2" ~ x[2],
+    name == "y3" ~ x[3],
+    name == "y4" ~ x[4]
+  )) %>%
+  ggplot() +
+  geom_density_ridges(aes(x = value, y = xvals, group = xvals), 
+                      bandwidth = 0.14, fill = "#003f5c", 
+                      alpha = 0.5, rel_min_height = 0.0001) +
+  coord_flip() +
+  labs(
+    y = "Porcentaje en pobreza",
+    x = "Tasa bruta de natalidad (por cada 1,000 mujeres adolescentes)",
+    title = "Las y's provienen de realizaciones de una normal con media 5 + 3x"
+  ) +
+  theme_bw() +
+  geom_line(aes(y = x, x = 3*x + 5), data = tibble(x = c(0, 5, 10, 15)),
+            color = "#58508d", size = 1) +
+  geom_point(aes(y = x, x = 3*x + 5), data = tibble(x = c(0, 5, 10, 15)),
+            color = "#58508d", size = 3) +
+  geom_point(aes(y = x, x = 3*x + 5), data = tibble(x = c(0, 5, 10, 15)),
+            color = "white", size = 1) +
+  annotate("label", x = 20, y = 20, 
+           label = "La idea es que para cada valor de x\nhay una normal con media 3x + 5")
+```
+
+Dicho de otra forma, suponemos que en un mundo perfecto los valores de $y$ (`Brth15to17`) estarían completamente determinados por los de $x$ (`PovPct`) mediante la ecuación de la recta. **Pero** como el mundo no es perfecto entonces la $y$ proviene de una normal con promedio dado por la recta. Los puntos (como puedes ver an la siguiente gráfica) se centran más en torno a los promedios de las normales sin embargo están colocados aleatoriamente pues corresponden a distintas realizaciones de $y$.
+
+```{r}
+#| echo: false
+library(ggridges)
+x    <- c(0, 5, 10, 15)
+vals <- seq(-5, 5, length.out = 1000)
+tibble(
+  y1 = rnorm(1000000, mean = 5 + 3*x[1], 4),
+  y2 = rnorm(1000000, mean = 5 + 3*x[2], 4),
+  y3 = rnorm(1000000, mean = 5 + 3*x[3], 4),
+  y4 = rnorm(1000000, mean = 5 + 3*x[4], 4),
+) %>%
+  pivot_longer(cols = everything()) %>%
+  mutate(xvals = case_when(
+    name == "y1" ~ x[1],
+    name == "y2" ~ x[2],
+    name == "y3" ~ x[3],
+    name == "y4" ~ x[4]
+  )) %>%
+  ggplot() +
+  geom_density_ridges(aes(x = value, y = xvals, group = xvals), 
+                      bandwidth = 0.14, fill = "#003f5c", 
+                      alpha = 0.5, rel_min_height = 0.0001) +
+  coord_flip() +
+  labs(
+    y = "Porcentaje en pobreza",
+    x = "Tasa bruta de natalidad (por cada 1,000 mujeres adolescentes)",
+    title = "Las y's provienen de realizaciones de una normal con media 5 + 3x"
+  ) +
+  theme_bw() +
+  geom_line(aes(y = x, x = 3*x + 5), data = tibble(x = c(0, 5, 10, 15)),
+            color = "#58508d", size = 1) +
+  geom_point(aes(y = x, x = 3*x + 5), data = tibble(x = c(0, 5, 10, 15)),
+            color = "#58508d", size = 3) +
+  geom_point(aes(y = x, x = 3*x + 5), data = tibble(x = c(0, 5, 10, 15)),
+            color = "white", size = 1) +
+  geom_point(aes(y = x, x = y), color = "#bc5090", data = (tibble(
+    x = seq(0, 15, length.out = 100),
+  ) %>%
+    mutate(y = rnorm(100, 3*x + 5, sd = 4)))) +
+  annotate("label", x = 20, y = 20, 
+           label = "La idea es que para cada valor de x\nhay una normal con media 3x + 5")
+```
+
+Por ejemplo si el porcentaje de pobreza (`PovPct`) es $10$ entonces la normal de la que provienen estos datos es:
+
+$$
+\text{Brth15to17}  \sim \textrm{Normal}(\underbrace{5 + 3\times 10}_{35}, \sigma^2)
+$$
+
+mientras que si el porcentaje en pobreza es $20$ entonces la normal es:
+
+$$
+\text{Brth15to17}  \sim \textrm{Normal}(\underbrace{5 + 3\times 20}_{65}, \sigma^2)
+$$
+
+Por supuesto que no hay nada de especial con el modelo normal y alguien podría elegir otra distribución (por ejemplo una Gamma) y establecer que:
+
+$$
+\text{Brth15to17}  \sim \textrm{Gamma}(\text{Intercepto} + \text{Pendiente}\times \text{PovPct}, \beta)
+$$
+
+Estos modelos son algunos de los lineales generalizados y los discutiremos más adelante. Por ahora nos quedaremos con la idea del modelo dado por:
+
+$$
+\text{Brth15to17}  \sim \textrm{Normal}(\text{Intercepto} + \text{Pendiente}\times \text{PovPct}, \sigma^2)
+$$
+
+> **Nota** quizá conoces la regresión lineal bajo la idea clásica de que $$
+> y = \beta_0 + \beta_1 x + \epsilon
+> $$ donde $\epsilon\sim\text{Normal}(0,\sigma^2)$ son los errores normales. Esta definición es equivalente a la que damos aquí pues por [propiedades aditivas de la normal](https://en.wikipedia.org/wiki/Normal_distribution#Properties) $\epsilon + \beta_0 + \beta_1 x$ se sigue distribuyendo normal pero con la media ahora dada por lo agregado ($\beta_0 + \beta_1 x$). Las ventajas de esta notación es que un modelo para regresión Poisson es simplemente: $$
+> y \sim \textrm{Poisson}(\beta_0 + \beta_1 x)
+> $$ y un modelo para regresión logística es: $$
+> y \sim \textrm{Bernoulli}\big(\textrm{logit}(\beta_0 + \beta_1 x)\big)
+> $$
+
+## Planteamiento en `R`
+
+Lo que nos toca ahora es programar nuestro modelo para ello seguiremos la filosofía de tidymodels que pretende unificar bajo la misma notación todos los modelos. La notación básica es como sigue:
+
+```{r}
+#| eval: false
+modelo %>%
+  set_engine("tipo de ajuste") %>%
+  fit("formula a ajustar", data = tus_datos)
+```
+
+A partir del ajuste se pueden predecir cosas con `predict`:
+
+```{r}
+#| eval: false
+modelo %>%
+  set_engine("tipo de ajuste") %>%
+  fit("formula a ajustar", data = tus_datos) %>%
+  predict()
+```
+
+o extraer nuevos datos con `extract_fit_engine` y `tidy`:
+
+```{r}
+#| eval: false
+modelo %>%
+  set_engine("tipo de ajuste") %>%
+  fit("formula a ajustar", data = tus_datos) %>%
+  extract_fit_engine() %>%
+  tidy()
+```
+
+Comencemos con nuestro primer modelo: una regresión lineal clásica dada por:
+
+$$
+\text{Brth15to17}  \sim \textrm{Normal}(\text{Intercepto} + \text{Pendiente}\times \text{PovPct}, \sigma^2)
+$$
+
+En `R` el `engine` que necesitamos es "lm" que es el clásico:
+
+```{r}
+#Ajusta un modelo lineal 
+#Brth15to17 = intercepto + pendiente*PovPct
+modelo_ajustado <- linear_reg() %>% 
+  set_engine("lm") %>%
+  fit(Brth15to17 ~ PovPct, data = emb_pob) #Notación y ~ x
+```
+
+Nota que a diferencia de `Stata`, `R` no arroja demasiados resultados. Podemos usar `extract_fit_engine` combinado con `summary` para obtenerlos:
+
+```{r}
+#Ajusta un modelo lineal 
+#Brth15to17 = intercepto + pendiente*PovPct
+modelo_ajustado %>%
+  extract_fit_engine() %>%
+  summary()
+```
+
+o bien con `tidy` si deseamos nos devuelva una tabla de resultados:
+
+```{r}
+#Ajusta un modelo lineal 
+#Brth15to17 = intercepto + pendiente*PovPct
+modelo_ajustado %>%
+  extract_fit_engine() %>%
+  tidy()
+```
+
+Según el tipo de regresión que estemos haciendo es el tipo de tabla que regresa `tidy` (ver `?tidy`). En particular, por ejemplo, podemos modificar para que devuelva intervalos de confianza al 90%:
+
+```{r}
+#Ajusta un modelo lineal 
+#Brth15to17 = intercepto + pendiente*PovPct
+modelo_ajustado %>%
+  tidy(conf.int = T, conf.level = 0.90)
+```
+
+En este caso, el modelo estima que el intercepto ($\beta_0$) es $4.27$ y la pendiente ($\beta_1$) es $1.37$. Como son *estimadores* del verdadero valor se denotan con *gorrito*: $\hat\beta_0 = 4.27$ y $\hat\beta_1 = 1.37$.
+
+Podemos utilizar la función de `predict` para que el modelo nos muestre cómo cree que son los verdaderos valores en relación a los ajustados:
+
+```{r}
+#Ajusta un modelo lineal 
+#Brth15to17 = intercepto + pendiente*PovPct
+predichos <- modelo_ajustado %>%
+  predict(new_data = emb_pob)
+
+intervalo_predichos <- modelo_ajustado %>%
+  predict(new_data = emb_pob, type = "pred_int", level = 0.95)
+
+#Juntamos los predichos con los observados
+obs_y_modelo <- emb_pob %>% 
+  cbind(predichos) %>%
+  cbind(intervalo_predichos)
+
+#Graficamos
+ggplot(obs_y_modelo) +
+  geom_ribbon(aes(x = PovPct, ymin = .pred_lower, ymax = .pred_upper), 
+              fill = "#003f5c", size = 1, alpha = 0.5) +
+  geom_point(aes(x = PovPct, y = Brth15to17), color = "#bc5090", size = 3) +
+  geom_line(aes(x = PovPct, y = .pred), 
+            color = "#003f5c", size = 1) +
+  labs(
+    x = "Porcentaje en pobreza",
+    y = "Tasa bruta de natalidad (por cada 1,000 mujeres adolescentes)",
+    title = "Relación entre tasa bruta de natalidad en adolescentes\nde 15 a 19 años y porcentaje en pobreza"
+  ) +
+  theme_bw()
+```
+
+Nada más a ojo no parece que el modelo sea el mejor pues puedes ver que no explica bien la variabilidad (los observados varían mucho respecto al intervalo). La $R^2$, una métrica que explica cuánto de la varianza captura el modelo tampoco es muy buena:
+
+```{r}
+resumen_ajuste <- modelo_ajustado %>%
+  extract_fit_engine() %>%
+  summary()
+
+#R^2 clásica
+resumen_ajuste$r.squared
+
+#R^2 ajustada
+resumen_ajuste$adj.r.squared
+```
+
+Podemos checar las diferentes gráficas de diagnóstico:
+
+```{r}
+library(ggfortify)
+autoplot(modelo_ajustado, which = 1:5)
+```
+
+Veamos qué significa cada una de ellas y juguemos un poco con `R` para irlas modificando.
+
+### Residuales contra ajustados
+
+Los **residuales** son la diferencia entre el modelo ($\hat{y}$) y lo real $y$. En el caso que estábamos trabajando tenemos que con nuestro modelo podemos predecir los valores de `Brth15to17` a partir del porcentaje en pobreza `PovPct`. A los valores predichos por el modelo de `Brth15to17` les ponemos un gorro encima y los llamamos: $\widehat{\text{Brth15to17}}$. Estos están dados por la siguiente función:
+
+$$
+\widehat{\text{Brth15to17}} = 4.26 + 1.37 \cdot \text{PovPct}
+$$
+
+por ejemplo para el porcentaje en pobreza de $20.1$ obtendríamos:
+
+$$
+\widehat{\text{Brth15to17}} = 4.26 + 1.37 \cdot \text{PovPct} = 31.797
+$$
+
+por otro lado el verdadero valor de cuando el `PovPct` es $20.1$ (estado de `Alabama`) es $\text{Brth15to17} = 31.5$. La diferencia entre el verdadero valor ($\text{Brth15to17} = 31.5$) y el predicho por el modelo ($\widehat{\text{Brth15to17}} = 31.797$) se conoce como el residual. La idea es que en un modelo bueno no debe haber patrones en los residuales (todos deben de flotar en torno al cero pero no mostrar un patrón).
+
+Veamoslo en nuestra base:
+
+```{r}
+obs_y_modelo <- obs_y_modelo %>%
+  mutate(residuales = Brth15to17 - .pred)
+
+ggplot(obs_y_modelo) +
+  geom_point(aes(x = .pred, y = residuales), color = "#ff6361") +
+  labs(
+    x = "Valores ajustados (predichos)",
+    y = "Residuales",
+    title = "Residuales vs ajustados"
+  ) +
+  theme_bw() +
+  geom_hline(aes(yintercept = 0), linetype = "dashed")
+```
+
+En esta gráfica el modelo predice mejor rumbo al final que en medio y esto parece estar corroborado por la gráfica del modelo (previa). Nada más para darnos una idea veamos una gráfica de *malos* residuales y una de *buenos*
+
+```{r}
+#| echo: false
+library(cowplot)
+
+datos_bien <- tibble(
+  x = seq(0, 25, length.out = 100)
+) %>%
+  mutate(y = rnorm(n(), mean = 3*x + 5, 4))
+
+modelo_1 <- linear_reg() %>% 
+  set_engine("lm") %>%
+  fit(y ~ x, data = datos_bien)
+
+datos_bien <- datos_bien %>%
+  cbind(
+    predict(modelo_1, new_data = datos_bien)
+  ) %>%
+  cbind(
+    predict(modelo_1, new_data = datos_bien, type = "conf_int", level = 0.9)
+  ) %>%
+  mutate(residuales = y - .pred)
+
+modelo_bien <-   ggplot(datos_bien) +
+  geom_point(aes(x = x, y = y), color = "#ff6361") +
+  geom_line(aes(x = x, y = .pred), color = "#003f5c") +
+  labs(
+    x = "x",
+    y = "y",
+    title = "Un buen modelo"
+  ) +
+  theme_bw() 
+
+plot_bien <- ggplot(datos_bien) +
+  geom_point(aes(x = .pred, y = residuales), color = "#ff6361") +
+  labs(
+    x = "Valores ajustados (predichos)",
+    y = "Residuales",
+    title = "En un buen modelo no se observa\nningún patrón"
+  ) +
+  theme_bw() +
+  geom_hline(aes(yintercept = 0), linetype = "dashed")
+
+datos_mal <- tibble(
+  x = seq(0, 25, length.out = 100)
+) %>%
+  mutate(y = rnorm(n(), mean = 2*x^2 + 3*x + 5, 4))
+
+modelo_2 <- linear_reg() %>% 
+  set_engine("lm") %>%
+  fit(y ~ x, data = datos_mal)
+
+datos_mal <- datos_mal %>%
+  cbind(
+    predict(modelo_2, new_data = datos_mal)
+  ) %>%
+  cbind(
+    predict(modelo_2, new_data = datos_mal, type = "conf_int", level = 0.9)
+  ) %>%
+  mutate(residuales = y - .pred)
+  
+modelo_mal <-   ggplot(datos_mal) +
+  geom_point(aes(x = x, y = y), color = "#ffa600") +
+  geom_line(aes(x = x, y = .pred), color = "#003f5c") +
+  labs(
+    x = "x",
+    y = "y",
+    title = "Un mal modelo"
+  ) +
+  theme_bw()
+  
+plot_mal <- ggplot(datos_mal) +
+  geom_point(aes(x = .pred, y = residuales), color = "#ffa600") +
+  labs(
+    x = "Valores ajustados (predichos)",
+    y = "Residuales",
+    title = "En un mal modelo se observa\nun patrón"
+  ) +
+  theme_bw() +
+  geom_hline(aes(yintercept = 0), linetype = "dashed")
+
+plot_grid(modelo_bien, modelo_mal, plot_bien, plot_mal, ncol = 2)
+```
+
+### Escala locación
+
+Representa la escala locación contra los residuales estandarizados. La idea de la gráfica es ver que la varianza $\sigma^2$ del modelo no cambie conforme cambia la $x$ (propiedad de *homoscedasticidad*). Para ello graficamos los residuales estandarizados dados por los residuales mismos dividos entre su desviación estándar:
+
+$$
+r_{\text{Std}} = \frac{\hat{y} - y}{\text{sd}(\hat{y} - y)} = \frac{\text{Residuales}}{\text{sd}\big(\text{Residuales}\big)}
+$$
+
+estos residuales estandarizados los podemos calcular en `R` como sigue:
+
+```{r}
+obs_y_modelo <- obs_y_modelo %>%
+  mutate(residuales_std = residuales/sd(residuales))
+```
+
+Si los graficamos contra los valores ajustados no deberíamos de ver ningún patrón:
+
+```{r}
+ggplot(obs_y_modelo) +
+  geom_point(aes(x = .pred, y = residuales_std), color = "#ff6361") +
+  labs(
+    x = "Valores ajustados (predichos)",
+    y = "Residuales estandarizados",
+    title = "Escala Locación"
+  ) +
+  theme_bw() +
+  geom_hline(aes(yintercept = 0), linetype = "dashed")
+```
+
+Podemos ver cómo se ven estos puntos en el modelo ideal vs en un modelo donde la $\sigma^2$ depende de la $x$:
+
+```{r}
+#| echo: false
+datos_bien <- tibble(
+  x = seq(0, 25, length.out = 100)
+) %>%
+  mutate(y = rnorm(n(), mean = 3*x + 5, 4))
+
+modelo_1 <- linear_reg() %>% 
+  set_engine("lm") %>%
+  fit(y ~ x, data = datos_bien)
+
+datos_bien <- datos_bien %>%
+  cbind(
+    predict(modelo_1, new_data = datos_bien)
+  ) %>%
+  cbind(
+    predict(modelo_1, new_data = datos_bien, type = "conf_int", level = 0.9)
+  ) %>%
+  mutate(residuales = y - .pred) %>%
+  mutate(residuales_std = residuales/sd(residuales))
+
+modelo_bien <-   ggplot(datos_bien) +
+  geom_point(aes(x = x, y = y), color = "#ff6361") +
+  geom_line(aes(x = x, y = .pred), color = "#003f5c") +
+  labs(
+    x = "x",
+    y = "y",
+    title = "Un buen modelo"
+  ) +
+  theme_bw() 
+
+plot_bien <- ggplot(datos_bien) +
+  geom_point(aes(x = .pred, y = residuales_std), color = "#ff6361") +
+  labs(
+    x = "Valores ajustados (predichos)",
+    y = "Residuales estandarizados",
+    title = "Modelo bien (sin patrón)"
+  ) +
+  theme_bw() +
+  geom_hline(aes(yintercept = 0), linetype = "dashed")
+
+datos_mal <- tibble(
+  x = seq(0, 25, length.out = 100)
+) %>%
+  mutate(y = rnorm(n(), mean = 3*x + 5, x^2))
+
+modelo_2 <- linear_reg() %>% 
+  set_engine("lm") %>%
+  fit(y ~ x, data = datos_mal)
+
+datos_mal <- datos_mal %>%
+  cbind(
+    predict(modelo_2, new_data = datos_mal)
+  ) %>%
+  cbind(
+    predict(modelo_2, new_data = datos_mal, type = "conf_int", level = 0.9)
+  ) %>%
+  mutate(residuales = y - .pred) %>%
+  mutate(residuales_std = residuales/sd(residuales))
+  
+modelo_mal <-   ggplot(datos_mal) +
+  geom_point(aes(x = x, y = y), color = "#ffa600") +
+  geom_line(aes(x = x, y = .pred), color = "#003f5c") +
+  labs(
+    x = "x",
+    y = "y",
+    title = "Un mal modelo"
+  ) +
+  theme_bw()
+  
+plot_mal <- ggplot(datos_mal) +
+  geom_point(aes(x = .pred, y = residuales_std), color = "#ffa600") +
+  labs(
+      x = "Valores ajustados (predichos)",
+    y = "Residuales estandarizados",
+    title = "Modelo mal (con patrón)"
+  ) +
+  theme_bw() +
+  geom_hline(aes(yintercept = 0), linetype = "dashed")
+
+plot_grid(modelo_bien, modelo_mal, plot_bien, plot_mal, ncol = 2)
+```
+
+### Normal cuantil cuantil
+
+La segunda gráfica corresponde a una gráfica cuantil cuantil. Esta la utilizamos para verificar la hipótesis de normalidad. En una gráfica cuantil cuantil se grafican los cuantiles de los residuales contra los cuantiles teóricos de la normal. Por ejemplo si la hacemos con sólo 4 puntos se vería algo así:
+
+```{r}
+#| echo: false
+ggplot(tibble(x = c(-2, -1, 0, 1, 2), 
+              y = c(-1, 0, 0.1, 0.4, 1))) +
+  geom_point(aes(x = x, y = y)) +
+  theme_bw() +
+  annotate("text", x = 0, y = 0, 
+           label = "Cada punto es el cuantil q1 de la normal\ncontra el cuantil q1 de los residuales") +
+  labs(
+    x = "Cuantiles teóricos de la normal",
+    y = "Cuantiles observados de los residuales",
+    title = "Gráfica qq"
+  )
+```
+
+Podemos armar una gráfica cuantil cuantil con `ggplot2`:
+
+```{r}
+ggplot(obs_y_modelo, aes(sample = residuales)) + 
+  stat_qq(color = "#ff6361") + 
+  stat_qq_line(color = "#58508d") +
+  theme_bw() +
+  labs(
+    x = "Cuantiles teóricos de la normal",
+    y = "Cuantiles observados de los residuales",
+    title = "Gráfica qq"
+  )
+```
+
+La idea de la gráfica cuantil cuantil es que los puntos sigan la línea lo más posible. Veamos cómo se ve con los datos bien (y los mal)
+
+```{r}
+#| echo: false
+qqmal <- ggplot(datos_mal, aes(sample = residuales)) + 
+  stat_qq(color = "#ffa600") + 
+  stat_qq_line(color = "#58508d") +
+  theme_bw() +
+  labs(
+    x = "Cuantiles teóricos de la normal",
+    y = "Cuantiles observados de los residuales",
+    title = "QQPLOT mal"
+  )
+
+qqbien <- ggplot(datos_bien, aes(sample = residuales)) + 
+  stat_qq(color = "#ff6361") + 
+  stat_qq_line(color = "#58508d") +
+  theme_bw() +
+  labs(
+    x = "Cuantiles teóricos de la normal",
+    y = "Cuantiles observados de los residuales",
+    title = "QQPLOT bien"
+  )
+
+plot_grid(modelo_bien, modelo_mal, qqbien, qqmal, ncol = 2)
+```
+
+### Residuales contra apalancamiento
+
+El apalancamiento representa qué tanto cambia el modelo al quitar una sola observación. Para poner un ejemplo considera los siguientes datos donde hay un valor atípico y selecciono dos puntos de interés en dos colores:
+
+```{r}
+#| echo: false
+datos_bien <- tibble(
+  x = seq(0, 25, length.out = 100)
+  ) %>%
+  mutate(y = rnorm(n(), mean = 3*x + 5, 4))
+datos_bien[50,"y"] <- 100 #outlier
+datos_bien[50,"x"] <- 100 #outlier
+
+ggplot(datos_bien) +
+  geom_point(aes(x = x, y = y), color = "#003f5c", size = 2) +
+  geom_segment(aes(x = 12, xend = as.numeric(datos_bien[50,"x"]), 
+                   y = 76, yend = as.numeric(datos_bien[50,"y"])),
+               color = "#bc5090",
+               arrow = arrow(length = unit(0.2,"inches"))) +
+  geom_segment(aes(x = 3, xend = as.numeric(datos_bien[12,"x"]), 
+                   y = 40, yend = as.numeric(datos_bien[12,"y"])),
+               color = "#bc5090",
+               arrow = arrow(length = unit(0.2,"inches"))) +
+  annotate("label", x = 3, y = 40, label = "Normal") +
+  annotate("label", x = 12, y = 75, label = "Influyente") +
+  geom_point(aes(x = x, y = y), data = datos_bien[50,], size = 2, color = "#ff6361") +
+  geom_point(aes(x = x, y = y), data = datos_bien[12,], size = 2, color = "#ffa600") +
+  theme_bw() 
+```
+
+Veamos cómo cambia la regresión si dejo todos los puntos, si quito el normal y si quito el influyente:
+
+```{r}
+#| echo: false
+ggplot(datos_bien) +
+  geom_point(aes(x = x, y = y), color = "#003f5c", size = 2) +
+  geom_smooth(aes(x = x, y = y, color = "Sin el normal"), method = "lm", 
+              formula = y ~ x, se = F, data = datos_bien[-12,]) +
+  geom_smooth(aes(x = x, y = y, color = "Sin el influyente"), method = "lm", 
+              formula = y ~ x, se = F, data = datos_bien[-50,]) +
+  geom_smooth(aes(x = x, y = y, color = "Todos los datos"), method = "lm", 
+              formula = y ~ x, se = F) +
+  theme_bw() +
+  scale_color_manual("Modelo", values = c("#bc5090","#ff6361","#ffa600"))
+```
+
+Nota que el modelo no cambia prácticamente nada cuando hago la regresión sin el dato que marqué como `normal` pero cambia mucho cuando quito el que marqué como `influyente`. La gráfica de residuales contra apalancamiento muestra también el valor extraño:
+
+```{r}
+#| echo: false
+modelo_res <-  linear_reg() %>% 
+  set_engine("lm") %>%
+  fit(y ~ x, data = datos_bien) 
+
+residuales <- modelo_res %>%
+  extract_fit_engine() %>%
+  residuals()
+
+apalancamiento <- modelo_res %>%
+  extract_fit_engine() %>%
+  hatvalues()
+
+ggplot() +
+  geom_point(aes(x = apalancamiento, y = residuales), color = "#ff6361") +
+  labs(
+    x = "Apalancamiento",
+    y = "Residuales",
+    title = "Residuales vs ajustados"
+  ) +
+  theme_bw() +
+  geom_hline(aes(yintercept = 0), linetype = "dashed") +
+  annotate("label", x = 0.5, y = -80, label = "El influyente") 
+```
+
+El apalancamiento mide la influencia de un dato y en `R` se puede calcular con `hatvalues`. Los datos con mayor **apalancamiento** siempre valen la pena checarlos para verificar que todo opera en orden.
+
+```{r}
+apalancamiento <- modelo_ajustado %>%
+  extract_fit_engine() %>%
+  hatvalues()
+
+obs_y_modelo <- obs_y_modelo %>%
+  cbind(apalancamiento)
+
+#Graficamos residuales contra apalancamiento
+ggplot(obs_y_modelo) +
+  geom_point(aes(x = apalancamiento, y = residuales), color = "#ff6361") +
+  labs(
+    x = "Apalancamiento",
+    y = "Residuales",
+    title = "Residuales vs ajustados"
+  ) +
+  theme_bw() +
+  geom_hline(aes(yintercept = 0), linetype = "dashed")
+```
+
+### Distancia de Cook
+
+La distancia de Cook es un concepto similar al apalancamiento que identifica observaciones influyentes. Aquellos valores con distancia de Cook alta vale la pena revisar. En `R` podemos usar `cooks.distance` para calcular la distancia de Cook.
+
+```{r}
+distanciaCook <- modelo_ajustado %>%
+  extract_fit_engine() %>%
+  cooks.distance()
+
+obs_y_modelo <- obs_y_modelo %>%
+  cbind(distanciaCook)
+
+#Graficamos residuales contra apalancamiento
+ggplot(obs_y_modelo) +
+  geom_col(aes(x = 1:nrow(obs_y_modelo), y = distanciaCook), fill = "#ff6361") +
+  labs(
+    x = "Observación (número de entrada en la base)",
+    y = "Distancia de Cook",
+    title = "Distancia de Cook"
+  ) +
+  theme_bw() 
+```
+
+podemos ver que en el ejemplo anterior (el de la observación influyente) la distancia de Cook es exagerada, tan exagerada que ni se alcanzan a ver los otros:
+
+```{r}
+#| echo: false
+cookdist <- modelo_res %>%
+  extract_fit_engine() %>%
+  cooks.distance()
+
+ggplot() +
+  geom_col(aes(x = 1:100, y = cookdist), fill = "#ff6361") +
+  labs(
+    x = "Observación",
+    y = "Distancia de Cook",
+    title = "Cook"
+  ) +
+  theme_bw() +
+  annotate("label", x = 50, y = 40, label = "El influyente") 
+```
+
+## Ejercicio
+
+1.  Corre el siguiente código para generar una base de datos de nombre `datLong` que contiene $4$ grupos. Para cada grupo genere una regresión lineal de la forma:
+
+$$
+y = \beta_0 + \beta_1 x
+$$
+
+Identifica cuáles regresiones sí ajustan bien y cuáles no mediante los gráficos de diagnóstico. Finalmente grafica tus datos $x$ contra $y$ y la regresión para ver que lo hayas hecho bien. ¿Hay alguna forma de corregir alguna de las que no ajusta bien?
+
+```{r}
+dat <- datasets::anscombe
+datLong <- data.frame(
+    grupo  = rep(1:4, each = 11),
+    x = unlist(dat[,c(1:4)]),
+    y = unlist(dat[,c(5:8)])
+    )
+rownames(datLong) <- NULL
+```
+
+2.  Lee la base de datos de $n = 345$ niños entre $6$ y $10$ años de Kahn, Michael (2005). Las variables de interés son $y = \text{FEV}$ el volumen de expiración forzada y $x = \text{edad}$ en años. Realiza una regresión lineal. Justifica que no se cumple la homocedasticidad mediante una gráfica de escala locación.
+
+## ¿Y si lo hacemos bayesiano?
+
+Para hacer la misma regresión lineal pero con estadística bayesiana podemos nada más cambiar el `engine`:
+
+```{r}
+#Ajusta un modelo lineal 
+#Brth15to17 = intercepto + pendiente*PovPct
+modelo_bayesiano <- linear_reg() %>% 
+  set_engine("stan") %>%
+  fit(Brth15to17 ~ PovPct, data = emb_pob) #Notación y ~ x
+```
+
+Y podemos ver el ajuste:
+
+```{r}
+modelo_bayesiano %>%
+  extract_fit_engine() %>%
+  summary()
+```
+
+o realizar predicciones:
+
+```{r}
+predichos <- modelo_bayesiano %>%
+  extract_fit_engine() %>%
+  predict(new_data = emb_pob)
+
+ic <- modelo_bayesiano %>%
+  extract_fit_engine() %>%
+  predictive_interval(newdata = emb_pob, prob = 0.95) #Para bayesiana
+
+#Juntamos los predichos con los observados
+obs_y_modelo <- emb_pob %>% 
+  cbind(predichos) %>%
+  cbind(ic)
+
+#Graficamos
+ggplot(obs_y_modelo) +
+  geom_ribbon(aes(x = PovPct, ymin = `2.5%`, ymax = `97.5%`), 
+              fill = "#003f5c", size = 1, alpha = 0.5) +
+  geom_point(aes(x = PovPct, y = Brth15to17), color = "#ffa600", size = 3) +
+  geom_line(aes(x = PovPct, y = predichos), 
+            color = "#003f5c", size = 1) +
+  labs(
+    x = "Porcentaje en pobreza",
+    y = "Tasa bruta de natalidad (por cada 1,000 mujeres adolescentes)",
+    title = "Relación entre tasa bruta de natalidad en adolescentes\nde 15 a 19 años y porcentaje en pobreza"
+  ) +
+  theme_bw()
+```
+
+Para validación del modelo puedes checar [esta página](https://mc-stan.org/rstanarm/articles/rstanarm.html#step-3-criticize-the-model-1).
+
+## Ejercicio
+
+1.  Utilice las opciones de `engine` para cambiar el `prior_intercept` del intercepto a una `t` de Student y el `prior` de los coeficientes a una `Laplace`. ¿Cambia mucho el resultado?
+
+# Modelos lineales generalizados
+
+## Regresión Poisson (conteo)
+
+Anteriormente planteamos el modelo
+
+$$
+y \sim \textrm{Normal}(\beta_0 + \beta_1 x, \sigma^2)
+$$
+
+podemos cambiar la distribución normal por una Poisson si tenemos datos de conteo, por ejemplo:
+
+$$
+y \sim \textrm{Poisson}(\beta_0 + \beta_1 x)
+$$
+
+¡Y ya tenemos una regresión Poisson! Ésta no es la clásica pues es bien difícil de controlar numéricamente. La Poisson clásica tiene una exponencial adentro:
+
+$$
+y \sim \textrm{Poisson}\big(\exp(\beta_0 + \beta_1 x)\big)
+$$
+
+Usaremos esta última para los modelos. Para ello nos apoyaremos del `engine` de `glm` (por generalized linear model)
+
+Para los datos usaremos la información de *Generalized Linear Models for Cross-Classified Data from the WFS. World Fertility Survey Technical Bulletins* . Podemos leerlos como sigue:
+
+```{r}
+#| warning: false
+niños <- read_table("https://data.princeton.edu/wws509/datasets/ceb.dat",
+                        skip = 1, col_names = F) 
+colnames(niños) <- c("Fila",  "dur", "res", "educ", "mean", "var", "n", "y")
+niños <- niños %>% mutate(y = round(y))
+```
+
+La base contiene la `dur` la duración del matrimonio, `res` la residencia (suva, urbano y rural), el nivel educativo `educ`, la media y la varianza del número de niños nacidos y `n` la cantidad de mujeres en cada grupo. La variable `y` contiene el producto de `mean*n` para obtener el total de niños nacidos para todas las mujeres en cada grupo.
+
+Podemos especificar fácilmente un modelo Poisson para los conteos:
+
+```{r}
+modelo_poisson <- poisson_reg() %>%
+  set_engine("glm") %>%
+  fit(y ~ educ, data = niños)
+```
+
+podemos obtener el summary:
+
+```{r}
+modelo_poisson %>%
+  extract_fit_engine() %>%
+  summary()
+```
+
+o crear un `tibble`:
+
+```{r}
+modelo_poisson %>%
+  extract_fit_engine() %>%
+  tidy()
+```
+
+o también podemos ajustarlo de manera bayesiana:
+
+```{r}
+poisson_reg() %>%
+  set_engine("stan") %>%
+  fit(y ~ educ, data = niños) %>%
+  extract_fit_engine() %>%
+  summary()
+```
+
+Podemos agregar más factores a nuestra regresión. Para ello vale la pena recordar las fórmulas de `R`:
+
+| Fórmula         | Significado                                                                                                                     |
+|-----------------|---------------------------------------------------------------------------------------------------------------------------------|
+| `1`               | El intercepto                                                                                                                   |
+| `+x`          | Agregar la variable `x` a la regresión                                                                                         |
+| `-x`          | Quitar la variable `x` de la regresión                                                                                         |
+| `x1:x2`         | Interacción entre `x1` y `x2`                                                                                                 |
+| `x1*x2`       | Cruzamiento es lo mismo que poner `x1 + x2 + x1:x2`                                                                            |
+| `I()`         | Se utiliza para realizar operaciones aritméticas adentro. Por ejemplo generar una variable que sea `x1+ x2 haciendo I(x1 + x2)` |
+| `(x | grupo)` | Modelos mixtos donde la pendiente de `x` depende del grupo (efectos aleatorios)                                                 |
+
+En nuestro modelo podemos incluir otras variables (digamos la residencia) agregándolas con suma:
+
+```{r}
+poisson_reg() %>%
+  set_engine("glm") %>%
+  fit(y ~ educ + res, data = niños) %>%
+  extract_fit_engine() %>%
+  summary()
+```
+
+La educación, sin embargo, es una variable ordinal donde `No educación` es menor que `Sec+` y es menor que `Upper`. Para ello podemos convertir la variable a factor y especificar el orden:
+
+```{r}
+niños <- niños %>%
+  mutate(edf = factor(educ, levels = c("none","lower", "sec+","upper"),
+                            ordered = T))
+poisson_reg() %>%
+  set_engine("glm") %>%
+  fit(y ~ edf + res, data = niños) %>%
+  extract_fit_engine() %>%
+  summary()
+```
+
+Podemos agregar también la interacción entre educación y residencia:
+
+```{r}
+poisson_reg() %>%
+  set_engine("glm") %>%
+  fit(y ~ edf + res + edf:res, data = niños) %>%
+  extract_fit_engine() %>%
+  summary()
+```
+
+que es lo mismo que el operador de cruzamiento `*`:
+
+```{r}
+poisson_reg() %>%
+  set_engine("glm") %>%
+  fit(y ~ edf * res, data = niños) %>%
+  extract_fit_engine() %>%
+  summary()
+```
+
+En los modelos de Poisson es usual usar un `offset` dado por el tamaño de la población. Si el `offset` es $\lambda$ el modelo se ve como:
+
+$$
+y \sim \textrm{Poisson}\big(\lambda\cdot \exp(\beta_0 + \beta_1 x)\big)
+$$
+
+Usualmente el `offset` es `log(n)` donde `n` es el tamaño de la población. Esto se escribe como:
+
+```{r}
+niños <- niños %>%
+  mutate(logn = log(n))
+
+poisson_reg() %>%
+  set_engine("glm") %>%
+  fit(y ~ edf * res + offset(logn), data = niños) %>%
+  extract_fit_engine() %>%
+  summary()
+```
+
+
+### Ejercicios
+
+1. Utilice los datos en la [siguiente página](https://data.princeton.edu/wws509/datasets/#smoking). Determine si hay una asociación entre el consumo de cigarros, pipas y puros y la muerte. 
+
+2. Utilice los datos en la [siguiente página](https://data.princeton.edu/wws509/datasets/#cancer). Determine si la edad influye en la supervivencia de los tuomores. 
+
+3. Plantee una regresión lineal usando [los datos de esta liga](https://data.princeton.edu/wws509/datasets/#salary) para determinar si el sexo influye en el salario. **Ojo** en la regresión es necesario incluir otras covariables. 
+
+## Regresión logística y probit
+
+En las regresiones logística y probit el planteamiento es similar sólo que se utilizan para respuestas binarias (0 ó 1). En este caso los modelos son:
+
+$$
+y \sim \textrm{Bernoulli}\big(\textrm{logit}(\beta_0 + \beta_1 x)\big)
+$$
+
+con 
+
+$$
+\textrm{logit}(p) = \frac{p}{1-p}
+$$
+
+y 
+
+$$
+y \sim \textrm{Bernoulli}\big(\Phi(\beta_0 + \beta_1 x)\big)
+$$
+donde $\Phi$ es la función de distribución acumulada de una normal. En ambos casos la especificación es similar:
+
+```{r}
+anticonceptivos <- read_table("https://data.princeton.edu/wws509/datasets/cuse.raw",
+                              skip = 0, col_names = F) %>% uncount(X5)
+
+colnames(anticonceptivos) <- c("age", "education", "wants_more_children",
+                               "using_contraceptive")
+
+anticonceptivos <- anticonceptivos %>%
+  mutate(
+    age = case_when(
+      age == 1 ~ "<25",
+      age == 2 ~ "25-29", 
+      age == 3 ~ "30-39", 
+      age == 4 ~ "40-49"
+    )
+  ) %>%
+  mutate(education = if_else(education == 0, "None", "Some")) %>%
+  mutate(wants_more_children = if_else(wants_more_children == 0, "No", "More")) %>%
+  mutate(usa_anticonceptivo = factor(using_contraceptive, 
+                                      levels = c(0,1), labels = c("No","Yes"))) 
+```
+
+Podemos checar si la gente está usando o no anticonceptivos en función del grupo de edad con una regresión logística:
+
+```{r}
+logistic_reg() %>%
+  set_engine("glm") %>%
+  fit(usa_anticonceptivo ~ age + education, data = anticonceptivos) %>%
+  extract_fit_engine() %>%
+  summary()
+```
+
+De hecho la logística es sólo un tipo de lineal por lo cual puede hacerse así:
+
+
+```{r}
+linear_reg() %>%
+  set_engine("glm", family = binomial(link = "logit")) %>%
+  fit(using_contraceptive ~ age + education, data = anticonceptivos) %>%
+  extract_fit_engine() %>%
+  summary()
+```
+
+
+O bien una probit sólo cambiando el modelo:
+
+
+```{r}
+linear_reg() %>%
+  set_engine("glm", family = binomial(link = "probit")) %>%
+  fit(using_contraceptive ~ age + education, data = anticonceptivos) %>%
+  extract_fit_engine() %>%
+  summary()
+```
+
+### Ejercicio
+
+1. Descargue la base de datos disponible [en este link](https://github.com/jenineharris/logistic-regression-tutorial/blob/main/lab%202%20data.dta). La codificación de `imc` es `0` si normal o bajo y `1` si sobrepeso u obesidad. La variable `yearsSmoke` son los años que lleva la persona fumando cigarrillos y `lungCancer` es `1` si ha tenido un diagnóstico de cáncer de pulmón y `0` si no. Determine si los años que lleva fumando la persona influyen en el diagnóstico. ¿Qué dice la $R^2$ del ajuste?
+
+# Sistema
+
+```{r}
+sessionInfo()
+```
