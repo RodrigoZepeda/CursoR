@@ -903,7 +903,7 @@ rownames(datLong) <- NULL
 
 2.  Lee la base de datos de $n = 345$ niños entre $6$ y $10$ años de Kahn, Michael (2005). Las variables de interés son $y = \text{FEV}$ el volumen de expiración forzada y $x = \text{edad}$ en años. Realiza una regresión lineal. Justifica que no se cumple la homocedasticidad mediante una gráfica de escala locación.
 
-3. Plantee una regresión lineal usando [los datos de esta liga](https://data.princeton.edu/wws509/datasets/#salary) para determinar si el sexo influye en el salario. **Ojo** en la regresión es necesario incluir otras covariables. 
+3.  Plantee una regresión lineal usando [los datos de esta liga](https://data.princeton.edu/wws509/datasets/#salary) para determinar si el sexo influye en el salario. **Ojo** en la regresión es necesario incluir otras covariables.
 
 ## ¿Y si lo hacemos bayesiano?
 
@@ -1049,13 +1049,13 @@ poisson_reg() %>%
 
 Podemos agregar más factores a nuestra regresión. Para ello vale la pena recordar las fórmulas de `R`:
 
-| Fórmula         | Significado                                                                                                                     |
-|-----------------|---------------------------------------------------------------------------------------------------------------------------------|
-| `1`               | El intercepto                                                                                                                   |
-| `+x`          | Agregar la variable `x` a la regresión                                                                                         |
-| `-x`          | Quitar la variable `x` de la regresión                                                                                         |
-| `x1:x2`         | Interacción entre `x1` y `x2`                                                                                                 |
-| `x1*x2`       | Cruzamiento es lo mismo que poner `x1 + x2 + x1:x2`                                                                            |
+| Fórmula       | Significado                                                                                                                     |
+|--------------|----------------------------------------------------------|
+| `1`           | El intercepto                                                                                                                   |
+| `+x`          | Agregar la variable `x` a la regresión                                                                                          |
+| `-x`          | Quitar la variable `x` de la regresión                                                                                          |
+| `x1:x2`       | Interacción entre `x1` y `x2`                                                                                                   |
+| `x1*x2`       | Cruzamiento es lo mismo que poner `x1 + x2 + x1:x2`                                                                             |
 | `I()`         | Se utiliza para realizar operaciones aritméticas adentro. Por ejemplo generar una variable que sea `x1+ x2 haciendo I(x1 + x2)` |
 | `(x | grupo)` | Modelos mixtos donde la pendiente de `x` depende del grupo (efectos aleatorios)                                                 |
 
@@ -1121,12 +1121,11 @@ poisson_reg() %>%
   summary()
 ```
 
-
 ### Ejercicios
 
-1. Utilice los datos en la [siguiente página](https://data.princeton.edu/wws509/datasets/#smoking). Determine si hay una asociación entre el consumo de cigarros, pipas y puros y la muerte. 
+1.  Utilice los datos en la [siguiente página](https://data.princeton.edu/wws509/datasets/#smoking). Determine si hay una asociación entre el consumo de cigarros, pipas y puros y la muerte.
 
-2. Utilice los datos en la [siguiente página](https://data.princeton.edu/wws509/datasets/#cancer). Determine si la edad influye en la supervivencia de los tuomores. 
+2.  Utilice los datos en la [siguiente página](https://data.princeton.edu/wws509/datasets/#cancer). Determine si la edad influye en la supervivencia de los tuomores.
 
 ## Regresión logística y probit
 
@@ -1136,18 +1135,17 @@ $$
 y \sim \textrm{Bernoulli}\big(\textrm{logit}(\beta_0 + \beta_1 x)\big)
 $$
 
-con 
+con
 
 $$
 \textrm{logit}(p) = \frac{p}{1-p}
 $$
 
-y 
+y
 
 $$
 y \sim \textrm{Bernoulli}\big(\Phi(\beta_0 + \beta_1 x)\big)
-$$
-donde $\Phi$ es la función de distribución acumulada de una normal. En ambos casos la especificación es similar:
+$$ donde $\Phi$ es la función de distribución acumulada de una normal. En ambos casos la especificación es similar:
 
 ```{r}
 anticonceptivos <- read_table("https://data.princeton.edu/wws509/datasets/cuse.raw",
@@ -1189,7 +1187,6 @@ modelo_logit %>%
 
 De hecho la logística es sólo un tipo de lineal por lo cual puede hacerse así:
 
-
 ```{r}
 linear_reg() %>%
   set_engine("glm", family = binomial(link = "logit")) %>%
@@ -1217,7 +1214,6 @@ linear_reg() %>%
 
 O bien una probit sólo cambiando el modelo:
 
-
 ```{r}
 linear_reg() %>%
   set_engine("glm", family = binomial(link = "probit")) %>%
@@ -1228,17 +1224,18 @@ linear_reg() %>%
 
 ### Ejercicio
 
-1. Descargue la base de datos disponible [en este link](https://github.com/jenineharris/logistic-regression-tutorial/blob/main/lab%202%20data.dta). La codificación de `imc` es `0` si normal o bajo y `1` si sobrepeso u obesidad. La variable `yearsSmoke` son los años que lleva la persona fumando cigarrillos y `lungCancer` es `1` si ha tenido un diagnóstico de cáncer de pulmón y `0` si no. Determine si los años que lleva fumando la persona influyen en el diagnóstico. ¿Qué dice la $R^2$ del ajuste?
+1.  Descargue la base de datos disponible [en este link](https://github.com/jenineharris/logistic-regression-tutorial/blob/main/lab%202%20data.dta). La codificación de `imc` es `0` si normal o bajo y `1` si sobrepeso u obesidad. La variable `yearsSmoke` son los años que lleva la persona fumando cigarrillos y `lungCancer` es `1` si ha tenido un diagnóstico de cáncer de pulmón y `0` si no. Determine si los años que lleva fumando la persona influyen en el diagnóstico. ¿Qué dice la $R^2$ del ajuste?
 
-2. Repite el análisis de la base de anticonceptivos pero ahora con un modelo bayesiano (`stan`). ¿Qué dice el `loo`?
+2.  Repite el análisis de la base de anticonceptivos pero ahora con un modelo bayesiano (`stan`). ¿Qué dice el `loo`?
 
+```{=html}
 <!--
 ## Validación de una logística
 
 
 http://www.sthda.com/english/articles/36-classification-methods-essentials/148-logistic-regression-assumptions-and-diagnostics-in-r
 -->
-
+```
 # Regresión Multinomial
 
 Mientras que una logística sirve para clasificar en dos categorías, una multinomial clasifica en múltiples. Leamos los datos:
@@ -1280,7 +1277,7 @@ modelo_multi  %>%
 
 ## Ejercicio
 
-1. Obtén la siguiente base de datos de pingüinos:
+1.  Obtén la siguiente base de datos de pingüinos:
 
 ```{r}
 library(palmerpenguins)
@@ -1302,7 +1299,7 @@ pinguinos_a_determinar <- tibble(
 
 **Notas incompletas**
 
-En muchos casos al hacer modelos predictivos lo que interesa es solamente si puedes predecir bien el caso. En ese sentido las métricas anteriores no son las mejores. 
+En muchos casos al hacer modelos predictivos lo que interesa es solamente si puedes predecir bien el caso. En ese sentido las métricas anteriores no son las mejores.
 
 ```{r}
 #Nos interesa predecir diabetes
@@ -1344,6 +1341,7 @@ diabetes_test  <- testing(diabetes_split)
 ```
 
 Construimos el modelo:
+
 ```{r}
 modelo_logreg <- logistic_reg() %>% 
   set_engine("glm") 
@@ -1398,10 +1396,9 @@ results %>%
   autoplot()
 ```
 
-
 ## Ejercicio
 
-1. Construye tres modelos distintos para predecir diabetes a partir de los siguientes datos **sin usar la variable `glucose`**:
+1.  Construye tres modelos distintos para predecir diabetes a partir de los siguientes datos **sin usar la variable `glucose`**:
 
 ```{r}
 library(mlbench)
@@ -1411,7 +1408,7 @@ diabedatos <- PimaIndiansDiabetes
 
 Tus modelos pueden ser logísticos pero al menos uno de los tres que sea un árbol en `mode = "classification"` (opciones: [`bart`](https://parsnip.tidymodels.org/reference/bart.html), [`random_forest`](https://parsnip.tidymodels.org/reference/rand_forest.html), [`boost_tree`](https://parsnip.tidymodels.org/reference/boost_tree.html), [`decision_tree`](https://parsnip.tidymodels.org/reference/decision_tree.html), [`bag_tree`](https://parsnip.tidymodels.org/reference/bag_tree.html))
 
-Utiliza métricas (como sensibilidad, especificidad, etc) sobre el para decidir cuál es el mejor modelo. 
+Utiliza métricas (como sensibilidad, especificidad, etc) sobre el para decidir cuál es el mejor modelo.
 
 # Series de tiempo
 
@@ -1472,7 +1469,7 @@ ggsave("Diags.pdf", width = 10, height = 25)
 
 ## Modelos
 
-En esta sección haremos `arima_reg()` y `linear_reg()`. En teoría el `arima` debería ser mejor que una regresión lineal. 
+En esta sección haremos `arima_reg()` y `linear_reg()`. En teoría el `arima` debería ser mejor que una regresión lineal.
 
 ```{r}
 #Para decidir el modelo primero obtenemos splits
@@ -1535,12 +1532,9 @@ futuro %>%
     )
 ```
 
-
-
 ## Ejercicio
 
-La siguiente base de datos contiene los registros de dengue en México de 2017 a la fecha. Las variables son `fecha` (proxy de semana epidemológica) y `nraw` (casos de dengue en la semana). `n` es un suavizamiento con media móvil, `logn` y `log_nraw` representan los logaritmos de la media móvil `n` y de `nraw` respectivamente.
-**Las variables `t` y `n.value` se deben ignorar.**
+La siguiente base de datos contiene los registros de dengue en México de 2017 a la fecha. Las variables son `fecha` (proxy de semana epidemológica) y `nraw` (casos de dengue en la semana). `n` es un suavizamiento con media móvil, `logn` y `log_nraw` representan los logaritmos de la media móvil `n` y de `nraw` respectivamente. **Las variables `t` y `n.value` se deben ignorar.**
 
 > Ajuste al menos dos modelos distintos uno de ellos `prophet_reg` para determinar cuántos casos de dengue habrán hasta que termine el año.
 
@@ -1548,7 +1542,6 @@ La siguiente base de datos contiene los registros de dengue en México de 2017 a
 dengue <- read_csv("https://media.githubusercontent.com/media/RodrigoZepeda/DengueMX/lognormal/datos-limpios/dengue_for_model_mx.csv") %>%
   filter(fecha >= as.Date("2017/01/01"))
 ```
-
 
 # Sistema
 
