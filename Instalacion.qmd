@@ -290,6 +290,10 @@ Da enter, cierra la `Terminal` y reinicia `R`.
 Si tienes problemas para instalar puedes usar [Posit Cloud (antes RStudio Cloud)](https://rstudio.cloud).
 :::
 
+### Rtools (Windows)
+
+`RTools` es una herramienta para poder instalar paquetes de `R`. Algunas versiones de Windows lo requieren. Entra [al sitio de RTools](https://cran.r-project.org/bin/windows/Rtools/), elige la opción que corresponde a tu versión de `R` (puedes verla con `R.version`) y descarga el instalador `Rtools42 installer` o `rtools40-x86_64.exe` según tu versión. 
+
 ## RStudio
 
 ```{r}
