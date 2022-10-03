@@ -1,0 +1,488 @@
+---
+title: "Preparación para el curso"
+subtitle: "Instalación de R / RStudio"
+author: "Rodrigo Zepeda-Tello"
+date: "`r Sys.Date()`"
+title-block-banner: true
+author-title: "Autores"
+published-title: "Última actualización"
+abstract-title: "Resumen"
+abstract: "Discutimos por qué vale la pena hacer un curso de `R` y cómo instalar tanto `R` como `RStudio` en todas las plataformas."
+backgroundcolor: "#fffff8"
+format:
+    pdf: default
+    html: 
+      self-contained: true
+      theme: litera
+      toc: true
+      toc-location: left
+      toc-depth: 3
+      number-sections: true
+      number-depth: 3
+reference-location: margin
+citation-location: margin
+bibliography: skeleton.bib
+link-citations: yes
+---
+
+```{r}
+#| echo: false
+#| message: false
+library(geomnet, quietly = TRUE) #devtools::install_github("sctyner/geomnet")
+library(tidyverse, quietly = TRUE)
+library(gridExtra, quietly = TRUE)
+library(latex2exp, quietly = TRUE)
+library(cowplot, quietly = TRUE)
+library(grid, quietly = TRUE)
+```
+
+<!--
+http://ncss-tech.github.io/stats_for_soil_survey/chapters/1_introduction/1_introduction.html
+-->
+
+## ¿`R`?
+
+Yo me enfrenté a `R` por primera vez hace más de 8 años cuando un grupo de investigadores con quienes trabajaba compartieron su código en `R`. Fue horrible. El código estaba mal comentado, elaborado sin ninguna lógica de programación (yo, según esto, ya sabía programar en ese entonces) y no funcionaba. Quizá, si ya conoces el programa, tu experiencia ha sido similar: en general cuando nos enfrentamos a `R` nos enfrentamos a cosas que otras personas escribieron para salir del aprieto sin mucha explicación. ¡Es lo peor del mundo porque no se entiende nada! El propósito de estas notas (¿y clase?) es dual: acompañarte en un acercamiento a `R` desde cero y perderle el miedo a dicho programa. 
+
+```{r}
+#| column: margin
+#| fig-width: 1.5
+#| fig-height: 1.5
+#| cache: true
+#| echo: false
+#| message: false
+#| out-width: "150px"
+#| fig-cap: "`R` es un programa chido de estadística. FIN."
+knitr::include_graphics('images/rlogo.png')
+```
+
+
+Una de las primeras cosas que necesitamos saber es que `R` (por más que sus más ávidos defensores digan lo contrario) no es para todo. Si tú ya conoces otro lenguaje (sea `Stata`, `Excel`, `SAS`, etc) sabrás utilizar muchas de sus opciones. Estoy seguro que, de conocer uno de estos, te será muchísimo más fácil seguir sacando promedios en tu lenguaje favorito que en `R`, realizar regresiones lineales es probablemente más sencillo en `Stata` mientras que las gráficas de barras quizá te sean más simples en `Excel`. Lo que probablemente no sea más sencillo de hacer en otro lenguaje (salvo si tu otro lenguaje es `Python`, `Julia` ó `Matlab`) es realizar modelos de simulación desde cero y todo el análisis que conlleva. Para eso, `R` es, indiscutiblemente, una de las mejores opciones para quienes no conocen de programación^[Modelos de simulación más avanzados suelen hacerse en `C`, `C++` o `Fortran` por su velocidad; empero, es necesario conocer más de programación.]. 
+
+Finalmente, uno de los consejos más importantes que te puedo dar es que este curso no te va a servir si no practicas. Igual que como pasa con los idiomas uno no aprende `R` en una semana _sin practicarlo después_. Mi sugerencia es que, a la vez que sigues estas notas comiences a trabajar un proyecto _tuyo_ específico junto con [el buscador de Internet de tu preferencia](https://duckduckgo.com/) a la mano y empieces a usar `R` en él. Practica^[La práctica hace al maestro]. 
+
+## Algunas ventajas de `R` y cosas no tan padres
+
+### Puntos a favor de `R`
+
+- Todo el mundo lo usa (7o lenguaje más usado según [PyPl](https://pypl.github.io/PYPL.html) y 16 [según TIOBE](https://www.tiobe.com/tiobe-index/)). Quizá éste es el punto más a favor. Si mucha gente lo conoce y lo utiliza, hay más opciones de ayuda. Los sitios de StackOverflow [en inglés](https://stackoverflow.com) y [en español](https://es.stackoverflow.com) son excelentes para pedir apoyo en `R`; los [grupos de usuarios de Google](https://groups.google.com/forum/#!forum/r-help-archive) son otra fuente muy buena así como [el canal de Slack](https://r-contributors.slack.com). Entre más gente usa el programa; es más fácil obtener ayuda porque seguro alguien más tuvo hace ya tiempo el mismo problema que tú. 
+
+- Hay grupos interesantes que valen la pena mencionar: [RLadies](https://rladies.org/) que busca promoveer la diversidad de género entre quienes usan `R`, [RainbowR](https://rainbowr.netlify.app/) con el objetivo de promover y conectar a la banda LGBTQ+ que trabaja en `R` y [`RMedicine`](https://events.linuxfoundation.org/r-medicine/) con el objetivo de divulgar herramientas de `R` específicas de medicina. 
+
+- Todas las personas que trabajan en estadística publican sus métodos y su código en `R` (eso, claro, cuando publican sus métodos). Es raro encontrar _un nuevo método estadístico_ en el mundo y que no se pueda usar, de alguna forma, en `R`. 
+
+- Dentro de los lenguajes de programación `R` es de los más sencillos. Quienes lo hicieron realmente se preocuparon por su público (de no especialistas) y en general desarrollan para él. 
+
+- `R` es gratis. Y en esta época de austeridad, cualquier ahorro es bueno. 
+
+- Todo lo que se hace en `R` es público. `R` no tiene métodos secretos ni es una caja negra. Todo lo que hace cada una de las funciones de `R`, cualquiera lo puede revisar, por completo. 
+
+- En `R` puedes hacer notas ¡como estas! donde guardes todo tu trabajo, reportes automatizados e incluso [documentos interactivos](https://gallery.shinyapps.io/086-bus-dashboard/) para facilitar el análisis de datos. 
+
+- `R` puede hacer gráficas bonitas: 
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+rojos  <- data.frame(x = rnorm(100, 1), y = rnorm(100,1))
+verdes <- data.frame(x = rnorm(100, -1), y = rnorm(100,-2))
+xmin   <- c(-4,4)
+ymin   <- c(-4,4)
+scatter <- ggplot(mapping=aes(x = x, y = y)) + 
+  geom_point(data = verdes, color = "deepskyblue3", size = 4) + 
+  geom_point(data = rojos, color = "tomato3", size = 4) +
+  geom_point(data = data.frame(x = 1, y = 2), color = "black", size = 5) +
+  geom_point(data = data.frame(x = 1, y = 2), color = "orange", size = 3) +
+  theme_classic() +
+  theme(plot.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8")) +
+  xlim(xmin[1],xmin[2]) + ylim(ymin[1],ymin[2]) + 
+  xlab("Diferencia de altura respecto a la media") + 
+  ylab("Diferencia de peso respecto a la media") +
+  ggtitle("Datos simulados de peso y altura")
+
+empty <- ggplot() +
+         geom_point(aes(1,1), colour="white")+
+         theme(axis.ticks=element_blank(), 
+               axis.text.x=element_blank(), axis.text.y=element_blank(),                
+               plot.background = element_rect(fill = "#fffff8"),
+               panel.background = element_rect(fill = "#fffff8"),
+               axis.title.x=element_blank(), axis.title.y=element_blank())
+
+xhist <- seq(xmin[1],xmin[2], length.out = 100)
+hist_top <- ggplot(mapping=aes(x=x,y=y)) + 
+  geom_line(color="tomato3", data = data.frame(x = xhist, y = dnorm(xhist,1))) +
+  geom_line(color="deepskyblue3", data = data.frame(x = xhist, y = dnorm(xhist,-1))) +
+  theme_classic() + 
+  xlim(xmin[1],xmin[2]) + 
+  theme(plot.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8")) +
+  ylab("Densidad") + xlab("") +
+  ggtitle("Altura")
+
+yhist      <- seq(ymin[1],ymin[2], length.out = 100)
+hist_right <- ggplot(mapping=aes(x=x,y=y)) + 
+                geom_line(color="tomato3", data = data.frame(x = yhist, y = dnorm(yhist,1))) +
+                geom_line(color="deepskyblue3", 
+                          data = data.frame(x = yhist, y = dnorm(yhist,-2))) + 
+                ylab("Densidad") + 
+                xlab("") +
+                ggtitle("Peso") +
+                theme_classic() + theme(plot.background = element_rect(fill = "#fffff8"),
+                      panel.background = element_rect(fill = "#fffff8")) +
+                xlim(ymin[1],ymin[2]) + coord_flip()
+
+g <- arrangeGrob(
+            hist_top +  geom_vline(xintercept = 0, linetype="dashed", color = "forestgreen"), 
+            empty, 
+            scatter +  geom_vline(xintercept = 0, linetype="dashed", color = "forestgreen") +
+              geom_hline(yintercept = -0.5, linetype="dashed", color = "forestgreen") + 
+              annotate("text", x = -3.5, y = 3.5, label = TeX("$\\Omega_1$"), color = "black") + 
+              annotate("text", x = 3.5,  y = 3.5, label = TeX("$\\Omega_2$"), color = "tomato3") + 
+              annotate("text", x = 3.5, y = -3.5, label = TeX("$\\Omega_3$"), color = "black") + 
+              annotate("text", x = -3.5, y = -3.5, label = TeX("$\\Omega_4$"), color = "deepskyblue3"), 
+            hist_right +  geom_vline(xintercept = -0.5, linetype="dashed", color = "forestgreen"), ncol=2, nrow=2, widths=c(5, 2), heights=c(2, 5),
+            bottom = textGrob("RESULTADOS DE LA SIMULACIÓN", gp=gpar(fontface="bold", col ="black")))
+
+cowplot::ggdraw(g) + 
+  theme(plot.background = element_rect(fill="#fffff8", color = NA))
+
+```
+
+### Puntos en contra de `R`
+
+Por supuesto, no todo es miel sobre hojuelas con `R`. Particularmente, algunos de los problemas con el lenguaje:
+
+```{r}
+#| column: margin
+#| fig-width: 5.5
+#| fig-height: 3.5
+#| cache: true
+#| echo: false
+#| message: false
+#| out-width: "150px"
+#| fig-cap: "La curva de aprendizaje de `R` es más empinada pero después de un rato vale la pena"
+
+#Get data
+x     <- seq(-0.5,2, length.out=250)
+pdata <- data.frame(x = x, y = x^2)
+
+ggplot(pdata) + 
+  geom_vline(xintercept = 1, linetype = "dashed", color = "gray", size = 0.5) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "gray", size = 0.5) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "gray", size = 0.5) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray", size = 0.5) +
+  geom_line(aes(x = x, y = y, color = "STATA, SPSS ó SAS"), data = subset(pdata, x > 0)) +
+  geom_line(aes(x = x, y = 0, color = "STATA, SPSS ó SAS"), data = subset(pdata, x < 0)) + 
+  geom_line(aes(x = x, y = x, color = "R")) + 
+  geom_point(aes(x = x, y = y), color = "gray", data = data.frame(x = 1, y = 1)) + 
+  geom_point(aes(x = x, y = y), color = "gray", data = data.frame(x = 0, y = 0)) + 
+  theme_classic() + 
+  ylab(toupper("Dificultad para programar")) +
+  xlab(toupper("Dificultad del modelo")) + 
+  coord_cartesian(ylim = c(-0.5, 4), clip = 'off') + 
+  annotate("text", x = 0.5, y = -0.9, label = "No uses R") +
+  annotate("text", x = 1.5, y = -0.9, label = "Usa R") +
+  annotate("text", x = -0.25, y = -0.9, label = "¡R!") +
+  theme(axis.text = element_blank(),
+        axis.title.x = element_text(margin = margin(0.5, unit = "cm")),
+        axis.ticks.y = element_blank(),
+        plot.background = element_rect(fill = "#fffff8"),
+        legend.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8"),
+        axis.ticks.length.x = unit(.5, "cm")) + 
+  scale_x_continuous(breaks = c(0,1)) +
+  scale_y_continuous(breaks = c(0,1)) + 
+  scale_color_manual("Programa", 
+                     values = c("STATA, SPSS ó SAS" = "tomato3", 
+                                "R" = "deepskyblue3"))
+
+```
+
+- La curva de aprendizaje es mucho más empinada que para otros programas estadísticos (como  `Stata`, `SAS` o `SPSS`) ¡particularmente si es tu primera vez programando!
+
+- La mayor parte de las personas que trabajan en `R` no son programadores de verdad. Gran parte del código que te puedes encontrar **en el mundo real** está escrito [con prisa para salir del aprieto](https://nsaunders.wordpress.com/2014/05/14/this-is-why-code-written-by-scientists-gets-ugly/) sin mucha planeación, con pocos comentarios, falta de control de versiones y pocas herramientas de revisión. ¡Internet está lleno de [creaturas espantosas escritas en `R`](https://codegolf.stackexchange.com/a/4011)!
+
+```{r}
+#| column: margin
+#| fig-width: 3.5
+#| fig-height: 3.5
+#| cache: true
+#| echo: false
+#| message: false
+#| out-width: "150px"
+#| fig-cap: "`R` puede ser muy lento pero eso te da oportunidad de hacer otras cosas ;) ."
+knitr::include_graphics('images/compiling.png')
+```
+
+- `R` [de ninguna manera es veloz](https://github.com/matthieugomez/benchmark-stata-r) por lo que algunos programas (lo veremos en simulación) pueden ser extremada (y dolorosamente) lentos.
+
+- `R` espera que tú sepas _a priori_ el método estadístico que vas a seguir. ¡A veces uno no se acuerda! 
+
+## Bienvenidx a `R`, `r R.Version()$nickname` (sí, así se llama esta versión)
+
+`R` es un lenguaje de cómputo y un programa estadístico [libre](https://www.gnu.org/philosophy/free-sw.html), gratuito, [de programación funcional](http://adv-r.had.co.nz/Functional-programming.html) (¿qué es eso?), [orientado a objetos](https://en.wikipedia.org/wiki/Object-oriented_programming) (_what??_) que mutó a partir de otros dos lenguajes conocidos como `Scheme` y `S`^[De ahí que se llame `R` porque la `R` es una mejor letra que la `S` (todos lo sabemos) 
+-Atte. Rodrigo, el autor de este documento.]. El primero de estos fue  desarrollado en el MIT por Sussman y Steele mientras que el segundo surgió en los laboratorios Bell^[Mejor conocidos ahora como AT&T, la compañía celular que nunca tiene señal] creado por Becker, Wilks y Chambers. `R` [nació en junio de 1995](https://cran.r-project.org/doc/html/interface98-paper/paper_2.html) a partir del trabajo de 	Ross Ihaka y Robert Gentleman^[Sus nombres empiezan con la letra `R` ¿coincidencia?]. 
+
+Desde su creación, la mayor parte del desarrollo de `R` ha sido trabajo completamente voluntario de la [Fundación R](https://www.r-project.org/foundation/), del equipo de R Core y de miles de usuarios que han creado funciones específicas para `R` conocidas como paquetes (`packages`). Actualmente el repositorio más importante de `R`, CRAN, contiene `r nrow(available.packages(repos = "https://cloud.r-project.org/"))` paquetes con distintas funciones para hacer ¡lo que quieras!
+
+Como todo el trabajo en `R` es voluntario hace falta: 
+
+1. Una homologación en los métodos. Puedes encontrar varias funciones _que supuestamente hacen exactamente lo mismo_ (como es el caso de `emojifont`, `fontemoji` y `emoGG` para graficar usando emojis). 
+
+2. Estandarizar la notación. Algunos paquetes como aquellos del `tidyverse` (veremos más adelante) utilizan `pipes` (`%>%`); estos sólo funcionan en el `tidyverse` pero no fuera del mismo.
+
+Sin embargo, también es una gran ventaja que sean los usuarios de `R` quienes guían su desarrollo. El lenguaje va mutando según peticiones de las personas que lo usan. Si hay algo que te gustaría `R` tuviera y aún no existe ¡lo puedes proponer! 
+
+## Instalación de `R`
+
+```{r}
+#| column: margin
+#| fig-width: 3.5
+#| fig-height: 3.5
+#| cache: true
+#| echo: false
+#| message: false
+#| out-width: "150px"
+#| fig-cap: "Oficialmente, la página de `R` es de las páginas más feas del mundo. ¡No te dejes llevar por las apariencias!"
+knitr::include_graphics('images/CRAN1.png')
+```
+
+A lo largo de estas notas estaré trabajando con: `r R.Version()$version.string` _`r R.Version()$nickname`_. La más reciente versión de `R` la puedes encontrar en [CRAN](https://cran.r-project.org). Para ello ve al sitio y selecciona tu plataforma. 
+
+- En el caso de **Windows** da clic en `Download R for Windows` y luego en `install R for the first time`. Finalmente, ejecuta el instalable que aparece al dar click en  ``r paste0("Download R ", R.Version()$major,".",R.Version()$minor," for Windows")`` . Específicamente si tienes la opción de elegir necesitas el de 64 bits (ver nota si tu computadora es mayor a 6 años).  
+<!-- Para este curso haremos uso de las herramientas de desarrollador [Rtools](https://cran.r-project.org/bin/windows/Rtools/) -->
+
+:::{.callout-note}
+### Nota usuarios de Windows
+
+En general las computadoras actuales son de [**64 bits**](https://en.wikipedia.org/wiki/64-bit_computing). Sin embargo, si tienes una computadora suficientemente vieja puede ser que ésta sea de [**32 bits**](https://en.wikipedia.org/wiki/32-bit_computing) en ese caso puedes descargar `R` pero no podrás usar `RStudio`. 
+
+La forma de saber cuántos bits tiene tu computadora Windows es yendo a `Configuración > Sistema > Acerca de` como indican [estas instrucciones de Microsoft](https://support.microsoft.com/es-es/windows/-qu%C3%A9-versi%C3%B3n-del-sistema-operativo-windows-tengo-628bec99-476a-2c13-5296-9dd081cdd808)
+:::
+
+- En el caso de **Mac** selecciona `Download R for (Mac) OS X` y luego elige   ``r paste0("R-", R.Version()$major,".",R.Version()$minor,".pkg")``. En Mac puede que necesites instalar adicionalmente [XQuartz](https://www.xquartz.org) (según tu versión de Mac). Si tu Mac es una versión antigua (mayor a 6 años), sigue las instrucciones específicas de `CRAN`.  
+
+:::{.callout-note}
+### Nota usuarios de Mac
+
+En algunas Mac, al abir R, aparece el siguiente mensaje de advertencia:
+
+```{bash}
+#| eval: false
+During startup - Warning messages: 1: Setting LC_CTYPE failed [...]
+```
+
+para [solucionarlo](https://stackoverflow.com/questions/9689104/installing-r-on-mac-warning-messages-setting-lc-ctype-failed-using-c) ve a `Aplicaciones` y abre `Terminal`. Copia y pega en ella el siguiente texto:
+
+```{bash}
+#| eval: false
+defaults write org.R-project.R force.LANG en_US.UTF-8
+```
+
+Da enter, cierra la `Terminal` y reinicia `R`. 
+:::
+
+- En el caso de **Linux** al elegir `Download R for Linux` tendrás la opción de buscar tu distribución específica. Al elegirla, aparecerán instrucciones para tu terminal de comandos; síguelas. En el caso de Linux, según los paquetes de `R` que elijamos instalar en la computadora requerirás instalar paquetería adicional para tu distribución de Linux. `R` te informará de la paquetería necesaria conforme la requiera.  
+
+:::{.callout-tip}
+Si tienes problemas para instalar puedes usar [Posit Cloud (antes RStudio Cloud)](https://rstudio.cloud).
+:::
+
+## RStudio
+
+```{r}
+#| column: margin
+#| fig-width: 3.5
+#| fig-height: 3.5
+#| cache: true
+#| echo: false
+#| message: false
+#| fig-cap: "RStudio es una empresa que se dedica a hacer cosas para R."
+knitr::include_graphics('images/rstudio.png')
+```
+
+`RStudio` es una interfaz gráfica (IDE) para `R`. Puedes pensar a `R` como el _Bloc de Notas_ y a `RStudio` como _Word_. El _Bloc_ tiene todas las capacidades que necesitas para poder escribir; empero, es muchísimo mejor trabajar tus _documentos / novelas / autobiografías_ en _Word_. De la misma manera, `R` tiene todas las capacidades para hacer estadística y análisis de datos _pero un formato horrible_ y `RStudio` se ha convertido en la más popular forma de usar `R`. Por supuesto que no es la única; algunas alternativas son [Visual Studio Code](https://code.visualstudio.com/), [Eclipse con StatET](https://marketplace.eclipse.org/content/statet-r) y [RKWard](https://rkward.kde.org). En general es posible seguir estas notas sin que tengas `RStudio` pero, si es tu primera vez programando, no lo recomiendo.
+
+:::{.callout-tip}
+Si ya tienes experiencia con lenguajes como Julia, Rust, Java ó alguno de los mil C que existen, no tendrás ningún problema usando [el editor de tu preferencia](https://www.vim.org/).
+:::
+
+Para descargar `RStudio` ve a [su página](https://www.rstudio.com) y da clic en `Download RStudio`. Baja tu pantalla hasta donde dice `Installers for Supported Platforms` y elige tu plataforma: `Windows`, `Mac OS X` ó tu sabor de `Linux` preferido de la versión `Desktop` gratuita. Una vez descargado el archivo, ábrelo y sigue las instrucciones que aparecen en pantalla.  
+
+## Primeros pasos en `RStudio`
+
+Una vez hayas instalado `R` y `RStudio`, abre `RStudio`^[Si decidiste no instalar RStudio salta al final de esta sección.]. Te enfrentarás a una pantalla similar a esta: 
+
+```{r}
+#| fig-cap: "La primera vez que abres RStudio"
+#| cache: true
+#| echo: false
+knitr::include_graphics('images/RStudio1.png')
+```
+
+Si tu RStudio tiene sólo 3 páneles, como en mi caso, ve a la esquina superior izquierda (signo de hoja+) y elige un nuevo `R Script`
+
+```{r}
+#| fig-cap: "Elige hoja+ o `CTRL + N` para crear un nuevo archivo"
+#| cache: true
+#| echo: false
+knitr::include_graphics('images/RStudio2.png')
+```
+
+Tendrás, entonces, 4 páneles como se ve a continuación: 
+
+```{r}
+#| fig-cap: "RStudio <3"
+#| cache: true
+#| echo: false
+
+# Import the image
+bg <- png::readPNG("images/RStudio3.png")
+ggplot() +  
+  annotation_custom(rasterGrob(bg, 
+                                 width = unit(1,"npc"), 
+                                 height = unit(1,"npc")), 
+                      -Inf, Inf, -Inf, Inf) +
+  geom_circle(aes(x = 2.5, y = 1.5), radius=0.1, fill = "deepskyblue3", color = "deepskyblue3", alpha = 0.95) +
+  annotate("text", x= 2.5, y = 1.5, label = "1", size = 10) +
+  geom_circle(aes(x = 2.5, y = 7.5), radius=0.1, fill = "deepskyblue3", color = "deepskyblue3", alpha = 0.95) +
+  annotate("text", x= 2.5, y = 7.5, label = "2", size = 10) +
+  geom_circle(aes(x = 7.5, y = 1.5), radius=0.1, fill = "deepskyblue3", color = "deepskyblue3", alpha = 0.95) +
+  annotate("text", x= 7.5, y = 1.5, label = "4", size = 10) +
+  geom_circle(aes(x = 7.5, y = 7.5), radius=0.1, fill = "deepskyblue3", color = "deepskyblue3", alpha = 0.95) +
+  annotate("text", x= 7.5, y = 7.5, label = "3", size = 10) +
+  xlim(c(0,10)) + ylim(c(0,10)) + theme_void()
+```
+
+1. El primer panel (esquina inferior izquierda) es la `Consola`. Aquí es donde se ejecutan las acciones. Prueba escribir `2 + 3` en él y presiona enter. Aparece el resultado de la suma. Definitivamente, `R` es la calculadora que más trabajo cuesta instalar. 
+
+```{r}
+#| fig-cap: "La consola de `R` es la calculadora más difícil de instalar que existe."
+#| cache: true
+#| echo: false
+#| message: false
+knitr::include_graphics('images/RStudio4.png')
+```
+
+2. El segundo panel (esquina superior izquierda) es el panel con el `Script`. Aquí se escribe el programa pero no _se ejecuta_. Prueba escribir `10 + 9`. ¿Ves que no pasa nada? Lo que acabas de hacer es crear un programa que, cuando se ejecute, hará la suma de `10 + 9`. ¡Qué programa más aburrido! Sin embargo, no todo está perdido: presiona `CTRL+Enter` (`Cmd+Enter` en Mac) al final de la línea o bien da clic en `Run` y verás que, en la consola, aparece la instrucción y el resultado de la misma. El `Script` es una excelente fuente para tener un historial de lo que estás haciendo. 
+
+```{r}
+#| fig-cap: "El `Script` sirve para salvar las instrucciones en el orden en que las vas a ejecutar."
+#| cache: true
+#| echo: false
+#| message: false
+knitr::include_graphics('images/RStudio5.png')
+```
+
+3. El tercer panel contiene el ambiente. Aquí aparecerán las variables que vayamos creando. Por ahora, para poner un ejemplo, importaremos el archivo `Example1.csv` (con valores simulados) dando clic en `Import Dataset` y `From Text (base)`. Selecciona el archivo y elige las opciones en la ventana de previsualización que hagan que se vea bien. Nota que una vez realizada la importación aparece en el panel derecho `Example1.` Al dar clic podrás ver la base de datos. Las bases de datos y variables que utilices durante tus análisis aparecerán en esa sección.
+
+```{r, echo = FALSE}
+set.seed(371)
+Example1 <- data.frame(Alturas = rnorm(100, 1.65, 0.3), Peso = rnorm(100, 80, 1))
+write.csv(Example1, paste0("Example1.csv"), row.names=FALSE)
+```
+
+```{r}
+#| fig-cap: "El `Ambiente` muestra las variables (incluyendo bases de datos) que estás utilizando en este momento. A diferencia de otros programas estadísticos (o sea `Stata`) en `R` es posible tener múltiples bases de datos abiertas a la vez."
+#| cache: true
+#| echo: false
+#| message: false
+knitr::include_graphics('images/RStudio6.png')
+```
+
+4. Para entender mejor lo que ocurre en el último de los páneles, lo mejor es trabajar con nuestra base. Escribe en la consola `plot(Example1)` . En el cuarto pánel aparecerá una gráfica. El cuarto de los páneles para nosotros tendrá esa utilidad: mostrará las gráficas que hagamos así como la ayuda. Para ver la ayuda para las instrucciones de `R` puedes escribir `?`. Prueba teclear `?plot` en la consola. El signo de interrogación es un `help()` que muestra las instrucciones para usar una función.  
+
+```{r}
+#| column: margin
+#| fig-width: 3.5
+#| fig-height: 3.5
+#| cache: true
+#| echo: false
+#| message: false
+#| fig-cap: "La gráfica que aparece de hacer un `plot` de la base de datos de ejemplo."
+plot(Example1)
+```
+
+```{r}
+#| fig-cap: "El cuarto panel muestra respectivamente las gráficas y la ayuda."
+#| cache: true
+#| echo: false
+#| message: false
+knitr::include_graphics('images/RStudio7.png')
+```
+
+Mi sugerencia personal es que escribas todo lo que haces en el `Script` y que sólo utilices la consola para verificar valores. De esta manera podrás almacenar todas las instrucciones ejecutadas y volver a ellas cuando se requieran. Por último te sugiero utilizar `#` gatos para comentar tu código. Así, el código anterior lo podrías ver en la consola como:
+
+```{r, eval = FALSE}
+# Aquí pruebo cómo R hace las sumas
+10 + 9
+```
+
+[Comenta](https://www.freecodecamp.org/news/code-comments-the-good-the-bad-and-the-ugly-be9cc65fbf83/). [Comenta](https://www.c-sharpcorner.com/blogs/why-comments-are-important-while-writing-a-code). [Comenta, por favor](https://blog.codinghorror.com/code-tells-you-how-comments-tell-you-why/). Tu ser del futuro que regrese a sus archivos de `R` un mes después de haberlos hecho te lo agradecerá (y tu profe también). 
+
+Finalmente y como aclaración para estas notas, el código de `R` aparece como:
+```{r}
+#| eval: false
+#Esto es código de R
+7 - 2
+```
+
+Mientras que los resultados de evaluar en `R` se ven con `[]`:
+```{r}
+#| echo: false
+#Esto es código de R
+7 - 2
+```
+
+Así, la evaluación con su resultado se ve de la siguiente forma:
+```{r}
+#Esto es código de R
+7 - 2
+```
+
+## Opcional: Instalación de TeamViewer
+
+:::{.callout-warning}
+**TeamViewer** es una herramienta a usar sólo **en última instancia** si hay un problema que requiera que alguien del equipo docente apoye mediante acceso directo a la máquina. Los **únicos tres escenarios** para usar **Teamviewer** son los siguientes:
+
+a. No se puede compartir pantalla mediante la liga oficial de **Zoom** ni mediante ligas alternas de **Zoom**, **Google Meets** y **Microsoft Teams** creadas específicamente para intentar solventar el problema de **compartir pantalla**. 
+
+b. **Se puede compartir pantalla pero no del equipo correcto** o la pantalla correcta (ejemplo se comparte pantalla pero del celular o bien se comparte la segunda pantalla de un equipo de dos pantallas).
+
+c. El usuario puede compartir pantalla pero **no puede interactuar con su máquina** (ejemplo: perdió acceso al teclado o al ratón). 
+:::
+
+[**TeamViewer**](https://www.teamviewer.com/en-us/) es una herramienta de escritorio remoto que, al compartir un usuario y password asignado le permite a otra persona operar a distancia tu computadora. En el caso **extremo** de que durante la clase tengamos problemas de instalación de `R` o `RStudio` que requieran **soporte avanzado** (donde las herramientas de videollamada interfieran con el proceso) te pedimos instalar la versión gratuita de [TeamViewer](https://www.teamviewer.com/en-us/). 
+
+Una vez la descargues comparte tu **ID** y tu **password** con el docente para que pueda tener acceso a tu máquina (acceso que tú puedes monitorear desde tu pantalla y revocar en cualquier momento). Como TeamViewer **le da acceso al docente a tu máquina** ésta es una herramienta para uso **en caso extremo** sólo cuando no se puede compartir pantalla o no puedes operar en tu computadora (el teclado y el mouse no sirven, por ejemplo). 
+
+
+```{r}
+#| fig-cap: "Teamviewer es una herramienta de soporte a distancia que permite ayudar en casos **extremos** a resolver problemas en tu computadora."
+#| cache: true
+#| echo: false
+#| message: false
+knitr::include_graphics('images/teamviewer.png')
+```
+
+
+Una vez hayas cambiado el **password** de Teamviewer (dando clic en la flecha) nadie tiene acceso a tu máquina sin embargo la recomendación es desinstalarlo completamente. 
+
+:::{.callout-warning}
+Una vez el equipo docente haya resuelto tu problema **desintala**, da clic en la flecha junto a **password** para cambiar el **password** y (de ser posible) desinstala Teamviewer.
+:::
+
+
+### Vamos a la siguiente sección
+
+* [Introducción a R](https://rodrigozepeda.github.io/CursoR/Introducci%C3%B3n_a_R.html)
+
+## Sistema
+
+```{r}
+sessioninfo::session_info()
+```
+
+
