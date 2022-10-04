@@ -1,7 +1,7 @@
 ---
 title: "Gráficas con `ggplot2`"
 subtitle: "Parte 1: Fundamentos de graficación en `R`"
-author: "Rodrigo Zepeda-Tello"
+author: "Rodrigo Zepeda-Tello y Rossana Torres"
 date: "`r Sys.Date()`"
 abstract: "Mostramos cómo funciona `ggplot2` para elaborar gráficas de puntos, de barras y de trayectorias. Utilizamos funciones de suavizamiento y algunas opciones de personalización mediante `theme`."
 title-block-banner: false
@@ -954,6 +954,16 @@ Si no tienes datos para usar te recomiendo `vacunacion_puebla_menores_1_anio.csv
 :::
 
   + En la siguiente liga puedes encontrar código de `R` para generar 50 tipos distintos de gráficas: [http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html](http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html)
-  
 
+## Continuación
+
+¡Felicidades! Ya terminaste esta sección. Puedes ir a:
+
+-   [Graficación con `ggplot2` parte 2](https://rodrigozepeda.github.io/CursoR/Gr%C3%A1ficas_con_ggplot2_parte_2.html).
+
+## Sistema
+
+```{r}
+sessioninfo::session_info()
+```
   
