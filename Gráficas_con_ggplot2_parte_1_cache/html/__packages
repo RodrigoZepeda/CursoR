@@ -1,0 +1,13 @@
+ggplot2
+gridExtra
+cowplot
+tidyverse
+tibble
+tidyr
+readr
+purrr
+dplyr
+stringr
+forcats
+kableExtra
+ggrepel
