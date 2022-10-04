@@ -9,7 +9,8 @@ Notas para un curso de R.
 ## Índice:
 0. [Instalación](https://rodrigozepeda.github.io/CursoR/Instalacion.html)
 1. [Introducción](https://rodrigozepeda.github.io/CursoR/Introducción_a_R.html)
-2. [Gráficas con ggplot2](https://rodrigozepeda.github.io/CursoR/Graficación_con_gglot2.html)
+2. [Gráficas con ggplot2 (parte 1)](https://rodrigozepeda.github.io/CursoR/Gráficas_con_ggplot2_parte_1.html)
+3. [Gráficas con ggplot2 (parte 2)](https://rodrigozepeda.github.io/CursoR/Graficación_con_gglot2.html)
 3. [Estadística Descriptiva](https://rodrigozepeda.github.io/CursoR/Estadística_Descriptiva.html)
 4. [Análisis de encuestas](https://rodrigozepeda.github.io/CursoR/AnalisisEncuestas.html)
 4. [Regresiones 1](https://rodrigozepeda.github.io/CursoR/Regresiones1.html)
