@@ -3,13 +3,15 @@ title: "`R` es una calculadora demasiado extraña"
 subtitle: "Introducción a `R`"
 author: "Rodrigo Zepeda-Tello"
 date: "`r Sys.Date()`"
-title-block-banner: true
+title-block-banner: false
 execute:
   error: true
+theme: lux  
+toc-title: "Contenido"
 author-title: "Autores"
 published-title: "Última actualización"
 abstract-title: "Resumen"
-abstract: "Discutimos por qué vale la pena hacer un curso de `R` y cómo instalar tanto `R` como `RStudio` en todas las plataformas."
+abstract: "Discutimos cómo usar `R` como si fuera una calculadora así como la lectura de datos, el directorio y la instalación de paquetes."
 backgroundcolor: "#fffff8"
 format:
     pdf: default
@@ -162,7 +164,7 @@ Determina, sin evaluar, los resultados de los siguientes segmentos de código:
 Evalúa para comprobar tus respuestas.
 
 ### Ejercicio (NNT)
- 
+
 El **número (de pacientes) que es necesario tratar (NNT)** se define como la cantidad total de pacientes a quienes es necesario darles tratamiento para evitar un resultado negativo (es decir a cuántos pacientes debo darles tratamiento para que al menos uno se beneficie).
 
 ::: callout-tip
@@ -193,11 +195,11 @@ $$
 
 > El ejercicio consiste en calcular en `R` el **NNT** para la siguiente tabla:
 >
->|             |     | Resultado |      |
->|-------------|-----|-----------|------|
->|             |     | Si        | No   |
->| Tratamiento | Si  | 234       | 39  |
->|             | No  | 981       | 1040 |
+> |             |     | Resultado |      |
+> |-------------|-----|-----------|------|
+> |             |     | Si        | No   |
+> | Tratamiento | Si  | 234       | 39   |
+> |             | No  | 981       | 1040 |
 
 #### Respuestas
 
@@ -210,7 +212,7 @@ cli::cli_alert_info("NNT = {round(1/abs(eer - cer), 2)}")
 
 ### Ejercicio (círculos)
 
-> Calcula en `R` el área y el perímetro de un círculo de radio 5. 
+> Calcula en `R` el área y el perímetro de un círculo de radio 5.
 
 Recuerda que la fórmula del área es $\pi \cdot r^2$ donde $r$ es el radio; mientras que la del perímetro es: $\pi \cdot d$ donde $d$ es el diámetro (= dos veces el radio).
 
@@ -221,6 +223,7 @@ Recuerda que la fórmula del área es $\pi \cdot r^2$ donde $r$ es el radio; mie
 r = 5
 cli::cli_alert_info("Área = {round(pi*r^2,2)} y Perímetro = {round(pi*r*2,2)}")
 ```
+
 ### Ejercicio (R0)
 
 El $R_0$ se interpreta como el promedio de casos nuevos que genera un infectado en una enfermedad infecciosa. En su forma [más sencilla](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3693038/) se puede modelar como:
@@ -229,7 +232,7 @@ $$
 R_0 = \text{Transmisibilidad} \times \text{Promedio de tasa de contactos} \times \text{Duración del periodo infeccioso}
 $$
 
-donde la **transmisibilidad** es la probabilidad de contagio si hay un contacto entre un individuo infectado y uno susceptible, el **promedio de contactos** es el promedio de interacciones entre un infectado y un susceptible que ocurran y la **duración** es la cantidad de tiempo que un individuo infectado dura contagioso. 
+donde la **transmisibilidad** es la probabilidad de contagio si hay un contacto entre un individuo infectado y uno susceptible, el **promedio de contactos** es el promedio de interacciones entre un infectado y un susceptible que ocurran y la **duración** es la cantidad de tiempo que un individuo infectado dura contagioso.
 
 > Calcula en R el $R_0$ para una enfermedad con $10$ días de duración de periodo infeccioso, un promedio de $2$ contactos por día y una transmisibilidad de $0.07$.
 
@@ -316,7 +319,7 @@ x == 4
 ```
 
 ::: callout-warning
-El operador de asignación también se puede utilizar al revés $2 \rightarrow x$ pero no lo hagas, por favor. 
+El operador de asignación también se puede utilizar al revés $2 \rightarrow x$ pero no lo hagas, por favor.
 :::
 
 Nota que no estamos asignando el valor de `x`:
@@ -359,9 +362,8 @@ En todos los casos los resultados han sido `TRUE` ó `FALSE`. La clase de variab
 6*FALSE
 ```
 
-
 ::: callout-warning
-[Aquí](https://medium.com/mindorks/common-bad-programming-practices-7fb470ed74d2) puedes encontrar una lista de malas prácticas en computación a evitar. 
+[Aquí](https://medium.com/mindorks/common-bad-programming-practices-7fb470ed74d2) puedes encontrar una lista de malas prácticas en computación a evitar.
 :::
 
 Finalmente, nota que es posible reescribir una variable y cambiar su valor:
@@ -500,7 +502,7 @@ x
 ```
 
 ::: callout-warning
-Un error de punto flotante en la vida real ocasionó en los años noventa, [la explosión del cohete `Ariane 5`](https://www.esa.int/Newsroom/Press_Releases/Ariane_501_-_Presentation_of_Inquiry_Board_report). Moraleja: hay que tener cuidado y respeto al punto flotante.  
+Un error de punto flotante en la vida real ocasionó en los años noventa, [la explosión del cohete `Ariane 5`](https://www.esa.int/Newsroom/Press_Releases/Ariane_501_-_Presentation_of_Inquiry_Board_report). Moraleja: hay que tener cuidado y respeto al punto flotante.
 :::
 
 No olvides cambiar la cantidad de dígitos que deseas que imprima `R` en su consola de vuelta:
@@ -513,7 +515,9 @@ El mismo problema ocurre con números decimales cuya representación binaria es 
 
 ### ¿Cómo checar un `if`?
 
-En general lo que hacen las computadoras para comparar valores es que verifican que, en valor absoluto, el error sea pequeño. Recuerda que el valor absoluto de $x$, $|x|$, regresa siempre el positivo: $$
+En general lo que hacen las computadoras para comparar valores es que verifican que, en valor absoluto, el error sea pequeño. Recuerda que el valor absoluto de $x$, $|x|$, regresa siempre el positivo: 
+
+$$
 |4| = 4 \qquad \textrm{y} \qquad |-8| = 8
 $$
 
@@ -525,7 +529,9 @@ Para verificar que algo es más o menos $0.3$ suele usarse el valor absoluto[^3]
 abs( (0.1 + 0.1 + 0.1) - 0.3 ) < 1.e-6
 ```
 
-donde `1.e-6` es notación corta para `r sprintf("%f", 1.e-6)` (también escrito como $1\times 10^{-6}$). La pregunta que nos estamos haciendo es que si el error entre sumar $0.1+0.1+0.1$ y $0.3$ es muy pequeño $< 0.000001$: $$
+donde `1.e-6` es notación corta para `r sprintf("%f", 1.e-6)` (también escrito como $1\times 10^{-6}$). La pregunta que nos estamos haciendo es que si el error entre sumar $0.1+0.1+0.1$ y $0.3$ es muy pequeño $< 0.000001$: 
+
+$$
 | (0.1 + 0.1 + 0.1) - 0.3 | < 0.000001
 $$
 
@@ -554,7 +560,7 @@ getwd()
 ```
 
 ::: callout-warning
-En general es buena práctica en `R` establecer, hasta arriba del `Script`, el comando de directorio. Esto con el propósito de que, cuando compartas un archivo, la persona a quien le fue compartido el archivo pueda rápidamente elegir su propio directorio en su computadora. 
+En general es buena práctica en `R` establecer, hasta arriba del `Script`, el comando de directorio. Esto con el propósito de que, cuando compartas un archivo, la persona a quien le fue compartido el archivo pueda rápidamente elegir su propio directorio en su computadora.
 :::
 
 Probemos guardar unas variables en un archivo dentro de nuestro directorio. Para ello utilizaremos el comando `save`.
@@ -572,7 +578,8 @@ Si vas a tu directorio, notarás que el archivo `MisVariables.rda` acaba de ser 
 
 ```{r}
 #| echo: false
-names(.GlobalEnv)[-which(names(.GlobalEnv) %in% c(".Random.seed", "escritorio","subDir","subcarpeta", "filedir"))]
+rm(cer, eer, r)
+names(.GlobalEnv)[-which(names(.GlobalEnv) %in% c(".Random.seed", "escritorio","subDir","subcarpeta", "filedir",".main"))]
 ```
 
 Podemos probar sumar nuestras variables y todo funciona súper:
@@ -601,7 +608,7 @@ x + y #Error
 ```
 
 ::: callout-warning
-Así como hay que lavarse las manos antes de comer, es buen hábito limpiar todas las variables del ambiente de `R` antes de usarlo. 
+Así como hay que lavarse las manos antes de comer, es buen hábito limpiar todas las variables del ambiente de `R` antes de usarlo.
 :::
 
 Podemos leer la base de datos usando `load`:
@@ -723,7 +730,7 @@ ggplot(mis.datos, aes(x = x)) +
 
 ```
 
-3. ¿Qué es un paquete para `R`?
+3.  ¿Qué es un paquete para `R`?
 
 **R INTERMEDIO**
 
@@ -888,7 +895,6 @@ Siempre escribe tu código pensando que alguien más ([y ese alguien más puedes
 
 ## Ejercicios de cierre de la sección
 
-
 1.  El siguiente código crea una variable que se llama `enfermedad` a la cual se le asigna el valor (caracter) `"Polio"`. Sin embargo el código no corre. Arréglalo para que funcione
 
 ```{r}
@@ -947,23 +953,25 @@ c.  El segundo signo de `+` está dentro del caracter por lo que estamos escribi
 d.  El signo de `+` le indica al usuario que hay un error en la línea previa.
 e.  El signo de `+` le indica al usuario que la línea previa está incompleta.
 
-```{=html}
 <!-- -->
-```
+
 6.  ¿Qué es el directorio que ponemos con `setwd`?
 
-```{=html}
 <!-- -->
-```
+
 a.  Es la carpeta donde vive `R`.
 b.  Es la carpeta donde viven los paquetes de `R`.
 c.  Es la carpeta donde viven los archivos que estoy usando para mi proyecto actual en `R`.
 
-7.  Genera un `RScript` de nombre `IMC.R` en el cual las personas almacenen en una variable su `peso` (kilos), en otra su `altura` (metros) y les calcule su índice de masa corporal `IMC` con la siguiente fórmula: 
+```{=html}
+<!-- -->
+```
+7.  Genera un `RScript` de nombre `IMC.R` en el cual las personas almacenen en una variable su `peso` (kilos), en otra su `altura` (metros) y les calcule su índice de masa corporal `IMC` con la siguiente fórmula:
 
 $$
 \text{IMC} = \frac{\text{Peso}}{\text{Altura}^2}
-$$
+$$ 
+
 ## Sistema
 
 ```{r}
