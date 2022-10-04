@@ -3,10 +3,10 @@ title: "Cambios en las interrupciones legales del embarazo en Ciudad de México 
 author: "Rodrigo Zepeda"
 date: "rodrigo.zepeda@imss.gob.mx"
 output:
-  html_document:
-    df_print: paged
   pdf_document: 
     latex_engine: lualatex
+  html_document:
+    df_print: paged
 urlcolor: blue
 bibliography: refs.bib
 ---

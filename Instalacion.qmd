@@ -3,11 +3,15 @@ title: "Preparación para el curso"
 subtitle: "Instalación de R / RStudio"
 author: "Rodrigo Zepeda-Tello"
 date: "`r Sys.Date()`"
-title-block-banner: true
+abstract: "Discutimos por qué vale la pena hacer un curso de `R` y cómo instalar tanto `R` como `RStudio` en todas las plataformas."
+title-block-banner: false
+execute:
+  error: true
+theme: lux  
+toc-title: "Contenido"
 author-title: "Autores"
 published-title: "Última actualización"
 abstract-title: "Resumen"
-abstract: "Discutimos por qué vale la pena hacer un curso de `R` y cómo instalar tanto `R` como `RStudio` en todas las plataformas."
 backgroundcolor: "#fffff8"
 format:
     pdf: default
@@ -479,7 +483,7 @@ Una vez el equipo docente haya resuelto tu problema **desintala**, da clic en la
 :::
 
 
-### Vamos a la siguiente sección
+## Continuación
 
 * [Introducción a R](https://rodrigozepeda.github.io/CursoR/Introducci%C3%B3n_a_R.html)
 

@@ -34,8 +34,6 @@ knitr::opts_chunk$set(tidy = FALSE, cache.extra = packageVersion('tufte'), error
 options(htmltools.dir.version = FALSE)
 ```
 
-> **DATOS** Todos los datos discutidos aquí se encuentran en: [https://www.dropbox.com/sh/bm2utmm3r6e3u8q/AADIrjN5yXHd2GW-73lTLkPGa?dl=0](https://www.dropbox.com/sh/bm2utmm3r6e3u8q/AADIrjN5yXHd2GW-73lTLkPGa?dl=0). 
-
 # ggplot2 
 `R` cuenta con su propia forma de hacer gráficas mediante el comando `plot`. Sin embargo, las gráficas que puedes hacer con plot son, salvo en el caso de regresiones, mucho más sencillas que las producidas por el paquete `ggplot`. Dicho paquete fue desarrollado inicialmente por [Hadley Wickham](http://hadley.nz) y actualmente [continúa en desarrollo](https://github.com/tidyverse/ggplot2) por más de 198 colaboradores distintos. Por su belleza y facilidad, nosotros nos enfocaremos en gráficas con `ggplot2`. Otros excelentes tutoriales los puedes hallar en el [libro de ggplot2](https://ggplot2-book.org) o en [r-statistics.co](http://r-statistics.co/ggplot2-Tutorial-With-R.html). 
 
@@ -216,6 +214,7 @@ ggsave("Edad_vs_colesterol.pdf", width = 8, height = 5)
 ## Ejercicio
 
 ### R Básico 
+
 1. Imita la siguiente gráfica de altura (`height`) contra peso (`weight`) de la base de datos de diabetes. En esta usamos otro tema distinto y los puntos son naranjas de tamaño $0.5$:
 
 ```{r, echo = FALSE, warning=FALSE}
@@ -229,6 +228,8 @@ ggplot(datos_diabetes) + geom_point(aes(x = weight, y = height), color = "orange
 ggplot(datos_diabetes) + 
   geom_point(aes(x = (weight * 0.453592) /(height * 0.0254)^2, y = chol/hdl), color = "purple", size = 0.5) + xlab("IMC") + ylab("Radio de colesterol") + ggtitle("Relación entre IMC y colesterol") + theme_bw()
 ```
+
+3. Descarga y lee la base de [Dosis aplicadas de BCG en el IMSS](http://datos.imss.gob.mx/dataset/informacion-en-salud/resource/62b158dd-3b17-470e-b7c3-dd3b3cfd9f34). Crea una nube de puntos donde en el eje $x$ esté el cambio en dosis de `2002` a `2003` y en el eje $y$ esté el cambio en dosis de `2003` a `2004`. Es decir el eje $x$ representa cuánto fue el aumento (o disminución) en dosis en `2003` y el eje `y` representa el mismo cambio pero en `2004`. 
 
 ### R Intermedio 
 Utiliza `scale_y_continuous` en particular la opción de `sec.axis` para agregar un segundo eje `y` del lado derecho donde la altura esté en metros (no pulgadas). Repite el proceso con `scale_x_continuous` para agregar un eje `x` en la parte superior con el peso en kilogramos.
