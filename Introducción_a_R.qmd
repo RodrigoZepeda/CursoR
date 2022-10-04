@@ -891,7 +891,7 @@ Siempre escribe tu código pensando que alguien más ([y ese alguien más puedes
 
 ¡Felicidades! Ya terminaste esta sección. Puedes ir a:
 
--   [Graficación con `ggplot2`](Graficación_con_gglot2.html).
+-   [Graficación con `ggplot2` parte 1](https://rodrigozepeda.github.io/CursoR/Gr%C3%A1ficas_con_ggplot2_parte_1.html).
 
 ## Ejercicios de cierre de la sección
 
