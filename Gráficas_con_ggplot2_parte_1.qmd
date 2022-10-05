@@ -586,6 +586,7 @@ ggplot(bcg) +
 Utiliza la base de datos `IMSS_BCG_2019.csv` y genera la siguiente gráfica con `color` de la orilla `white` y relleno (`fill`) de color `forestgreen`. El tema es el `bw` y el texto del eje `x` está a 45 grados:
 
 ```{r}
+#| echo: false
 read_csv("datasets/IMSS_BCG_2019.csv", show_col_types = F) %>%
 ggplot() +
   geom_col(aes(x = Del, y = `Casos detectados tuberculosis`), 
@@ -827,6 +828,7 @@ La base de datos `casos_covid_agosto_2022.csv` contiene datos sobre la cantidad 
 
 ```{r}
 #| echo: false
+#| message: false
 sinave <- read_csv("datasets/casos_covid_agosto_2022.csv")
 ```
 

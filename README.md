@@ -14,7 +14,7 @@ Notas para un curso de R.
 3. [Estadística Descriptiva](https://rodrigozepeda.github.io/CursoR/Estadística_Descriptiva.html)
 4. [Análisis de encuestas](https://rodrigozepeda.github.io/CursoR/AnalisisEncuestas.html)
 4. [Regresiones 1](https://rodrigozepeda.github.io/CursoR/Regresiones1.html)
-5. [Regresiones 2](https://rodrigozepeda.github.io/CursoR/Regresiones2.html)
+5. [Regresiones 2](https://rodrigozepeda.github.io/CursoR/Regresiones_2.html)
 6. [Cadenas de Markov](https://rodrigozepeda.github.io/CursoR/Cadenas_de_Markov.html)
 
 ## Contacto
