@@ -467,7 +467,142 @@ ggplot(datos_diabetes) +
                      sec.axis = sec_axis(~ . * 0.453592, name = "Peso (kilogramos)"))
 ```
 
-## Gráficas de barras
+## Gráficas de columnas (barras)
+
+### Una tranquila (BCG en IMSS)
+
+La base de datos `IMSS_BCG_2019.csv` contiene las dosis de B.C.G que se han aplicado en el IMSS por Delegación. Generaremos una gráfica de barras con ellas. Para eso leemos la base:
+
+```{r}
+#| message: false
+bcg <- read_csv("datasets/IMSS_BCG_2020.csv")
+```
+
+Ésta se ve más o menos así:
+
+```{r}
+#| echo: false
+head(bcg) %>% 
+  kable() %>%
+  kableExtra::kable_styling()
+```
+
+Graficaremos la columna de `Dosis BCG` por delegación `Del`. Para ello ponemos nuestro lienzo con `ggplot` y agregamos un `geom_col`:
+
+```{r}
+ggplot(bcg) +
+  geom_col(aes(x = Del, y = `Dosis BCG`))
+```
+Nota que aquí a la variable hubo que llamarle `Dosis BCG` con los acentos graves <code>`</code>
+
+Esto porque de otra forma genera error pues piensa que `Dosis` y `BCG` son dos palabras distintas:
+
+```{r}
+ggplot(bcg) +
+  geom_col(aes(x = Del, y = Dosis BCG))
+```
+Para darle color usaremos tanto `color` como `fill`. Nota que el `color` cambia la orilla:
+
+```{r}
+ggplot(bcg) +
+  geom_col(aes(x = Del, y = `Dosis BCG`), color = "red")
+```
+
+mientras que `fill` cambia el contenido:
+
+```{r}
+ggplot(bcg) +
+  geom_col(aes(x = Del, y = `Dosis BCG`), color = "red",
+           fill = "blue")
+```
+
+Cambiaré los colores por unos más bellos, y agregaré título y etiquetas a los ejes. En este caso no deseo etiqueta en el eje `x` por lo cual lo dejaré como comillas vacías: `""`. 
+
+```{r}
+ggplot(bcg) +
+  geom_col(aes(x = Del, y = `Dosis BCG`), 
+           color = "red", fill = "blue") +
+  labs(
+    x        = "",
+    y        = "Dosis BCG aplicadas",
+    title    = "Dosis de B.C.G. aplicadas en el IMSS",
+    subtitle = "Año 2020"
+  )
+```
+
+Voy a agregar comas a los números del eje `y` con `scale_y_continuous`. El `scale_y_continuous` manipula lo que sea del eje `y`. En mi caso deseo sólo que los números les ponga comas (otra opción es para porcentajes usar `percent` en lugar de `comma`):
+
+```{r}
+ggplot(bcg) +
+  geom_col(aes(x = Del, y = `Dosis BCG`), 
+           color = "red", fill = "blue") +
+  labs(
+    x        = "",
+    y        = "Dosis BCG aplicadas",
+    title    = "Dosis de B.C.G. aplicadas en el IMSS",
+    subtitle = "Año 2020"
+  ) +
+  scale_y_continuous(labels = scales::comma)
+```
+
+Finalmente usaremos `theme` para cambiar la orientación de las etiquetas del eje `x` a vertical (_i.e_ con un ángulo de 90º) para que se vean mejor:
+
+```{r}
+ggplot(bcg) +
+  geom_col(aes(x = Del, y = `Dosis BCG`), 
+           color = "red", fill = "blue") +
+  labs(
+    x        = "",
+    y        = "Dosis BCG aplicadas",
+    title    = "Dosis de B.C.G. aplicadas en el IMSS",
+    subtitle = "Año 2020"
+  ) +
+  scale_y_continuous(labels = scales::comma) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+Seguro en este punto te estarás preguntando ¿y cómo Rod sabe cuál es el código para cada opción? La respuesta es que pasé mucho tiempo (¡demasiado!) en Google encontrándola pero que una vez encontré el cómo rotar las etiquetas guardé el código en mi cuaderno y ahora cada que se ofrece ¡ya sé qué poner!
+
+Finalmente agregaré colores más lindos y un `theme_linedraw`
+
+```{r}
+ggplot(bcg) +
+  geom_col(aes(x = Del, y = `Dosis BCG`), 
+           color = "black", fill = "tomato3") +
+  labs(
+    x        = "",
+    y        = "Dosis BCG aplicadas",
+    title    = "Dosis de B.C.G. aplicadas en el IMSS",
+    subtitle = "Año 2020"
+  ) +
+  scale_y_continuous(labels = scales::comma) +
+  theme_linedraw() +  #Nota que se agrega antes porque
+                      #si se pone después desconfigura la rotada
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
+```
+
+### Ejercicio
+
+Utiliza la base de datos `IMSS_BCG_2019.csv` y genera la siguiente gráfica con `color` de la orilla `white` y relleno (`fill`) de color `forestgreen`. El tema es el `bw` y el texto del eje `x` está a 45 grados:
+
+```{r}
+read_csv("datasets/IMSS_BCG_2019.csv", show_col_types = F) %>%
+ggplot() +
+  geom_col(aes(x = Del, y = `Casos detectados tuberculosis`), 
+           color = "white", fill = "forestgreen") +
+  labs(
+    x        = "",
+    y        = "Casos",
+    title    = "Casos detectados de tuberculosis en el IMSS",
+    subtitle = "Año 2019",
+    caption  = "Fuente: Datos Abiertos IMSS" 
+  ) +
+  scale_y_continuous(labels = scales::comma) +
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+```
+
+### Una más complicada (Seguro Popular)
 
 El archivo `inegi_seguro_popular.csv` ([datos reales obtenidos de INEGI](https://datos.gob.mx/busca/dataset/porcentaje-de-la-poblacion-afiliada-al-seguro-popular-derecho-a-la-salud-recepcion-del-derecho)) contiene información del número de personas afiliadas al seguro popular por entidad federativa en 2010 y 2015. Graficaremos ambos años. Para ello, leamos el archivo:
 
@@ -498,7 +633,7 @@ ggplot(seguro.pop) +
                y = `Porcentaje de la población afiliada al seguro popular`))
 ```
 
-Esta vez como los nombbres de las columnas contienen varias palabras hubo que colocarlas entre dos [acentos graves ó backticks:](https://en.wikipedia.org/wiki/Backtick) <code>`</code>
+Esta vez como los nombres de las columnas contienen varias palabras hubo que colocarlas entre dos [acentos graves ó backticks:](https://en.wikipedia.org/wiki/Backtick) <code>`</code>
 
 Nota que hay gráficas donde el porcentaje supera el 100% esto es porque `R`, de inicio, combina los años `2010` y `2015` sumando los valores. Podemos ver esto con el comando `fill` diciéndole a `R` que `Periodo` no lo lea como número sino como caracter `character` (de otra forma buscará colorearlo con el color `2010` y `2015` los cuales no se distinguen):
 
@@ -640,7 +775,7 @@ colnames(vacunacion) <- c("ENSANUT", "Porcentaje vacunado", "Edad de los niños"
 
 Corre el código tal cual y una vez lo hayas corrido, grafica los datos con columnas eligiendo colores y texto adecuados. 
 
-2. Utiliza la base `IMSS_BCG_2019.csv` para realizar una gráfica de barras como sigue. Para agregar los numeritos en las barras se usó `geom_text`, para rotar el eje `x` se usó `theme(axis.text.x = element_text(angle = 90, hjust = 1))` y para acomodar las etiquetas en el eje `y`con comas `scale_y_continuous(labels = comma)`. 
+2. Utiliza la base `IMSS_BCG_2019.csv` para realizar una gráfica de barras identica a  la que sigue (el `fill` es `deepskyblue4` y no tiene `color`). Para agregar los numeritos en las barras se usó `geom_text` con `size = 2`, `hjust = 0`, `color = "white"` y `angle = 90`.  El tema es el `bw`. 
 
 ```{r}
 #| echo: false
@@ -902,7 +1037,7 @@ ggplot(sinave) +
            label = "Primer caso de COVID-19", color = "gray75")
 ```
 
-## Ejercicios
+### Ejercicios
 
 1. Agrega a la gráfica anterior una anotación el 24 de diciembre del 2022 indicando que ese día ocurrió la primer vacuna. 
 

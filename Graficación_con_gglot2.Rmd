@@ -605,7 +605,7 @@ ggplot(seguro.pop) +
                y = `Porcentaje de la población afiliada al seguro popular`))
 ```
 
-Esta vez como los nombbres de las columnas contienen varias palabras hubo que colocarlas entre dos [acentos graves ó backticks:](https://en.wikipedia.org/wiki/Backtick) <code>`</code>
+Esta vez como los nombres de las columnas contienen varias palabras hubo que colocarlas entre dos [acentos graves ó backticks:](https://en.wikipedia.org/wiki/Backtick) <code>`</code>
 
 Nota que hay gráficas donde el porcentaje supera el 100% esto es porque `R`, de inicio, combina los años `2010` y `2015` sumando los valores. Podemos ver esto con el comando `fill` diciéndole a `R` que `Periodo` no lo lea como número sino como caracter `character` (de otra forma buscará colorearlo con el color `2010` y `2015` los cuales no se distinguen):
 
