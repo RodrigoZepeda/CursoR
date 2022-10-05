@@ -10,11 +10,11 @@ Notas para un curso de R.
 0. [Instalación](https://rodrigozepeda.github.io/CursoR/Instalacion.html)
 1. [Introducción](https://rodrigozepeda.github.io/CursoR/Introducción_a_R.html)
 2. [Gráficas con ggplot2 (parte 1)](https://rodrigozepeda.github.io/CursoR/Gr%C3%A1ficas_con_ggplot2_parte_1.html)
-3. [Gráficas con ggplot2 (parte 2)](https://rodrigozepeda.github.io/CursoR/Graficaci%C3%B3n_con_gglot2.html)
+3. [Gráficas con ggplot2 (parte 2)](https://rodrigozepeda.github.io/CursoR/Gr%C3%A1ficas_con_ggplot2_parte_2.html)
 3. [Estadística Descriptiva](https://rodrigozepeda.github.io/CursoR/Estadística_Descriptiva.html)
 4. [Análisis de encuestas](https://rodrigozepeda.github.io/CursoR/AnalisisEncuestas.html)
-4. [Regresiones 1](https://rodrigozepeda.github.io/CursoR/Regresiones1.html)
-5. [Regresiones 2](https://rodrigozepeda.github.io/CursoR/Regresiones_2.html)
+4. [Regresiones (parte 1)](https://rodrigozepeda.github.io/CursoR/Regresiones1.html)
+5. [Regresiones (parte 2)](https://rodrigozepeda.github.io/CursoR/Regresiones_2.html)
 6. [Cadenas de Markov](https://rodrigozepeda.github.io/CursoR/Cadenas_de_Markov.html)
 
 ## Contacto
