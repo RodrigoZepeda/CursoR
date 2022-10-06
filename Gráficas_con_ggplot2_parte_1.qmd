@@ -558,7 +558,8 @@ ggplot(bcg) +
     subtitle = "Año 2020"
   ) +
   scale_y_continuous(labels = scales::comma) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1, vjust = 0.5))
 ```
 
 Seguro en este punto te estarás preguntando ¿y cómo Rod sabe cuál es el código para cada opción? La respuesta es que pasé mucho tiempo (¡demasiado!) en Google encontrándola pero que una vez encontré el cómo rotar las etiquetas guardé el código en mi cuaderno y ahora cada que se ofrece ¡ya sé qué poner!
@@ -578,7 +579,8 @@ ggplot(bcg) +
   scale_y_continuous(labels = scales::comma) +
   theme_linedraw() +  #Nota que se agrega antes porque
                       #si se pone después desconfigura la rotada
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1, vjust = 0.5)) 
 ```
 
 ### Ejercicio
@@ -600,7 +602,7 @@ ggplot() +
   ) +
   scale_y_continuous(labels = scales::comma) +
   theme_bw() + 
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 0.5)) 
 ```
 
 ### Una más complicada (Seguro Popular)
@@ -797,6 +799,448 @@ ggplot(imss2019) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   scale_y_continuous(labels = scales::comma)
 ```
+
+## Histogramas con `ggplot2`
+
+### Un histograma es una gráfica de barras especial 
+
+El comando `geom_histogram` sirve para crear histogramas. Un histograma es un tipo de gráfico de barras que acumula en cada barra conteos de cuántos cayeron en ese sitio. Para entender mejor, veamos un ejemplo. Para ello copia el siguiente código el cual genera una base de datos expuesta a continuación:
+
+```{r}
+datos_histograma <- tibble(
+  estaturas = c(1.42, 1.45, 1.65, 1.55, 1.32, 1.44, 1.50, 1.51, 1.62, 1.55)
+)
+```
+
+```{r}
+#| echo: false
+datos_histograma %>%
+  kable() %>% 
+  kable_styling()
+```
+
+Viendo la base de datos notamos que puede resumirse según fueron cayendo en distintos intervalos:
+
+```{r}
+#| echo: false
+datos_histograma %>%
+  mutate(`Intervalo`= cut(estaturas, c(1.3,1.4,1.5,1.6,1.7,1.8))) %>%
+  mutate(Intervalo = str_remove_all(Intervalo,"\\(|\\]")) %>%
+  mutate(Intervalo = str_replace_all(Intervalo,","," - ")) %>%
+  group_by(Intervalo) %>%
+  tally() %>%
+  kable() %>%
+  kable_styling()
+```
+Podemos elaborar fácilmente una gráfica de barras para ese conteo: 
+
+```{r}
+#| echo: false
+datos_histograma %>%
+  mutate(`Intervalo`= cut(estaturas, c(1.3,1.4,1.5,1.6,1.7,1.8))) %>%
+  mutate(Intervalo = str_remove_all(Intervalo,"\\(|\\]")) %>%
+  mutate(Intervalo = str_replace_all(Intervalo,","," - ")) %>%
+  group_by(Intervalo) %>%
+  tally() %>%
+  ggplot() +
+  geom_col(aes(x = Intervalo, y = n), fill = "purple")
+```
+
+donde, de nuevo, la altura de la barra corresponde al conteo de cuántos cayeron en ese intervalo. 
+
+Podemos también hacer una gráfica de barras donde no pongamos el conteo absoluto sino el porcentaje (sabemos que hay `r nrow(datos_histograma)` mediciones en total) y esto se vería así:
+
+```{r}
+#| echo: false
+datos_histograma %>%
+  mutate(`Intervalo`= cut(estaturas, c(1.3,1.4,1.5,1.6,1.7,1.8))) %>%
+  mutate(Intervalo = str_remove_all(Intervalo,"\\(|\\]")) %>%
+  mutate(Intervalo = str_replace_all(Intervalo,","," - ")) %>%
+  group_by(Intervalo) %>%
+  tally() %>%
+  ggplot() +
+  geom_col(aes(x = Intervalo, y = n/10), fill = "purple")
+```
+
+Un histograma representa la misma idea que estas gráficas de barras de manera simplificada. Usando los datos asignados previamente puedo construir un histograma como sigue:
+
+```{r}
+ggplot(datos_histograma) +
+  geom_histogram(aes(x = estaturas), color = "white",
+                 breaks = c(1.3, 1.4, 1.5, 1.6, 1.7, 1.8))
+```
+
+donde los `breaks` indican a `R` dónde hacer los cortes (volveremos más adelante). 
+
+Si quisiéramos verlo como porcentaje y no cómo conteo basta con agregar una opción (muy específica que a nadie se le va a ocurrir sin googlearlo) de `y = (..count..)/sum(..count..)` en el `aes` como sigue:
+
+```{r}
+ggplot(datos_histograma) +
+  geom_histogram(aes(x = estaturas, y = (..count..)/sum(..count..)), 
+                 color = "white",
+                 breaks = c(1.3, 1.4, 1.5, 1.6, 1.7, 1.8))
+```
+
+¡Hagamos entonces nuestro primer histograma!
+
+### Histograma de colesterol
+
+Tomaremos de nuevo la base de diabetes que usamos en la sección anterior. Para ello la leemos:
+
+```{r}
+#| message: false
+datos_diabetes <- read_csv("datasets/diabetes.csv")
+```
+
+Para armar el histograma es sólo necesario especificar una variable en el `aes`:
+
+```{r}
+#Graficación de un histograma
+ggplot(datos_diabetes) + 
+  geom_histogram(aes(x = chol))
+```
+
+Date cuenta que solito `R` decide cuántas barras poner. 
+
+::: callout-note
+Según [Ioannidis](http://www.madgik.di.uoa.gr/sites/default/files/vldb03_pp19-30.pdf) histograma viene del griego _histos_ (mástil) y _gram-ma_ (algo escrito). Por lo que literalmente sería algo escrito en mástiles. A pesar de que éstos se atribuyen a Karl Pearson, los histogramas fueron inventados desde antes. Él fue quien les puso nombre. :::
+
+Para especificar el número de barras hay dos formas: utilizando el comando `bins` lo que le dice a `R` cuántas barras poner:
+
+```{r}
+#Graficación de un histograma con 50 barras
+ggplot(datos_diabetes) + 
+  geom_histogram(aes(x = chol), bins = 50)
+```
+
+O bien especificando el ancho de cada barra y dejando a `R` decidir:
+
+```{r}
+#Graficación con barras de ancho 10
+ggplot(datos_diabetes) + 
+  geom_histogram(aes(x = chol), binwidth = 10)
+```
+
+o bien especificando de dónde a dónde van los puntos de corte de cada barra:
+
+```{r}
+#Graficación con barras de ancho 10
+ggplot(datos_diabetes) + 
+  geom_histogram(aes(x = chol), 
+                 breaks = c(50, 100, 150, 200, 250, 300, 350))
+```
+
+El comando `fill` cambia el color interno de las barras. 
+```{r}
+#El comando fill cambia el color
+ggplot(datos_diabetes) + 
+  geom_histogram(aes(x = chol), bins = 50, fill = "#cef0ff")
+```
+
+Mientras que el comando `color` cambia el color del borde de la misma:
+```{r}
+ggplot(datos_diabetes) + 
+  geom_histogram(aes(x = chol), bins = 50, 
+                 fill = "#cef0ff",  color = "#1D1B1B")
+```
+
+FInalmente, podemos hacer que el histograma muestre no el número de casos totales en la base sino la proporción de los casos mediante `y = ..density..`. La diferencia entre `..density..` y `(..count..)/sum(..count..)` es que ``..density..` está hecho para que la suma de las áreas de los rectángulos dé $1$ mientras que en `(..count..)/sum(..count..)` la suma de las alturas de los rectángulos es la que da $1$. 
+
+```{r}
+#..density.. nos da el % de casos de manera normalizada
+#para que los rectángulos sumen sus áreas a área 1
+ggplot(datos_diabetes) + 
+  geom_histogram(aes(x = chol, y = ..density..), 
+                 bins = 50, fill = "#cef0ff",  color = "#1D1B1B")
+```
+
+Podemos agregar, además, una densidad kernel que nos dé una idea de cómo se ve la distribución ajustada. Como veremos más adelante, la densidad kernel (aunque puede ser manipulable) es más fácil que no nos dé errores de distribución incorrecta. 
+
+```{r}
+#Gráfica de histograma con densidad kernel
+ggplot(datos_diabetes) + 
+  geom_histogram(aes(x = chol, y = ..density..), 
+                 bins = 50,
+                 fill = "#cef0ff",  color = "#1D1B1B") + 
+  geom_density(aes(x = chol))
+```
+
+**Ojo** `ggplot2` funciona por capas por lo cual el orden en el que se agrega cada capa (`geom`) sí afecta el cómo se ve. Si ponemos el `geom_density` antes del `geom_histogram` nos queda la línea _detrás_ del histograma:
+
+```{r}
+#Gráfica de histograma con densidad kernel
+ggplot(datos_diabetes) + 
+  geom_density(aes(x = chol)) +
+  geom_histogram(aes(x = chol, y = ..density..), 
+                 bins = 50,
+                 fill = "#cef0ff",  color = "#1D1B1B")  
+```
+
+Continuando con la edición podemos cambiar los parámetros de `color` y `size` de la distribución para ajustar su color y tamaño. Así mismo, [`linetype` nos da una línea discontinua](https://ggplot2.tidyverse.org/reference/aes_linetype_size_shape.html): 
+
+```{r}
+#Cambio de color y tipo de línea a la densidad
+ggplot(datos_diabetes) + 
+  geom_histogram(aes(x = chol, y = ..density..), 
+                 bins = 50,
+                 fill = "#cef0ff",  color = "#1D1B1B") + 
+  geom_density(aes(x = chol), color = "deepskyblue4",
+               linetype = "dotted", size = 1)
+```
+
+Finalmente, modificamos los temas:
+
+```{r}
+#Graficación con barras de ancho 0.05
+ggplot(datos_diabetes) + 
+  geom_histogram(aes(x = chol, y = ..density..), 
+                 bins = 50,
+                 fill = "#cef0ff",  color = "#1D1B1B") + 
+  geom_density(aes(x = chol), color = "deepskyblue4",
+               linetype = "dotted", size = 1) +
+  labs(
+    x        = "Colesterol",
+    y        = "",
+    title    = "Distribución observada de los niveles de colesterol",
+    subtitle = "Población afroamericana de Virginia"
+  ) + 
+  theme_bw()
+```
+
+La función `mean` calcula la media de una columna dentro de una base de datos. Podemos calcular la media de la columna de `chol` dentro de `datos_diabetes`:
+```{r}
+#Media de la columna de colesterol
+#la opción na.rm = T es para no considerar los valores missing
+
+promedio_colesterol <- mean(datos_diabetes$chol) #No funciona pues tiene un missing
+promedio_colesterol
+
+#Acá le decimos que ignore el missing con na.rm = T
+promedio_colesterol <- mean(datos_diabetes$chol, na.rm = T)
+promedio_colesterol
+```
+
+Y agregamos una línea vertical a la gráfica exactamente en la media:
+```{r}
+#Agregamos indicadora del promedio
+ggplot(datos_diabetes) + 
+  geom_histogram(aes(x = chol, y = ..density..), bins = 50,
+                 fill = "#cef0ff",  color = "#1D1B1B") + 
+  geom_density(aes(x = chol), color = "deepskyblue4",
+               linetype = "dotted", size = 1) +
+  labs(
+    x        = "Colesterol",
+    y        = "",
+    title    = "Distribución observada de los niveles de colesterol",
+    subtitle = "Población afroamericana de Virginia"
+  ) + 
+  theme_bw() +
+  geom_vline(aes(xintercept = promedio_colesterol))
+```
+
+Podemos cambiar el color de la línea así como el tipo:
+```{r}
+#Agregamos indicadora del promedio
+ggplot(datos_diabetes) + 
+  geom_histogram(aes(x = chol, y = ..density..), bins = 50,
+                 fill = "#cef0ff",  color = "#1D1B1B") + 
+  geom_density(aes(x = chol), color = "deepskyblue4",
+               linetype = "dotted", size = 1) +
+  labs(
+    x        = "Colesterol",
+    y        = "",
+    title    = "Distribución observada de los niveles de colesterol",
+    subtitle = "Población afroamericana de Virginia"
+  ) + 
+  theme_bw() +
+  geom_vline(aes(xintercept = promedio_colesterol),
+             color = "tomato3", linetype = "dashed", size = 1)
+```
+
+Finalmente, podemos agregar una anotación junto a la media que nos indique que dicha es la media. Para ello usamos el comando `annotate` indicando que agregaremos un texto (`"text"`) y las coordenadas del mismo.  
+
+```{r}
+#Agregamos indicadora del promedio
+ggplot(datos_diabetes) + 
+  geom_histogram(aes(x = chol, y = ..density..), bins = 50,
+                 fill = "#cef0ff",  color = "#1D1B1B") + 
+  geom_density(aes(x = chol), color = "deepskyblue4",
+               linetype = "dotted", size = 1) +
+  labs(
+    x        = "Colesterol",
+    y        = "",
+    title    = "Distribución observada de los niveles de colesterol",
+    subtitle = "Población afroamericana de Virginia"
+  ) + 
+  theme_bw() +
+  geom_vline(aes(xintercept = promedio_colesterol),
+             color = "tomato3", linetype = "dashed", size = 1) +
+  annotate("label", x = promedio_colesterol, 
+           y = 0.0001, label = "Media = 208", color = "tomato3")
+```
+
+La función de `scale_y_continuous` permite agregar etiquetas al eje vertical (`scale_x_continuous` si fuera el horizontal). En este caso podemos usar porcentajes para mejor representar los datos:
+
+```{r}
+#Agregamos indicadora del promedio
+ggplot(datos_diabetes) + 
+  geom_histogram(aes(x = chol, y = ..density..), bins = 50,
+                 fill = "#cef0ff",  color = "#1D1B1B") + 
+  geom_density(aes(x = chol), color = "deepskyblue4",
+               linetype = "dotted", size = 1) +
+  labs(
+    x        = "Colesterol",
+    y        = "",
+    title    = "Distribución observada de los niveles de colesterol",
+    subtitle = "Población afroamericana de Virginia"
+  ) + 
+  theme_bw() +
+  geom_vline(aes(xintercept = promedio_colesterol),
+             color = "tomato3", linetype = "dashed", size = 1) +
+  annotate("label", x = promedio_colesterol, 
+           y = 0.0001, label = "Media = 208",  color = "tomato3") +
+  scale_y_continuous(labels = scales::percent)
+```
+
+### Ejercicios
+
+
+1. Utiliza la función `quantile` (con la opción `na.rm = T`)  para calcular los cuantiles `0.975` y `0.025` y agrega dos líneas verticales a la gráfica anterior indicando los valores de los cuantiles junto con sus etiquetas:
+
+```{r}
+#| echo: false
+#Agregamos indicadora del promedio
+q025 <- quantile(datos_diabetes$chol, 0.025, na.rm = T)
+q975 <- quantile(datos_diabetes$chol, 0.975, na.rm = T)
+ggplot(datos_diabetes) + 
+  geom_histogram(aes(x = chol, y = ..density..), binwidth = 10,
+                 fill = "#cef0ff",  color = "#1D1B1B") + 
+  geom_density(aes(x = chol), color = "deepskyblue4",
+               linetype = "dotted", size = 1) +
+  labs(
+    x        = "Colesterol",
+    y        = "",
+    title    = "Distribución observada de los niveles de colesterol",
+    subtitle = "Población afroamericana de Virginia"
+  ) + 
+  theme_bw() +
+  geom_vline(aes(xintercept = promedio_colesterol),
+             color = "tomato3", linetype = "dashed", size = 1) +
+  geom_vline(aes(xintercept = q025),
+             color = "tomato3", linetype = "dashed", size = 1) +
+  geom_vline(aes(xintercept = q975),
+             color = "tomato3", linetype = "dashed", size = 1) +
+  annotate("label", x = promedio_colesterol, y = 0.0001, label = "Media = 208", 
+           color = "tomato3") +
+  annotate("label", x = q025, y = 0.0001, label = glue::glue("2.5% = {q025}"), 
+           color = "tomato3") +
+  annotate("label", x = q975, y = 0.0001, label = glue::glue("97.5% = {q975}"), 
+           color = "tomato3") +
+  scale_y_continuous(labels = scales::label_percent())
+```
+
+
+2. Imita la siguiente gráfica de altura en pulgadas (`height`) con color `red` donde se usó el comando `fill` para colorear el interior de la densidad en azul (`deepskyblue4`) y el tema `theme_linedraw`. 
+
+> **Nota** quizá necesites modificar la transparencia con `alpha`. 
+
+```{r}
+#| echo: false
+#Graficación con barras de ancho 0.05
+ggplot(datos_diabetes) + 
+  geom_histogram(aes(x = height, y = ..density..), color = "black",
+               fill = "#fffff8", bins = 10) +
+  geom_density(aes(x = height), color = "red",
+               fill = "deepskyblue3", alpha = 0.5) +
+  xlab("Altura (pulgadas)") + 
+  ylab("Densidad") +
+  ggtitle("Histograma y densidad ajustada de altura") +
+  theme_linedraw() + 
+  theme(plot.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8")) + 
+  scale_y_continuous(labels = scales::label_percent())
+```
+
+
+3. Considera la siguiente base de datos:
+```{r}
+mis.datos <- data.frame(
+  x = c(1.03, 1.24, 1.47, 1.52, 1.92, 1.93, 1.94, 1.95, 1.96, 1.97,
+       1.98, 1.99, 2.72, 2.75, 2.78, 2.81, 2.84, 2.87, 2.90, 2.93,
+       2.96, 2.99, 3.60, 3.64, 3.66, 3.72, 3.77, 3.88, 3.91, 4.14,
+       4.54, 4.77, 4.81, 5.62)
+)
+```
+
+Realiza un histograma de la variable `x` dentro de  `mis.datos` con `binwidth` a `0.75`:
+
+  a. ¿Podemos concluir la forma de la distribución a partir del histograma? Es decir ¿está centrada?
+
+::: callout-tip
+Minitab tiene un [blog](https://blog.minitab.com/blog/3-things-a-histogram-can-tell-you) sobre cuándo usar histogramas. ¿Puedes descubrir todos sus errores?
+:::
+
+  b. Realiza el mismo histograma pero ahora con un ancho de banda de `1.2`.  ¿Y ahora?
+
+4. Considera la siguiente [base de datos](https://stats.stackexchange.com/questions/51718/assessing-approximate-distribution-of-data-based-on-a-histogram):
+
+```{r}
+mis.datos <- data.frame(
+  A =  c(3.15, 5.46, 3.28, 4.20, 1.98, 2.28, 3.12, 4.10, 3.42, 3.91, 
+         2.06, 5.53, 5.19, 2.39, 1.88, 3.43, 5.51, 2.54, 3.64, 4.33, 
+         4.85, 5.56, 1.89, 4.84, 5.74, 3.22, 5.52, 1.84, 4.31, 2.01, 
+         4.01, 5.31, 2.56, 5.11, 2.58, 4.43, 4.96, 1.90, 5.60, 1.92),
+  B =  c(2.90, 5.21, 3.03, 3.95, 1.73, 2.03, 2.87, 3.85, 3.17, 3.66,
+         1.81, 5.28, 4.94, 2.14, 1.63, 3.18, 5.26, 2.29, 3.39, 4.08,
+         4.60, 5.31, 1.64, 4.59, 5.49, 2.97, 5.27, 1.59, 4.06, 1.76, 
+         3.76, 5.06, 2.31, 4.86, 2.33, 4.18, 4.71, 1.65, 5.35, 1.67),
+  C =  c(2.65, 4.96, 2.78, 3.70, 1.48, 1.78, 2.62, 3.60, 2.92, 3.41,
+         1.56, 5.03, 4.69, 1.89, 1.38, 2.93, 5.01, 2.04, 3.14, 3.83,
+         4.35, 5.06, 1.39, 4.34, 5.24, 2.72, 5.02, 1.34, 3.81, 1.51, 
+         3.51, 4.81, 2.06, 4.61, 2.08, 3.93, 4.46, 1.4, 5.1, 1.42),
+  D =  c(2.40, 4.71, 2.53, 3.45, 1.23, 1.53, 2.37, 3.35, 2.67, 3.16,
+         1.31, 4.78, 4.44, 1.64, 1.13, 2.68, 4.76, 1.79, 2.89, 3.58,
+         4.10, 4.81, 1.14, 4.09, 4.99, 2.47, 4.77, 1.09, 3.56, 1.26, 
+         3.26, 4.56, 1.81, 4.36, 1.83, 3.68, 4.21, 1.15, 4.85, 1.17)
+)
+```
+
+Grafica un histograma de las variables `A`, `B`, `C` y `D` de dicha base con un ancho de banda (`binwidth`) igual a `1`:
+```{r}
+#| echo: false
+bw <- 1
+
+plotA <- ggplot(mis.datos) + geom_histogram(aes(x = A, y = (..count..)/sum(..count..)), fill = "tomato3", color = "black", binwidth = bw) +
+  ylab("Proporción") +   theme(plot.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8"))
+
+plotB <- ggplot(mis.datos) + geom_histogram(aes(x = B, y = (..count..)/sum(..count..)), fill = "forestgreen", color = "black", binwidth = bw) +   theme(plot.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8")) +
+  ylab("Proporción")
+
+plotC <- ggplot(mis.datos) + geom_histogram(aes(x = C, y = (..count..)/sum(..count..)), fill = "purple", color = "black", binwidth = bw) +
+  ylab("Proporción") +   theme(plot.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8"))
+
+plotD <- ggplot(mis.datos) + geom_histogram(aes(x = D, y = (..count..)/sum(..count..)), fill = "deepskyblue3", color = "black", binwidth = bw) +
+  ylab("Proporción") +   
+  theme(plot.background = element_rect(fill = "#fffff8"),
+        panel.background = element_rect(fill = "#fffff8"))
+
+```
+
+```{r}
+#|echo: false
+#SI no lo haces así imprime a lo tonto
+ggdraw(arrangeGrob(plotA, plotB, plotC, plotD, 
+                   top = "Son 4 gráficas separadas no intentes hacer una sola (como en esta que es para las notas)")) +
+  theme(plot.background = 
+          element_rect(fill="#fffff8", color = NA))
+```
+
+¿Podemos concluir la forma de la distribución a partir del histograma? Es decir ¿hay distribuciones sesgadas a la izquierda, a la derecha, uniformes, centradas o con colas pesadas?
+
+Realiza el mismo histograma pero ahora con un ancho de banda de `0.25` ¿por qué hubo cambios? Analiza la base de datos (los valores en función de la columna `A`) y concluye. 
 
 ## Gráficas de trayectorias
 ```{r}
@@ -1091,6 +1535,10 @@ Si no tienes datos para usar te recomiendo `vacunacion_puebla_menores_1_anio.csv
 :::
 
   + En la siguiente liga puedes encontrar código de `R` para generar 50 tipos distintos de gráficas: [http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html](http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html)
+  
+## Para saber más
+
+El [libro de `ggplot2`](https://ggplot2-book.org/) es una excelente referencia para la parte de graficación así como [las notas en español de `rafalab`](https://rafalab.github.io/dslibro/ggplot2.html). Por otro lado el libro de [Fundamentals of Data Visualization](https://clauswilke.com/dataviz/) analiza más a fondo cómo presentar datos de formas que convenzan al público. Para armar historias a partir de los datos ve el libro de [Story-telling with data](https://www.storytellingwithdata.com/books)  
 
 ## Continuación
 

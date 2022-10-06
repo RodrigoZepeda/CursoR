@@ -10,3 +10,5 @@ dplyr
 stringr
 forcats
 kableExtra
+magick
+ggtext
