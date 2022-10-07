@@ -1230,7 +1230,7 @@ plotD <- ggplot(mis.datos) + geom_histogram(aes(x = D, y = (..count..)/sum(..cou
 ```
 
 ```{r}
-#|echo: false
+#| echo: false
 #SI no lo haces así imprime a lo tonto
 ggdraw(arrangeGrob(plotA, plotB, plotC, plotD, 
                    top = "Son 4 gráficas separadas no intentes hacer una sola (como en esta que es para las notas)")) +
