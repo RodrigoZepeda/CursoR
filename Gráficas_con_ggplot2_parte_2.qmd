@@ -43,16 +43,12 @@ library("tidyverse")
 library("kableExtra")
 ```
 
-::: callout-warning
-Si aún no cuentas con una instalación de `ggplot2` dentro de `R` ve a la
-[sección de instalación de
-paquetes](https://rodrigozepeda.github.io/CursoR/Introducci%C3%B3n_a_R.html#instalaci%C3%B3n-de-paquetes)
-o bien corre la siguiente instrucción:
+::: callout-note
+Los datos están disponibles en el [Github](https://github.com/RodrigoZepeda/CursoR/tree/master/datasets) y en [Dropbox](https://www.dropbox.com/sh/ajgteruqo1wf47d/AADMfTnIUeIFSn_3whMVYgjfa?dl=0)
+:::
 
-```{r}
-#| eval: false
-install.packages("ggplot2")
-```
+::: callout-warning
+Si aún no sabes usar `ggplot2` te recomiendo revisar la [parte 1 de estas notas](https://rodrigozepeda.github.io/CursoR/Gr%C3%A1ficas_con_ggplot2_parte_1.html)
 :::
 
 

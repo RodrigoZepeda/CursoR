@@ -43,6 +43,11 @@ library("tidyverse")
 library("kableExtra")
 ```
 
+::: callout-note
+Los datos están disponibles en el [Github](https://github.com/RodrigoZepeda/CursoR/tree/master/datasets) y en [Dropbox](https://www.dropbox.com/sh/ajgteruqo1wf47d/AADMfTnIUeIFSn_3whMVYgjfa?dl=0)
+:::
+
+
 ::: callout-warning
 Si aún no cuentas con una instalación de `ggplot2` dentro de `R` ve a la
 [sección de instalación de
