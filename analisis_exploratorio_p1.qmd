@@ -1,0 +1,1050 @@
+---
+title: "Análisis exploratorio de datos con `tidyverse`"
+subtitle: "Parte 1: Fundamentos de análisis exploratorio en `R`"
+author: "Rodrigo Zepeda-Tello"
+date: "`r Sys.Date()`"
+abstract: "Mostramos cómo funciona `dplyr` para filtrar (`filter`), seleccionar (`select`), mutar (`mutate`), agrupar (`group_by`), y resumir (`summarise`) bases de datos en `R`"
+title-block-banner: false
+execute:
+  error: true
+  warning: false
+theme: lux  
+toc-title: "Contenido"
+author-title: "Autores"
+published-title: "Última actualización"
+abstract-title: "Resumen"
+backgroundcolor: "#fffff8"
+format:
+    pdf: default
+    html: 
+      self-contained: true
+      theme: litera
+      toc: true
+      toc-location: left
+      toc-depth: 3
+      number-sections: true
+      number-depth: 3
+reference-location: margin
+citation-location: margin
+bibliography: skeleton.bib
+link-citations: yes
+editor: 
+  markdown: 
+    wrap: 80
+---
+
+```{r}
+#| echo: false
+#| message: false
+library("tidyverse")
+library("kableExtra")
+```
+
+::: callout-note
+Los datos están disponibles en el
+[Github](https://github.com/RodrigoZepeda/CursoR/tree/master/datasets) y en
+[Dropbox](https://www.dropbox.com/sh/ajgteruqo1wf47d/AADMfTnIUeIFSn_3whMVYgjfa?dl=0)
+:::
+
+::: callout-warning
+Si aún no cuentas con una instalación de `tidyverse` dentro de `R` corre la
+siguiente instrucción:
+
+```{r}
+#| eval: false
+install.packages("tidyverse")
+```
+:::
+
+## El flujo de trabajo de trabajo con datos
+
+En general el flujo de trabajo de un análisis de datos se divide en tres
+componentes principales:
+
+1.  **Preparación de los datos** lo que incluye la recolección (no discutida
+    aquí), la **importación** de los datos y la **limpieza** inicial (por
+    ejemplo el poner nombres a las columnas u homologar mayúsculas y minúsculas)
+    para generar una base de trabajo.
+
+::: callout-warning
+Una vez recolectados la recomendación es que las bases de datos **no se toquen**
+una vez se tiene la información. Entre menos modifiquemos la base de datos hay
+menor probabilidad de cometer errores y accidentes que resulten en **pérdida de
+información**.
+:::
+
+2.  **Análisis de datos** incluye tres pasos que fluyen en cualquier orden:
+
+```{=html}
+<!-- -->
+```
+a.  **Formulación de preguntas** ¿qué me gustaría saber de mis datos?\_
+b.  **Visualización de los datos** ¿puede una gráfica ayudarme a responder mi
+    pregunta u orientarme hacia qué analizar?
+c.  **Análisis de los datos:** ¿qué resumen de la información (por ejemplo una
+    tabla o un promedio) resulta eficaz para presentar lo que me interesa?
+
+```{=html}
+<!-- -->
+```
+3.  Una vez se tienen los datos analizados continuamos a la parte de
+    **comunicación** donde buscamos **generar tablas, gráficas y reportes**
+    (entre otros) que comuniquen nuestros datos al público.
+
+El siguiente diagrama (traducido de
+[aquí](https://emanuelaf.github.io/data-an-workflow.html)) intenta resumir el
+flujo de trabajo:
+
+```{mermaid}
+flowchart TB;
+
+    subgraph C[Comunicación]
+       Tablas --> Reportes
+       G[Gráficas] --> Reportes
+    end
+    
+    subgraph AD[Análisis de datos]
+        FP[Preguntas]  --> V[Visualización]
+        V  --> FP
+        V  --> AN[Análisis]
+        AN --> FP
+        AN --> V
+        FP --> AN
+    end
+
+    subgraph PD[Preparación de los datos]
+        R[Recolección] --> I[Importación]
+        I  --> L[Limpieza]
+    end
+
+    PD --> AD --> C
+```
+
+## Armado de un proyecto
+
+En `RStudio` para un proyecto de análisis de datos la recomendación es crear un
+`Project`. Ésta es una carpeta especial en la cual se almacena todo el código,
+las bases de datos e incluso los registros de las versiones de los paquetes que
+estás usando Con pasarle a otra persona tu proyecto (`Project`) ésta podrá
+reproducir absolutamente todo sin preocuparse por tener que acomodar las rutas a
+los archivos o instalar los paquetes que tú usaste.
+
+Para armar un proyecto puedes ir a `File > New Project`. Esto abrirá una ventana
+como sigue:
+
+```{r}
+#| cache: true
+#| echo: false
+#| message: false
+#| fig-cap:  "Opciones de proyecto incluyen nuevo directorio o existente así como control de versiones"
+knitr::include_graphics('images/proyecto_1.png')
+```
+
+Existen diferentes opciones: empezar a crear un proyecto desde cero
+(`New Directory`) o bien trabajar con algún folder que ya tenemos
+`Existing directory`. El control de versiones (`Version Control`) es una
+herramienta más avanzada de programación y no la discutiremos por ahora.
+
+Elige la opción de `New Directory` y en la ventana que sigue elige
+`New R Proyect`. Notarás que esto sirve para muchas cosas entre ellas armar
+presentaciones y páginas web. Por ahora trabajaremos sólo con código normal.
+
+```{r}
+#| cache: true
+#| echo: false
+#| message: false
+#| fig-cap:  "Las opciones de tipo de proyecto incluyen blogs, páginas web y libros. Por ahora comenzamos con `New Proyect` para hacer un proyecto nuevo sin opciones específicas de los otros tipos."
+knitr::include_graphics('images/proyecto_2.png')
+```
+
+Finalmente en la tercer ventana elegimos el nombre del proyecto, el folder
+dentro de nuestros documentos donde habrá de guardarse y activamos las opciones:
+
+-   `renv` sirve para controlar los paquetes de `R` usados. Si eliges la opción
+    `renv`, cualquier otra persona que use el proyecto se le instalarán los
+    paquetes que tú usaste y las versiones específicas (digamos tu `ggplot2` es
+    del 2021 entonces esa persona tendrá ese `ggplot2` cuando abra el proyecto).
+
+-   `git` sirve para guardar un historial de tu código. Explicaremos más
+    adelante su funcionamiento principal pero la idea es que se guarde cada
+    cambio que haces en el código (pues `ctrl Z` es limitado).
+
+-   `Open in new session` cierra la ventana actual de `RStudio` y te abre el
+    proyecto en un nuevo lienzo en blanco para que comiences tu trabajo.
+
+```{r}
+#| cache: true
+#| echo: false
+#| message: false
+#| fig-cap:  "Un nuevo proyecto con nombre `AnalisisDatos`, en mi carpeta de `Dropbox` con las opciones de `git` y `renv` habilitadas. Se solicitó a `R` además abrir en una sesión nueva."
+knitr::include_graphics('images/proyecto_3.png')
+```
+
+Una vez iniciado el proyecto nos aparecerá un mensaje similar a este en una
+nueva consola de \`R\`\`:
+
+```{bash}
+#| eval: false
+The version of R recorded in the lockfile will be updated:
+- R      [*] -> [4.2.1]
+
+* Lockfile written to '~/AnalisisDatos/renv.lock'.
+```
+
+¡Podemos empezar a usarlo!
+
+::: callout-warning
+Todas las bases de datos que utilicemos dentro de estas notas supondremos están
+almacenadas dentro del proyecto `AnalisisDatos` el cual está en tus documentos
+donde sea hayas elegido.
+
+> Por favor copia todos los datos que uses **dentro del proyecto** para que así,
+> a cualquier persona que le envíes el proyecto pueda usarlo.
+:::
+
+## Lectura de bases de datos
+
+`R` sirve para abrir cualquier tipo de dato. En particular es posible leer bases
+de datos desde `Excel`, `csv`, `txt`, `Stata`. También (aunque no lo veremos)
+puede leer imágenes, videos, datos provenientes de documentos `pdf`, páginas
+web, mapas, etc. Al día de hoy no he encontrado un sólo tipo de dato que no
+pueda leer `R`.
+
+Las bases de datos si ya están recolectadas **no se tocan**. Lo que haremos en
+`R` será leerlas, copiarlas en una base nueva y trabajar sobre la base nueva sin
+modificar la original. De esta forma, cualquier error que cometamos ¡y seguro
+cometeremos muchos! no afectará la original. Esto permite además tener un flujo
+de trabajo seguro (en el sentido de que estamos seguros que no borraremos nada).
+
+### Lectura de datos desde un archivo delimitado (`csv` ó `txt`).
+
+Los documentos de datos, si son (relativamente) medianas, pueden ser compartidos
+en archivos de texto que se pueden abrir con el bloc de notas. Por ejemplo, el
+documento `casos_covid_agosto_2022.csv` se ve como sigue:
+
+```{r}
+#| echo: false
+cat(read_lines("datasets/casos_covid_agosto_2022.csv", n_max = 5), sep = "\n")
+```
+
+por otro lado el documento `embarazo_adolescente.txt` es un archivo delimitado
+por tabs (a veces llamados `tsv`) donde cada columna ocurre después de un `tab`
+(espacio largo):
+
+```{r}
+#| echo: false
+cat(read_lines("datasets/embarazo_adolescente.txt", n_max = 5), sep = "\n")
+```
+
+finalmente, `covid_sinave_bc_bcs.txt` es un archivo donde las columnas son
+separadas por `|`:
+
+```{r}
+#| echo: false
+cat(read_lines("datasets/covid_sinave_bc_bcs.txt", n_max = 5), sep = "\n")
+```
+
+Todos estos archivos son archivos de texto simple delimitados y se pueden leer
+con la librería `readr`.
+
+#### Lectura simple
+
+Para leer los archivos basta con `File > Import dataset` o bien con código:
+
+```{r}
+#| echo: false
+#| message: false
+casos_covid <- read_csv("datasets/casos_covid_agosto_2022.csv")
+```
+
+```{r}
+#| eval: false
+#| message: false
+casos_covid <- read_csv("casos_covid_agosto_2022.csv")
+```
+
+Para los archivos delimitados por espacios podemos usar `read_tsv`:
+
+```{r}
+#| echo: false
+#| message: false
+adolescentes <- read_tsv("datasets/embarazo_adolescente.txt")
+```
+
+```{r}
+#| eval: false
+#| message: false
+adolescentes <- read_tsv("embarazo_adolescente.txt")
+```
+
+Finalmente archivos con delimitadores que no son comas ni tabs (como los `|` )
+puedes usar `read_delim` y especificar el separador `delim`:
+
+```{r}
+#| echo: false
+#| message: false
+covid <- read_delim("datasets/covid_sinave_bc_bcs.txt", delim = "|")
+```
+
+```{r}
+#| eval: false
+#| message: false
+covid <- read_delim("covid_sinave_bc_bcs.txt", delim = "|")
+```
+
+#### Complicaciones
+
+La base de datos `zapopan.csv` contiene las estimaciones de la población del
+municipio homónimo por parte del INEGI. Sin embargo, al momento de leerla pasan
+dos cosas:
+
+1.  Los acentos en algunos equipos no se leen bien
+2.  La primera fila no representa nada pues sólo dice **Datos**.
+
+Aquí una muestra de cómo viene el archivo. Nota que en mi equipo los acentos y
+las ñ aparecen como el símbolo `?`:
+
+```{r}
+#| echo: false
+#| output: asis
+cat(read_lines("datasets/zapopan.csv", n_max = 5), sep = "\n")
+```
+
+Para leer esta base es necesario saltarnos la primera fila pues **Datos
+Poblacionales** no es un nombre de columna. Para ello usamos `skip = 1`
+indicándole que se salte (`skip`) una fila (`= 1`). Por otro lado para los
+acentos usamos el encoding de `WINDOWS-1252`. Los más comunes para acentos en
+México son `UTF-8` y `WINDOWS-1252`. Cuando no leemos bien los acentos vale la
+pena probar ambos para hallar el correcto:
+
+```{r}
+#| echo: false
+#| message: false
+zapopan <- read_csv("datasets/zapopan.csv", 
+                    locale = locale(encoding = "WINDOWS-1252"), 
+                    skip = 1)
+```
+
+```{r}
+#| eval: false
+zapopan <- read_csv("zapopan.csv", 
+                    locale = locale(encoding = "WINDOWS-1252"), 
+                    skip = 1)
+```
+
+### Lectura de datos desde un `Excel`
+
+#### Lectura simple
+
+Para leer datos desde un Excel podemos usar la `Import From > Excel` o bien
+`read_excel` dentro de la librería `readxl`:
+
+```{r}
+library(readxl)
+```
+
+dado un archivo como `persona_cigarros.xlsx` podemos leerlo directamente:
+
+```{r}
+#| echo: false
+#| message: false
+cigarros <- read_excel("datasets/persona_cigarros.xlsx")
+```
+
+```{r}
+#| eval: false
+#| message: false
+cigarros <- read_excel("persona_cigarros.xlsx")
+```
+
+#### Complicaciones
+
+Algunos archivos como `Poblacion_01.xlsx` contienen filas tanto al inicio como
+al final que funcionan como descriptores del archivo. Al momento de leerlo
+debemos ignorar estas partes:
+
+```{r}
+#| cache: true
+#| echo: false
+#| message: false
+#| fig-cap:  "Opciones de proyecto incluyen nuevo directorio o existente así como control de versiones"
+knitr::include_graphics('images/excel_1.png')
+```
+
+Para ello en `read_excel` podemos especificar el rango de las celdas que nos
+interesa exportar indicando las dos esquinas del rectángulo de celdas:
+
+```{r}
+#| echo: false
+#| message: false
+poblacion <- read_excel("datasets/Poblacion_01.xlsx", range = "A5:C38")
+```
+
+```{r}
+#| eval: false
+#| message: false
+poblacion <- read_excel("Poblacion_01.xlsx", range = "A5:C38")
+```
+
+### Ejercicios
+
+1.  Lee las bases de datos `ile-2019-2021.csv`, `IME_2020.xls` y `niños.txt`.
+
+## Análisis de bases de datos
+
+Vamos a leer la base de datos `conjunto_de_datos_defunciones_generales_2017.csv`
+la cual contiene el registro de mortalidad en México para el año `2017` del
+INEGI:
+
+```{r}
+#| message: false
+#| echo: false
+mortalidad_2017 <- read_csv("datasets/conjunto_de_datos_defunciones_generales_2017.csv")
+```
+
+```{r}
+#| eval: false
+mortalidad_2017 <- read_csv("conjunto_de_datos_defunciones_generales_2017.csv")
+```
+
+Aquí sólo muestro las filas de la base:
+
+```{r}
+#| echo: false
+kable(head(mortalidad_2017)) %>%
+  kable_styling()
+```
+
+La función `glimpse` nos permite darnos una idea de la composición de nuestros
+datos:
+
+```{r}
+mortalidad_2017 %>% glimpse() 
+```
+
+Hacer esto es lo mismo que hacerlo con el pipe nativo de `R`, `|>`:
+
+```{r}
+#| eval: false
+mortalidad_2017 |> glimpse() 
+```
+
+o bien ponerlo dentro del `glimpse`:
+
+```{r}
+#| eval: false
+glimpse(mortalidad_2017) 
+```
+
+El comando `ncol` nos muestra el número de columnas en la base de datos y
+`tally` nos cuenta el número de filas en la base de datos.
+
+```{r}
+mortalidad_2017 %>% ncol() #Columnas
+mortalidad_2017 %>% tally() #Filas
+```
+
+El comando `nrow` hace lo mismo: conteo de filas. Pero no es tan recomendado
+como veremos más adelante.
+
+```{r}
+mortalidad_2017 %>% nrow() #Filas
+```
+
+Podemos ver los nombres de las columnas de la base de datos con `colnames`:
+
+```{r}
+#Mostramos las columnas
+mortalidad_2017 %>% colnames()
+```
+
+Una descripción de las variables las puedes encontrar en el archivo
+`diccionario_datos_defunciones_generales_2017.csv`. Donde aparece como sigue:
+
+```{r}
+#| echo: false
+defunciones_diccionario <- read_csv("datasets/Catalogo_datos_inegi/diccionario_datos_defunciones_generales_2017.csv", locale = locale(encoding = "WINDOWS-1252"))
+
+kable(defunciones_diccionario) %>%
+  kable_styling()
+```
+
+Una vez tenemos una base de datos podemos analizar sus entradas usando el nombre
+de la base y corchetes. Por ejemplo:
+
+```{r}
+#| eval: false
+#Obtengo todo el registro de la columna sexo
+mortalidad_2017[ ,"sexo"]
+```
+
+```{r}
+#| echo: false
+#Obtengo todo el registro de sexo
+head(mortalidad_2017[ ,"sexo"])
+```
+
+También podemos usar el número de columna:
+
+```{r}
+#Me regresa las observaciones de la columna 2
+#dada por mun_regis
+#| eval: false
+mortalidad_2017[ ,2]
+```
+
+```{r}
+#| eval: false
+#Me regresa las observaciones de la columna 2
+#dada por mun_regis
+head(mortalidad_2017[ , 2])
+```
+
+También podemos acceder a la base por renglones. Por ejemplo, así vemos el
+tercer renglón:
+
+```{r}
+#| eval: false
+mortalidad_2017[3, ]
+```
+
+```{r}
+#| echo: false
+mortalidad_2017[3, 1:6]
+```
+
+Finalmente, podemos combinar la primer entrada de la columna `lista1` se vería
+así:
+
+```{r}
+mortalidad_2017[1, "lista1"]
+```
+
+En resumen, la notación siempre es de la siguiente forma:
+
+$$
+\text{datos}[\underbrace{f}_{fila},\overbrace{c}^{columna}]
+$$ Esta notación `notación matricial` es estándar en el mundo de computación y
+de las matemáticas. Siempre siempre primero es fila luego columna.
+
+Otra forma de seleccionar una columna es con \$ seguido del nombre de la
+columna. Por ejemplo:
+
+```{r}
+#| eval: false
+mortalidad_2017$edo_civil
+```
+
+```{r}
+#| echo: false
+head(mortalidad_2017$edo_civil)
+```
+
+Por ciertos errores en los que se pueden incurrir al crear funciones, se
+recomienda que se utilice siempre la notación de doble corchete y se evite el
+signo de \$. Pero ambos métodos funcionan. Sólo recuerda que la notación es así:
+
+$$
+\text{datos}\$\text{Columna}[\underbrace{f}_{\text{Fila}}]
+$$ Una última opción es con `select`:
+
+```{r}
+#| eval: false
+mortalidad_2017 %>% select(edo_civil)
+```
+
+```{r}
+#| echo: false
+mortalidad_2017 %>% select(edo_civil) %>% head()
+```
+
+la cual nos regresa la columna de estado civil. El comando
+[`select`](https://dplyr.tidyverse.org/reference/select.html) es bastante útil
+si, por ejemplo, no recordamos exactamente el nombre de la columna. Por ejemplo,
+si sólo recordamos que tiene la palabra `"civil"` pero no exactamente cómo se
+escribe podemos usar `contains`:
+
+```{r}
+#Podemos usar contains si recordamos que dice civil 
+#pero no el nombre completo
+mortalidad_2017 %>% select(contains("civil"))
+```
+
+Podemos preguntarnos, de igual manera por la 7a entrada de `edo_civil` haciendo:
+
+```{r}
+mortalidad_2017$edo_civil[7]
+```
+
+Lo cual es similar (mas no equivalente) a la forma anterior:
+
+```{r}
+mortalidad_2017[7, "edo_civil"]
+```
+
+En el caso del `tidyverse` el equivalente a `select`, para elegir fila, el
+equivalente se conoce como `slice`:
+
+```{r}
+#Selecciona la fila 11
+mortalidad_2017 %>% slice(11)
+```
+
+Podemos combinar múltiples argumentos con `%>%`[^1]:
+
+[^1]: En el mismo renglón debe estar el `%>%` que el último comando para no
+    generar error
+
+```{r}
+mortalidad_2017 %>% 
+  select(sexo, edo_civil) %>%  #Selecciona edo civil y sexo
+  slice(11:20) #Selecciona filas 11 a 20
+```
+
+Esta forma de combinación con `pipes` (`%>%` ó `|>`) será bastante útil más
+adelante.
+
+Para seleccionar múltiples filas o columnas, como vimos en el ejemplo anterior,
+hay que crear un vector usando `c`[^2]. Un vector es una lista ordenada de
+variables del mismo tipo. Por ejemplo:
+
+[^2]: Se llama `c` por `concatenate` (concatenar).
+
+```{r}
+mi_vector <- c(1, 141, 12)
+```
+
+Es un vector de 3 entradas. De hecho, la forma de acceder a sus entradas es la
+misma que la de los `tibbles` con un agregado: ¡sólo hay filas, no hay columnas!
+
+::: callout-note
+Intuitivamente podemos pensar un vector como una columna de una base de datos.
+En ella todas las variables son del mismo tipo.
+:::
+
+Para acceder a las entradas de un vector es de la siguiente forma:
+
+```{r}
+#Para un vector sólo pongo el número de entrada ¡no hay columna!
+mi_vector[2] #entrada 2
+```
+
+En general la notación es la siguiente:
+
+$$
+\text{vector}[\underbrace{i}_{\text{Entrada}}]
+$$
+
+Un vector que ya nos encontramos antes es el de columnas. Podemos, por ejemplo,
+ver el nombre de la cuarta columna de la base combinando lo que sabemos de
+vectores con el comando `colnames`:
+
+```{r}
+#Regresa el nombre de la 5a columna
+colnames(mortalidad_2017)[5]
+```
+
+La pregunta también puede hacerse al revés: podemos pedirle a `R` que nos
+conteste cuál es el número de columna para una columna dada. Por ejemplo, ¿cuál
+es el número de columna para `edad`?
+
+```{r}
+#Preguntamos a R cuál de las columnas se llama edad
+which(colnames(mortalidad_2017) == "edad")
+```
+
+Nota que si preguntamos por una columna que no existe, `R` nos regresa lo
+siguiente:
+
+```{r}
+#Preguntamos a R cuál de las columnas se llama edad
+which(colnames(mortalidad_2017) == "Paraguas")
+```
+
+Esto significa que no hay ninguna columna con ese nombre. Finalmente, nota que
+el `which` puede regresar múltiples resultados si las cosas se repiten. Por
+ejemplo, el siguiente comando nos regresa las múltiples entradas del vector
+`nombres_de_amigos` donde hay un amigo que tiene el nombre de `Alejandro`:
+
+```{r}
+#Creo un vector con nombres de mis amigos
+nombres_de_amigos <- c("Alejandro", "Beatriz", "Alejandro", "Carla")
+
+#Pregunto por cuáles entradas contienen a Alejandro
+which(nombres_de_amigos == "Alejandro")
+```
+
+Finalmente, podemos usar vectores para seleccionar múltiples columnas y filas,
+por ejemplo si deseo seleccionar, de la base, las columnas de `sexo` y `edad`:
+
+```{r, eval = FALSE}
+mortalidad_2017[ , c("sexo", "edad")]
+```
+
+```{r, echo = FALSE}
+head(mortalidad_2017[ , c("sexo", "edad")])
+```
+
+Finalmente si quiero seleccionar sólo algunos renglones puedo ponerlos en un
+vector:
+
+```{r}
+#Selecciona sólo el renglón 1 y el 7
+mortalidad_2017[c(1, 7), c("sexo", "edad")]
+```
+
+Mientras que el `:` selecciona *del renglón 1 al renglón 7*
+
+```{r}
+#Selecciona del 1 al 7
+mortalidad_2017[1:7, c("sexo", "edad")]
+```
+
+El equivalente usando `select` y `slice` es:
+
+```{r}
+mortalidad_2017 %>% 
+  select(sexo, edad) %>%
+  slice(1:7)
+```
+
+```{r}
+#Selecciona renglones del 2 al 7
+#y las columnas 5 a 9
+mortalidad_2017[2:7, 5:9]
+```
+
+Los `:` también funcionan para seleccionar rangos de columnas a través del
+`select`:
+
+```{r}
+#Selecciona todas las columnas desde loc_resid hasta tloc_ocurr
+mortalidad_2017 %>%
+  select(loc_resid:tloc_ocurr) 
+```
+
+## Ejercicios
+
+1.  Lee la hoja `MCV2` del archivo `unicef_vacunas.xlsx` el cual contiene
+    información sobre vacunas `MCV2` dada por la UNICEF. Responde las siguientes
+    preguntas:
+
+```{=html}
+<!-- -->
+```
+a.  Determina los nombres de todas las columnas de las variables usando `R` (no
+    vale ver el archivo).
+b.  Determina el número de renglones y el número de filas totales de la base.
+c.  Encuentra cuál fila contiene a México en la columna de `country`.
+d.  Regresa todas las mediciones para la fila de Colombia.
+e.  Regresa la 5a columna.
+f.  Obtén el nombre de la columna `9`.
+g.  Obtén la entrada en la columna `5` y fila `14`.
+
+```{=html}
+<!-- -->
+```
+2.  Considera la base de datos creada por el siguiente código:
+
+```{r}
+base_inventada <- tibble(Tiempo = rexp(100), 
+                             Enfermo = rbinom(100, 83, 1/3))
+```
+
+Determina qué ocasionó los resultados siguientes:
+
+a.  ¿Por qué da error?
+
+```{r}
+#Primer error
+base_inventada[ , 200]
+```
+
+b.  ¿Por qué da `NA`?
+
+```{r}
+#NA
+base_inventada[1000, ]
+```
+
+c.  ¿Por qué dice esto?
+
+```{r}
+#Primer error
+base_inventada[0,0]
+```
+
+d.  ¿Por qué da error\`?
+
+```{r}
+#NULL
+base_inventada[2, c("tiempo")]
+```
+
+e.  Arregla este código para que no dé error
+
+```{r, eval = FALSE}
+base.inventada %>% select("Tiempo")
+               %>% slice(2)
+```
+
+## Limpieza de la base de datos
+
+### Seleccionar columnas con `select`
+
+De la base de mortalidad comencemos por quedarnos sólo con las columnas
+`ent_regis`, `sexo`, `edad`, `dia_ocurr`, `mes_ocurr`, `anio_ocurr` y
+`causa_def`. Para ello seleccionamos múltiples columnas mediante un vector con
+el nombre de las columnas a seleccionar.
+
+::: callout-warning
+`R` trabaja con una copia de la base de datos. Todo lo que hacemos aquí nunca va
+a cambiar la base de datos a menos que explícitamente se lo pidamos. ¡Es genial
+porque nos evitamos el riesgo de perder información!
+:::
+
+```{r}
+#Reescribimos la variable sólo con las columnas que nos
+#interesan
+mortalidad_2017 <- mortalidad_2017 %>%
+  select(ent_regis, sexo, edad, dia_ocurr, mes_ocurr, anio_ocur, causa_def)
+```
+
+Ojo que aquí estoy sobreescribiendo la copia de `R` de la base de
+`mortalidad_2017`. Es decir, estoy editando la base `mortalidad_2017` y
+guardándola en sí misma (para que se queden los cambios). También lo pude haber
+guardado en otra variable:
+
+```{r}
+#Reescribimos la variable sólo con las columnas que nos
+#interesan
+mortalidad_2017_pedazo <- mortalidad_2017 %>%
+  select(ent_regis, sexo, edad, dia_ocurr, mes_ocurr, anio_ocur, causa_def)
+```
+
+El punto importante es guardarla porque de otra forma los cambios no son
+permanentes. Por ejemplo el siguiente comando de seleccionar sólo `sexo` y
+`edad` no edita la base pues no se asigna a la base:
+
+```{r}
+#Reescribimos la variable sólo con las columnas que nos
+#interesan
+mortalidad_2017 %>%
+  select(sexo, edad)
+```
+
+### Renombrar columnas con `rename`
+
+Utilicemos `rename` para mejorar los nombres de las variables. El comando es:
+
+```{r}
+#| eval: false
+rename(`Nuevo nombre` = `Viejo nombre`)
+```
+
+Por ejemplo:
+
+```{r}
+mortalidad_2017 <- mortalidad_2017 %>%
+  rename(Entidad = ent_regis)
+```
+
+También podemos renombrar varias columnas de golpe aplicando varios `rename`
+concatenados por el `%>%`:
+
+```{r}
+mortalidad_2017 <- mortalidad_2017 %>%
+  rename(Sexo = sexo) %>%
+  rename(Edad = edad) %>%
+  rename(Día = dia_ocurr) %>%
+  rename(Mes = mes_ocurr) %>%
+  rename(Año = anio_ocur) %>%
+  rename(Causa = causa_def)
+```
+
+### Filtrar filas con `filter`
+
+Podemos reducir nuestra base quedándonos, por ejemplo, con aquellas
+observaciones que ocurrieron en el Año `2017`. Nota que el número de filas
+cambia de:
+
+```{r}
+#Antes de filtrar
+mortalidad_2017 %>% tally()
+```
+
+```{r}
+#Filtro
+mortalidad_2017 <- mortalidad_2017 %>%
+  filter(Año == 2017)
+```
+
+```{r}
+#Después de filtrar
+mortalidad_2017 %>% tally()
+```
+
+El filter opera poniéndole una condición adentro. Aquí te copio las
+instrucciones más comunes:
+
+| Nombre   | Instrucción | Significado |
+|----------|-------------|-------------|
+| Igualdad |    `x == y`         |   `x` es igual a `y`          |
+| Mayor/menor         | `x > y`            |   `x` es menor que `y`            |
+| Mayor/menor igual          |   `x >= y`          | `x` es mayor o igual que `y`            |
+| Diferente         | `x != y`             |   `x` es distinto de `y` ($x \neq y$)          |
+| Pertenencia         |  `x %in% y`           | `x` está en `y` si `y` es un vector `c`            |
+| O         |  `A  | B`           | al menos una de las dos condiciones `A` ó `B` es verdadera            |
+| Y        |  `A & B`           | ambas `A` y `B` son verdaderas           |
+| No         |  `!A`           |  lo contrario a la condición `A`           |
+| Búsqueda de palabras       |  `str_detect(Columna, "palabra")`           |   Devuelve aquellos casos donde la columna `Columna` contiene la palabra `"palabra"`          |
+| Identifica datos faltantes | `is.na` | `is.na(Columna)` |
+: Instrucciones comunes para el \`filter\`
+
+Podemos jugar más con el filter por ejemplo devolviendo aquellas defunciones en un mes después de febrero (mes `2`):
+
+```{r}
+mortalidad_2017 %>%
+  filter(Mes > 2)
+```
+
+Aquellas defunciones cuyo mes es antes de febrero (incluyendo febrero):
+
+```{r}
+mortalidad_2017 %>%
+  filter(Mes <= 2)
+```
+
+Aquellas defunciones cuyos días estén entre el día `7` y el `9` 
+
+```{r}
+mortalidad_2017 %>%
+  filter(Día %in% c(7,8,9)) #o bien 7:9 en lugar del c
+```
+
+Aquellas defunciones cuyo día **no** esté entre el día `7` y el `9` 
+
+```{r}
+mortalidad_2017 %>%
+  filter(!(Día %in% c(7,8,9))) #o bien 7:9 en lugar del c
+```
+
+Aquellas defunciones en enero el día `14`:
+
+```{r}
+mortalidad_2017 %>%
+  filter(Día == 14 & Mes == 1) #o bien 7:9 en lugar del c
+```
+
+O bien:
+
+```{r}
+mortalidad_2017 %>%
+  filter(Día == 14) %>%
+  filter(Mes == 1) 
+```
+
+Aquellas defunciones donde el mes sea enero o diciembre:
+
+```{r}
+mortalidad_2017 %>%
+  filter(Mes == 1 | Mes == 12)
+```
+
+Aquellas defunciones donde el mes sea distinto de octubre:
+
+```{r}
+mortalidad_2017 %>%
+  filter(Mes != 10)
+```
+
+Aquellas defunciones cuya causa contenga el caracter `C5`:
+
+```{r}
+mortalidad_2017 %>%
+  filter(str_detect(Causa,"C5"))
+```
+
+### Ejercicio
+
+En la base `unicef_vacunas.xlsx` abre la hoja `HEPBB` con información de la cobertura de dicha vacuna. Determina:
+
+1. ¿Cuántos países están registrados para la región `ROSA`?
+2. ¿Cuántos países en `2020` lograron una cobertura mayor al 90\%?
+3. Dentro de la región de Latinoamérica y el Caribe (`LACR`) ¿cuántos países lograron una cobertura menor a 80\%?
+4. ¿Cuál fue la cobertura de México, Colombia y Uruguay en `2020`? 
+5. ¿Cuántos países no contienen datos para 1990?
+
+
+## Estadísticos de resumen con `summarise`
+
+La función de `summarise` sirve para colapsar columnas en números. Por ejemplo: obtener el promedio de una columna, obtener el máximo, un cuartil, una suma o un conteo. Por ejemplo para obtener el promedio de la columna `Edad` basta con usar `mean` adentro de `summarise`:
+
+```{r}
+mortalidad_2017 %>%
+  summarise(`Edad promedio` = mean(Edad))
+```
+
+Nota que aquí la edad sale altísima y esto es porque el INEGI empieza a contar los años a partir del `4000` siendo `4001` un año, `4002` dos años etc. Por otro lado es necesario eliminar a aquellos con edad de `4998` pues corresponde a `Edad no especificada`. Para ello filtramos y luego calculamos la media de edad menos `4000`:
+
+```{r}
+mortalidad_2017 %>%
+  filter(Edad >= 4000 & Edad != 4998) %>%
+  summarise(`Edad promedio` = mean(Edad - 4000))
+```
+
+Esto nos dice que en el `2017` el promedio de edad de las defunciones de más de un año fue de 65 años. 
+
+Observa que ese promedio es lo mismo que haber sumado todas las edades con `sum` y luego dividido entre el total de observaciones `n`:
+
+```{r}
+mortalidad_2017 %>%
+  filter(Edad >= 4000 & Edad != 4998) %>%
+  summarise(`Suma de edades` = sum(Edad - 4000))
+```
+
+```{r}
+mortalidad_2017 %>%
+  filter(Edad >= 4000 & Edad != 4998) %>%
+  summarise(`Total de observaciones` = n())
+```
+
+pues:
+```{r}
+43216448/660152
+```
+
+Podemos también obtener el máximo de edad con `max` (el mínimo sería con `min`)
+
+```{r}
+mortalidad_2017 %>%
+  filter(Edad >= 4000 & Edad != 4998) %>%
+  summarise(`Edad promedio` = max(Edad - 4000))
+```
+
+O bien la mediana o algún cuantil:
+
+```{r}
+mortalidad_2017 %>%
+  filter(Edad >= 4000 & Edad != 4998) %>%
+  summarise(`Edad mediana` = median(Edad - 4000))
+```
+
+```{r}
+#Cuantil 0.25 = primer cuartil
+mortalidad_2017 %>%
+  filter(Edad >= 4000 & Edad != 4998) %>%
+  summarise(`Edad (25%)` = quantile(Edad - 4000, 0.25))
+```
+
+de hecho podemos aplicar el `summarise` de todos a la vez:
+
+
+```{r}
+#Cuantil 0.25 = primer cuartil
+mortalidad_2017 %>%
+  filter(Edad >= 4000 & Edad != 4998) %>%
+  summarise(`Edad promedio` = mean(Edad - 4000),
+            `Edad mediana`  = median(Edad - 4000),
+            `Edad máxima`   = max(Edad - 4000))
+```
