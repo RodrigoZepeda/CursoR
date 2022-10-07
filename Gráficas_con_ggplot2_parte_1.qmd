@@ -903,7 +903,8 @@ ggplot(datos_diabetes) +
 Date cuenta que solito `R` decide cuántas barras poner. 
 
 ::: callout-note
-Según [Ioannidis](http://www.madgik.di.uoa.gr/sites/default/files/vldb03_pp19-30.pdf) histograma viene del griego _histos_ (mástil) y _gram-ma_ (algo escrito). Por lo que literalmente sería algo escrito en mástiles. A pesar de que éstos se atribuyen a Karl Pearson, los histogramas fueron inventados desde antes. Él fue quien les puso nombre. :::
+Según [Ioannidis](http://www.madgik.di.uoa.gr/sites/default/files/vldb03_pp19-30.pdf) histograma viene del griego _histos_ (mástil) y _gram-ma_ (algo escrito). Por lo que literalmente sería algo escrito en mástiles. A pesar de que éstos se atribuyen a Karl Pearson, los histogramas fueron inventados desde antes. Él fue quien les puso nombre. 
+:::
 
 Para especificar el número de barras hay dos formas: utilizando el comando `bins` lo que le dice a `R` cuántas barras poner:
 

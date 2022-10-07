@@ -1,7 +1,7 @@
 ---
 title: "Gráficas con `ggplot2`"
 subtitle: "Parte 2: Graficación avanzada en `R`"
-author: "Rodrigo Zepeda-Tello y Rossana Torres"
+author: "Rodrigo Zepeda-Tello"
 date: "`r Sys.Date()`"
 abstract: "Mostramos algunas funciones avanzadas de `ggplot2`: cómo formatear el texto con otros colores usando `gridtext`, cómo agregar en la misma gráfica datos de dos fuentes distintas, cómo juntar gráficas usando `cowplot` y cómo agregar logotipos a gráficas."
 title-block-banner: false
@@ -725,8 +725,9 @@ Dentro del `gghighlight` para que respete los `facets` utiliza `calculate_per_fa
 :::
 
 ::: callout-tip
-Necesitas usar `plot_grid` para juntar el gráfico que sólo contiene el logo con el gráfico que contiene la info de vacunas. 
+Necesitas usar `plot_grid` para juntar el gráfico que sólo contiene el logo (en `imagenes`) con el gráfico que contiene la info de vacunas. 
 :::
+
 
 ```{r}
 #| message: false
@@ -787,7 +788,7 @@ plot_logo <- ggplot() +
   theme_void() + 
   theme(
     plot.background  = element_rect(fill = "#fffff8", color = "#fffff8"),
-    panel.background = element_rect(fill = "#fffff8")
+    panel.background = element_rect(fill = "#fffff8", color = "#fffff8")
   )
 
 panel2 <- plot_grid(
@@ -795,7 +796,7 @@ panel2 <- plot_grid(
     theme_void() + 
     theme(
       plot.background  = element_rect(fill = "#fffff8", color = "#fffff8"),
-      panel.background = element_rect(fill = "#fffff8")
+      panel.background = element_rect(fill = "#fffff8", color = "#fffff8")
     ), 
   plot_logo, rel_widths = c(1, 0.5))
 
