@@ -75,18 +75,16 @@ información**.
 
 2.  **Análisis de datos** incluye tres pasos que fluyen en cualquier orden:
 
-```{=html}
 <!-- -->
-```
+
 a.  **Formulación de preguntas** ¿qué me gustaría saber de mis datos?\_
 b.  **Visualización de los datos** ¿puede una gráfica ayudarme a responder mi
     pregunta u orientarme hacia qué analizar?
 c.  **Análisis de los datos:** ¿qué resumen de la información (por ejemplo una
     tabla o un promedio) resulta eficaz para presentar lo que me interesa?
 
-```{=html}
 <!-- -->
-```
+
 3.  Una vez se tienen los datos analizados continuamos a la parte de
     **comunicación** donde buscamos **generar tablas, gráficas y reportes**
     (entre otros) que comuniquen nuestros datos al público.
@@ -677,11 +675,13 @@ which(nombres_de_amigos == "Alejandro")
 Finalmente, podemos usar vectores para seleccionar múltiples columnas y filas,
 por ejemplo si deseo seleccionar, de la base, las columnas de `sexo` y `edad`:
 
-```{r, eval = FALSE}
+```{r}
+#| eval: false
 mortalidad_2017[ , c("sexo", "edad")]
 ```
 
-```{r, echo = FALSE}
+```{r}
+#| echo: false
 head(mortalidad_2017[ , c("sexo", "edad")])
 ```
 
@@ -729,9 +729,8 @@ mortalidad_2017 %>%
     información sobre vacunas `MCV2` dada por la UNICEF. Responde las siguientes
     preguntas:
 
-```{=html}
 <!-- -->
-```
+
 a.  Determina los nombres de todas las columnas de las variables usando `R` (no
     vale ver el archivo).
 b.  Determina el número de renglones y el número de filas totales de la base.
@@ -741,9 +740,8 @@ e.  Regresa la 5a columna.
 f.  Obtén el nombre de la columna `9`.
 g.  Obtén la entrada en la columna `5` y fila `14`.
 
-```{=html}
 <!-- -->
-```
+
 2.  Considera la base de datos creada por el siguiente código:
 
 ```{r}
@@ -756,6 +754,7 @@ Determina qué ocasionó los resultados siguientes:
 a.  ¿Por qué da error?
 
 ```{r}
+#| error: true
 #Primer error
 base_inventada[ , 200]
 ```
@@ -777,13 +776,14 @@ base_inventada[0,0]
 d.  ¿Por qué da error\`?
 
 ```{r}
-#NULL
+#| error: true
 base_inventada[2, c("tiempo")]
 ```
 
 e.  Arregla este código para que no dé error
 
-```{r, eval = FALSE}
+```{r}
+#| eval: false
 base.inventada %>% select("Tiempo")
                %>% slice(2)
 ```
@@ -793,8 +793,8 @@ base.inventada %>% select("Tiempo")
 ### Seleccionar columnas con `select`
 
 De la base de mortalidad comencemos por quedarnos sólo con las columnas
-`ent_regis`, `sexo`, `edad`, `dia_ocurr`, `mes_ocurr`, `anio_ocurr` y
-`causa_def`. Para ello seleccionamos múltiples columnas mediante un vector con
+`ent_regis`,`mun_regis`, `sexo`, `edad`, `dia_ocurr`, `mes_ocurr`, `anio_ocurr`
+y `causa_def`. Para ello seleccionamos múltiples columnas mediante un vector con
 el nombre de las columnas a seleccionar.
 
 ::: callout-warning
@@ -807,7 +807,7 @@ porque nos evitamos el riesgo de perder información!
 #Reescribimos la variable sólo con las columnas que nos
 #interesan
 mortalidad_2017 <- mortalidad_2017 %>%
-  select(ent_regis, sexo, edad, dia_ocurr, mes_ocurr, anio_ocur, causa_def)
+  select(ent_regis, mun_regis, sexo, edad, dia_ocurr, mes_ocurr, anio_ocur, causa_def)
 ```
 
 Ojo que aquí estoy sobreescribiendo la copia de `R` de la base de
@@ -818,8 +818,9 @@ guardado en otra variable:
 ```{r}
 #Reescribimos la variable sólo con las columnas que nos
 #interesan
+#| eval: false
 mortalidad_2017_pedazo <- mortalidad_2017 %>%
-  select(ent_regis, sexo, edad, dia_ocurr, mes_ocurr, anio_ocur, causa_def)
+  select(ent_regis, mun_regis, sexo, edad, dia_ocurr, mes_ocurr, anio_ocur, causa_def)
 ```
 
 El punto importante es guardarla porque de otra forma los cambios no son
@@ -846,20 +847,21 @@ Por ejemplo:
 
 ```{r}
 mortalidad_2017 <- mortalidad_2017 %>%
-  rename(Entidad = ent_regis)
+  rename(`Entidad` = `ent_regis`)
 ```
 
 También podemos renombrar varias columnas de golpe aplicando varios `rename`
-concatenados por el `%>%`:
+concatenados por el `%>%` o bien poniendo muchas igualdades dentro del `rename`:
 
 ```{r}
 mortalidad_2017 <- mortalidad_2017 %>%
-  rename(Sexo = sexo) %>%
-  rename(Edad = edad) %>%
-  rename(Día = dia_ocurr) %>%
-  rename(Mes = mes_ocurr) %>%
-  rename(Año = anio_ocur) %>%
-  rename(Causa = causa_def)
+  rename(`Sexo`  = `sexo`) %>%
+  rename(`Edad`  = `edad`) %>% 
+  rename(`Día`      = `dia_ocurr`, 
+         `Mes`      = `mes_ocurr`,
+         `Año`      = `anio_ocur`,
+         `Causa`    = `causa_def`, 
+         `Municipio`= `mun_regis`)
 ```
 
 ### Filtrar filas con `filter`
@@ -881,27 +883,30 @@ mortalidad_2017 <- mortalidad_2017 %>%
 
 ```{r}
 #Después de filtrar
-mortalidad_2017 %>% tally()
+mortalidad_2017 %>% 
+  tally()
 ```
 
-El filter opera poniéndole una condición adentro. Aquí te copio las
+El `filter` opera poniéndole una condición adentro. Aquí te copio las
 instrucciones más comunes:
 
-| Nombre   | Instrucción | Significado |
-|----------|-------------|-------------|
-| Igualdad |    `x == y`         |   `x` es igual a `y`          |
-| Mayor/menor         | `x > y`            |   `x` es menor que `y`            |
-| Mayor/menor igual          |   `x >= y`          | `x` es mayor o igual que `y`            |
-| Diferente         | `x != y`             |   `x` es distinto de `y` ($x \neq y$)          |
-| Pertenencia         |  `x %in% y`           | `x` está en `y` si `y` es un vector `c`            |
-| O         |  `A  | B`           | al menos una de las dos condiciones `A` ó `B` es verdadera            |
-| Y        |  `A & B`           | ambas `A` y `B` son verdaderas           |
-| No         |  `!A`           |  lo contrario a la condición `A`           |
-| Búsqueda de palabras       |  `str_detect(Columna, "palabra")`           |   Devuelve aquellos casos donde la columna `Columna` contiene la palabra `"palabra"`          |
-| Identifica datos faltantes | `is.na` | `is.na(Columna)` |
+| Nombre                     | Instrucción                      | Significado                                                                        |
+|-----------------------|-----------------------------|-----------------------------|
+| Igualdad                   | `x == y`                         | `x` es igual a `y`                                                                 |
+| Mayor/menor                | `x > y`                          | `x` es menor que `y`                                                               |
+| Mayor/menor igual          | `x >= y`                         | `x` es mayor o igual que `y`                                                       |
+| Diferente                  | `x != y`                         | `x` es distinto de `y` ($x \neq y$)                                                |
+| Pertenencia                | `x %in% y`                       | `x` está en `y` si `y` es un vector `c`                                            |
+| O                          | `A  | B`                         | al menos una de las dos condiciones `A` ó `B` es verdadera                         |
+| Y                          | `A & B`                          | ambas `A` y `B` son verdaderas                                                     |
+| No                         | `!A`                             | lo contrario a la condición `A`                                                    |
+| Búsqueda de palabras       | `str_detect(Columna, "palabra")` | Devuelve aquellos casos donde la columna `Columna` contiene la palabra `"palabra"` |
+| Identifica datos faltantes | `is.na`                          | `is.na(Columna)`                                                                   |
+
 : Instrucciones comunes para el \`filter\`
 
-Podemos jugar más con el filter por ejemplo devolviendo aquellas defunciones en un mes después de febrero (mes `2`):
+Podemos jugar más con el `filter` por ejemplo devolviendo aquellas defunciones
+en un mes después de febrero (mes `2`):
 
 ```{r}
 mortalidad_2017 %>%
@@ -915,14 +920,14 @@ mortalidad_2017 %>%
   filter(Mes <= 2)
 ```
 
-Aquellas defunciones cuyos días estén entre el día `7` y el `9` 
+Aquellas defunciones cuyos días estén entre el día `7` y el `9`
 
 ```{r}
 mortalidad_2017 %>%
   filter(Día %in% c(7,8,9)) #o bien 7:9 en lugar del c
 ```
 
-Aquellas defunciones cuyo día **no** esté entre el día `7` y el `9` 
+Aquellas defunciones cuyo día **no** esté entre el día `7` y el `9`
 
 ```{r}
 mortalidad_2017 %>%
@@ -965,27 +970,36 @@ mortalidad_2017 %>%
   filter(str_detect(Causa,"C5"))
 ```
 
-### Ejercicio
+#### Ejercicio
 
-En la base `unicef_vacunas.xlsx` abre la hoja `HEPBB` con información de la cobertura de dicha vacuna. Determina:
+En la base `unicef_vacunas.xlsx` abre la hoja `HEPBB` con información de la
+cobertura de dicha vacuna. Determina:
 
-1. ¿Cuántos países están registrados para la región `ROSA`?
-2. ¿Cuántos países en `2020` lograron una cobertura mayor al 90\%?
-3. Dentro de la región de Latinoamérica y el Caribe (`LACR`) ¿cuántos países lograron una cobertura menor a 80\%?
-4. ¿Cuál fue la cobertura de México, Colombia y Uruguay en `2020`? 
-5. ¿Cuántos países no contienen datos para 1990?
+1.  ¿Cuántos países están registrados para la región `ROSA`?
+2.  ¿Cuántos países en `2020` lograron una cobertura mayor al 90%?
+3.  Dentro de la región de Latinoamérica y el Caribe (`LACR`) ¿cuántos países
+    lograron una cobertura menor a 80%?
+4.  ¿Cuál fue la cobertura de México, Colombia y Uruguay en `2020`?
+5.  ¿Cuántos países no contienen datos para 1990?
 
+### Estadísticos de resumen con `summarise`
 
-## Estadísticos de resumen con `summarise`
-
-La función de `summarise` sirve para colapsar columnas en números. Por ejemplo: obtener el promedio de una columna, obtener el máximo, un cuartil, una suma o un conteo. Por ejemplo para obtener el promedio de la columna `Edad` basta con usar `mean` adentro de `summarise`:
+La función de `summarise` sirve para colapsar columnas en números. Por ejemplo:
+obtener el promedio (`mean`) de una columna, obtener el máximo (`max`), un
+cuantil (`quantile`), una suma (`sum`) o un conteo (`n`). Por ejemplo para
+obtener el promedio de la columna `Edad` basta con usar `mean` adentro de
+`summarise`:
 
 ```{r}
 mortalidad_2017 %>%
   summarise(`Edad promedio` = mean(Edad))
 ```
 
-Nota que aquí la edad sale altísima y esto es porque el INEGI empieza a contar los años a partir del `4000` siendo `4001` un año, `4002` dos años etc. Por otro lado es necesario eliminar a aquellos con edad de `4998` pues corresponde a `Edad no especificada`. Para ello filtramos y luego calculamos la media de edad menos `4000`:
+Nota que aquí la edad sale altísima y esto es porque el INEGI empieza a contar
+los años a partir del `4000` siendo `4001` un año, `4002` dos años etc. Por otro
+lado es necesario eliminar a aquellos con edad de `4998` pues corresponde a
+`Edad no especificada`. Para ello filtramos (`filter`) y luego calculamos la
+media (`mean`) de edad menos `4000`:
 
 ```{r}
 mortalidad_2017 %>%
@@ -993,9 +1007,11 @@ mortalidad_2017 %>%
   summarise(`Edad promedio` = mean(Edad - 4000))
 ```
 
-Esto nos dice que en el `2017` el promedio de edad de las defunciones de más de un año fue de 65 años. 
+Esto nos dice que en el `2017` el promedio de edad de las defunciones de más de
+un año fue de 65 años.
 
-Observa que ese promedio es lo mismo que haber sumado todas las edades con `sum` y luego dividido entre el total de observaciones `n`:
+Observa que ese promedio es lo mismo que haber sumado todas las edades con `sum`
+y luego dividido entre el total de observaciones `n`:
 
 ```{r}
 mortalidad_2017 %>%
@@ -1010,6 +1026,7 @@ mortalidad_2017 %>%
 ```
 
 pues:
+
 ```{r}
 43216448/660152
 ```
@@ -1039,7 +1056,6 @@ mortalidad_2017 %>%
 
 de hecho podemos aplicar el `summarise` de todos a la vez:
 
-
 ```{r}
 #Cuantil 0.25 = primer cuartil
 mortalidad_2017 %>%
@@ -1048,3 +1064,472 @@ mortalidad_2017 %>%
             `Edad mediana`  = median(Edad - 4000),
             `Edad máxima`   = max(Edad - 4000))
 ```
+
+### Operaciones en grupos usando `group_by`
+
+Supongamos que es de nuestro interés calcular la media de edad de la defunción
+pero no para todo el país sino por entidad. Una opción es ir filtrando `32`
+veces para cada entidad como sigue (por ejemplo en este caso obteniendo todo
+`Baja California` que es la entidad `02`)
+
+```{r}
+mortalidad_2017 %>%
+  filter(Edad >= 4000 & Edad != 4998) %>%
+  filter(Entidad == "02") %>%
+  summarise(`Edad promedio` = mean(Edad - 4000))
+```
+
+Repetir este proceso `32` veces es bastante ineficiente. Para ello el `group_by`
+nos sirve pues el `group_by` indica sobre qué columna debe repetirse la
+operación. En nuestro caso sería la de `Entidad` y podría ponerse:
+
+```{r}
+mortalidad_2017 %>%
+  filter(Edad >= 4000 & Edad != 4998) %>%
+  group_by(Entidad) %>%
+  summarise(`Edad promedio` = mean(Edad - 4000))
+```
+
+Podemos, por ejemplo, también calcular el número total de registros por cada
+`Entidad` como sigue:
+
+```{r}
+mortalidad_2017 %>%
+  group_by(Entidad) %>%
+  tally()
+```
+
+Se puede agrupar por más de una columna separando por comas. Por ejemplo el
+siguiente conteo de hombres y mujeres por entidad
+
+```{r}
+conteo_sexo_entidad <- mortalidad_2017 %>%
+  group_by(Entidad, Sexo) %>%
+  tally()
+```
+
+```{r}
+#| echo: false
+conteo_sexo_entidad
+```
+
+Una vez hayamos terminado de operar por la variable agrupada y decidamos seguir
+usando la base es necesario **desagrupar** primero. Por ejemplo si queremos
+seguir ocupando la base `conteo_sexo_entidad` para ahora calcular el total de
+defunciones a nivel nacional usando una suma `sum` el programa no sabe que
+queremos dejar de agrupar:
+
+```{r}
+conteo_sexo_entidad %>%
+  summarise(Todas = sum(n))
+```
+
+De hecho en la misma impresión de la base `conteo_sexo_entidad` puedes ver que
+dice `# Groups:   Entidad [32]`. Esto porque se quedó agrupada. Para eliminar
+los grupos y poder trabajar con toda la base basta con usar `ungroup`:
+
+```{r}
+conteo_sexo_entidad %>%
+  ungroup() %>%
+  summarise(Todas = sum(n))
+```
+
+### Cambio de columnas usando `mutate`
+
+La función de `mutate` sirve para cambiar columnas en función de otras columnas
+o bien generar columnas nuevas. Por ejemplo podemos generar una nueva columna
+que se llame `Dos` y que consista sólo del número `2`:
+
+```{r}
+mortalidad_2017 %>%
+  mutate(`Dos` = 2)
+```
+
+También podemos generar una columna que asigne el número de fila:
+
+```{r}
+mortalidad_2017 %>%
+  mutate(`Fila` = 1:n())
+```
+
+Por último podemos generar una columna que a la edad le reste `4000`:
+
+```{r}
+mortalidad_2017 %>%
+  mutate(`Edad corregida` = `Edad` - 4000)
+```
+
+#### Cambio de columnas de manera condicional usando `if_else` y `case_when` dentro de `mutate`
+
+El `if_else` y el `case_when` sirven para realizar cambios en columnas
+(`mutate`) en función de condiciones de la columna. La redacción del `if_else`
+es como sigue:
+
+```{r}
+#| eval: false
+if_else(CONDICIÓN, VALOR SI VERDADERO, VALOR SI FALSO)
+```
+
+por ejemplo podemos construir una columna que se llame `Sexo categoría` y que
+diga `Hombre`, `Mujer` en los casos de `1` y `2` respectivamente:
+
+```{r}
+mortalidad_2017 %>%
+  filter(Sexo %in% c(1,2)) %>% #eliminamos los desconocidos
+  mutate(`Sexo categoría` = if_else(Sexo == 1, "Hombre", "Mujer"))
+```
+
+O bien podemos crear una columna de edad nueva que sea `0` si la edad es menor
+que `4000` y `Edad - 4000` en otro caso. Esto porque en la codificación del
+INEGI los números menores a 4000 se usan para codificar horas, días y meses.
+
+```{r}
+mortalidad_2017 %>%
+  mutate(`Edad corregida` = if_else(Edad >= 4000, Edad - 4000, 0))
+```
+
+También podemos, por ejemplo, obtener una columna que diga `Tuberculosis` si la
+causa de defunción fue tuberculosis (códigos A15-A19) o bien `Otra` en caso
+contrario:
+
+```{r}
+mortalidad_2017 %>%
+  mutate(TB = if_else(str_detect(Causa,"A15") | str_detect(Causa,"A16") |
+                       str_detect(Causa,"A17") | str_detect(Causa,"A18") |
+                       str_detect(Causa,"A19"), "Tuberculosis", "Otra"))
+```
+
+Además del `if_else` (que sirve para dos condiciones) existe el `case_when` que
+sirve para múltiples. La redacción siempre es:
+
+```{r}
+#| eval: false
+case_when(
+  CONDICION1 ~ VALOR1,
+  CONDICION2 ~ VALOR2,
+  CONDICION3 ~ VALOR3,
+  TRUE ~ VALOR_DEFAULT #Este se puede omitir y el default es NA
+)
+```
+
+Por ejemplo, la vez anterior eliminamos aquellos que tenían sexo faltante.
+Podemos mejor dejarlos como missing: `NA`
+
+```{r}
+mortalidad_2017 %>%
+  mutate(`Sexo corregido` = case_when(
+    `Sexo` == 1 ~ "Hombre",
+    `Sexo` == 2 ~ "Mujer",
+    TRUE ~ NA_character_ 
+  ))
+```
+
+Nota que pusimos `NA_character_` para indicar el faltante. Esto es porque
+existen diferentes tipos de valores faltantes según la variable que tenemos:
+`NA_real_` para números, `NA_integer_` para números enteros y `NA_character_`
+para palabras/caracteres.
+
+Como nota no hace falta poner la última condición para que `R` sepa que aquellos
+que no son `"Hombre"` o `"Mujer"` son faltantes:
+
+```{r}
+#Es lo mismo
+mortalidad_2017 %>%
+  mutate(`Sexo corregido` = case_when(
+    `Sexo` == 1 ~ "Hombre",
+    `Sexo` == 2 ~ "Mujer",
+  ))
+```
+
+En un `mutate` podemos sobreescribir nombres de variables (es decir asignarle a
+`Sexo` un nuevo valor de `Sexo`). Esto sólo se sobreescribe en `R` y no la
+original.
+
+```{r}
+#Es lo mismo
+mortalidad_2017 %>%
+  mutate(`Sexo` = case_when(
+    `Sexo` == 1 ~ "Hombre",
+    `Sexo` == 2 ~ "Mujer",
+  ))
+```
+
+Finalmente podemos combinar operaciones que ya hemos visto antes como `tally` y
+`group_by` por poner un ejemplo:
+
+```{r}
+#Es lo mismo
+mortalidad_2017 <- mortalidad_2017 %>%
+  mutate(`Sexo` = case_when(
+    `Sexo` == 1 ~ "Hombre",
+    `Sexo` == 2 ~ "Mujer",
+  )) 
+
+#Tabla de sexo
+mortalidad_2017 %>% 
+  group_by(`Sexo`) %>% 
+  tally()
+```
+
+Un ejemplo más complicado de `case_when` consiste en asignar el tipo de
+tuberculosis a cada `causa`:
+
+```{r}
+mortalidad_2017 %>%
+  mutate(`Tipo tuberculosis` = case_when(
+    str_detect(`Causa`, "A15") ~ "Tuberculosis respiratoria",
+    str_detect(`Causa`, "A17") ~ "Tuberculosis del sistema nervioso",
+    str_detect(`Causa`, "A18") ~ "Tuberculosis de otros órganos",
+    str_detect(`Causa`, "A19") ~ "Tuberculosis miliar",
+    TRUE ~ "Sin tuberculosis" #Valor default
+  )) %>%
+  filter(`Tipo tuberculosis` != "Sin tuberculosis") %>%
+  group_by(`Tipo tuberculosis`) %>%
+  tally()
+```
+
+### Unión de otras bases usando `_join`
+
+![Unión de bases de datos usando diferentes tipos de `_join`. Fuente: William
+Surles (https://rpubs.com/williamsurles/293454)](images/joins.png)
+
+Para unir los nombres de las entidades o de los municipios podríamos hacer un
+`case_when` gigante pero eso es poco eficiente dado que el INEGI nos provee de
+una base de datos (`decateml.csv`). Leámosla
+
+```{r}
+#| echo: false
+#| message: false
+codigos_entidad <- read_csv("datasets/Catalogo_datos_inegi/decateml.csv",
+                            locale = locale(encoding = "WINDOWS-1252"))
+```
+
+```{r}
+#| eval: false
+codigos_entidad <- read_csv("decateml.csv", 
+                            locale = locale(encoding = "WINDOWS-1252"))
+```
+
+Nota que las entidades son todas aquellas que en `cve_mun` y `cve_loc` tienen
+ceros. Primero hagamos una base de entidades quedándonos sólo con `cve_ent` y
+`nom_loc`:
+
+```{r}
+base_entidades <- codigos_entidad %>%
+  filter(`cve_loc` == "0000") %>%
+  filter(`cve_mun` == "000") %>%
+  select(`cve_ent`, `nom_loc`) %>%
+  rename(`Entidad federativa` = `nom_loc`)
+```
+
+```{r}
+#| echo: false
+base_entidades
+```
+
+Nota que en la `base_entidades` la columna con la clave de la entidad se llama
+`cve_ent` mientras que en la base de `mortalidad_2017` se llama `Entidad`. Para
+juntar las bases usaremos un `left_join`. Esta instrucción lo que hace es tomar
+una base `grande` y pegarle el diccionario de datos de una base `pequeña` como
+sigue:
+
+```{r}
+#| eval: false
+grande %>% left_join(pequeña)
+```
+
+En nuestro caso la base grande es `mortalidad_2017` y la base pequeña es
+`base_entidades` y las variables en común son: `Entidad = cve_ent`.
+
+```{r}
+mortalidad_2017 <- mortalidad_2017 %>%
+  left_join(base_entidades, by = c("Entidad" = "cve_ent"))
+```
+
+En el caso del municipio requerimos dos columnas `cve_ent` (`Entidad`) y
+`cve_mun` (`Municipio`). Para ello filtramos la base inicial del `INEGI`:
+
+```{r}
+base_municipios <- codigos_entidad %>%
+  filter(`cve_loc` == "0000") %>%
+  filter(`cve_mun` != "000") %>%
+  select(`cve_ent`, `cve_mun`, `nom_loc`) %>%
+  rename(`Nombre del municipio` = `nom_loc`)
+```
+
+y pegamos a nuestros datos:
+
+```{r}
+mortalidad_2017 <- mortalidad_2017 %>%
+  left_join(base_municipios, 
+            by = c("Entidad" = "cve_ent",
+                   "Municipio" = "cve_mun"))
+```
+
+Podemos entonces mostrar las defunciones para los municipios de `Sinaloa`:
+
+```{r}
+mortalidad_2017 %>%
+  filter(`Entidad federativa` == "Sinaloa") %>%
+  group_by(`Nombre del municipio`) %>%
+  tally()
+```
+
+### Pivoteo de bases con `pivot`
+
+La siguiente tabla muestra por sexo y entidad las defunciones. Muchas veces para
+mejorar el formato buscamos transponer la tabla de tal forma que hombres sea una
+columna y mujeres otra. Éste no es el formato recomendado para análisis pero a
+veces sí para presentar. Para poder transformar la tabla podemos `pivot_wider`:
+
+```{r}
+#Tabla en formato largo (long)
+formato_largo <- mortalidad_2017 %>%
+  group_by(`Entidad federativa`, Sexo) %>%
+  tally()
+```
+
+```{r}
+formato_largo
+```
+
+Podemos decirle a `R` que vuelva cada sexo una columna. Para ello hay que
+especificar las variables que quedan constantes como columnas en `id_cols` (en
+este caso `Entidad federativa`) y las que van a cambiar a columna (`names_from`)
+`Sexo` junto con el valor asignar (`values_from`) `n`:
+
+```{r}
+formato_ancho <- formato_largo %>%
+  pivot_wider(id_cols = `Entidad federativa`,
+              names_from  = `Sexo`,
+              values_from = `n`)
+```
+
+```{r}
+#| echo: false
+formato_ancho
+```
+
+por otro lado si tenemos una base en formato ancho `wide` y que queremos pasar a
+largo para su análisis (`long`) podemos trabajar con `pivot_longer`
+seleccionando en `cols` las columnas a transformar, bajo qué nombre quedan en
+`names_to` y bajo qué valor en `values_to`:
+
+```{r}
+#Y de regreso
+formato_ancho %>%
+  pivot_longer(cols = c(`Mujer`, `Hombre`, `NA`),
+               names_to = "Sexo",
+               values_to = "n")
+```
+
+### Unión de columnas con `paste`
+
+En nuestra base de datos tenemos el día, mes y año separados en las columnas
+homónimas. Podemos juntarlas en una sola con `paste` especificando cómo
+separarlas con `sep`:
+
+```{r}
+mortalidad_2017 <- mortalidad_2017 %>%
+  mutate(Fecha = paste(Día, Mes, Año, sep = "-"))
+```
+
+```{r}
+#| echo: false
+mortalidad_2017
+```
+
+Una vez que están unidas podemos usar la librería `lubridate` para convertirlas
+a fecha usando `dmy` si es día-mes-año o `ymd` si es año mes día (`mdy` ¿para
+qué será?)
+
+```{r}
+#| warning: false
+library(lubridate)
+mortalidad_2017 <- mortalidad_2017 %>%
+  mutate(Fecha = dmy(Fecha))
+```
+
+Una vez es convertida en fecha podemos hacer operaciones con fechas por ejemplo
+contar cuántos días han pasado desde el `01` de enero del `2017` hasta la fecha:
+
+```{r}
+#| warning: false
+mortalidad_2017 <- mortalidad_2017 %>%
+  mutate(`Días desde primero de enero` = Fecha - dmy("01/01/2017"))
+```
+
+o bien obtener la semana epidemiológica y el año epidemiológico:
+
+```{r}
+#| warning: false
+mortalidad_2017 <- mortalidad_2017 %>%
+  mutate(`Semana epidemiológica` = epiweek(Fecha)) %>%
+  mutate(`Año epidemiológico` = epiyear(Fecha))
+```
+
+### Ejercicio
+
+> El ejercicio consiste en usar las siguientes funciones en una base de datos de
+> tu preferencia al menos una vez para responder preguntas de la base de
+> datos. + `filter` + `group_by` + `mutate` + `select` + `tally` + `rename` +
+> `summarise` + Al menos una de las siguientes: `left_join`, `right_join`,
+> `full_join`, `inner_join` + Al menos una de las siguientes: `pivot_longer`,
+> `pivot_wider` + Una gráfica con `ggplot` Si no tienes una base de datos puedes
+> usar la que sigue:
+
+En el siguiente
+[hipervínculo](https://www.gob.mx/salud/documentos/datos-abiertos-152127) puedes
+encontrar la base de datos de **Enfermedades Febriles Exantemáticas** más
+reciente de la Dirección General de Epidemiología (`Base de Datos`) así como el
+significado de cada uno de los códigos en `Diccionario de Datos`. Cada renglón
+de la base de datos representa un caso distinto de una de estas enfermedades.
+
+Utiliza la base para responder las siguientes preguntas usando al menos una vez
+(en todo el ejercicio) las funciones:
+
+-   `filter`
+-   `group_by`
+-   `mutate`
+-   `select`
+-   `tally`
+-   `rename`
+-   `summarise`
+-   Al menos una de las siguientes: `left_join`, `right_join`, `full_join`,
+    `inner_join`
+-   Al menos una de las siguientes: `pivot_longer`, `pivot_wider`
+-   Una gráfica con `ggplot`
+
+1.  ¿Cuántos casos se han presentado este año?
+
+2.  ¿Cuántos presentaron fiebre?
+
+3.  ¿Cuántos casos en hombres y cuántos en mujeres?
+
+4.  ¿Cuál es la edad promedio de los casos?
+
+5.  De los casos ¿cuántos hombres estaban vacunados y cuántas mujeres
+    vacunadas?. Genera una tabla de 2 por 2 que se vea **exactamente** así:
+
+    |                         | Hombres | Mujeres |
+    |-------------------------|---------|---------|
+    | Con al menos una vacuna | \-\-\-   | \-\-\-   |
+    | Sin vacuna              | \-\-\-   | \-\-\-   |
+
+6.  De los casos ¿qué proporción de los hombres estaban vacunados y qué
+    proporción de las mujeres vacunadas?
+
+7.  Utiliza la población del [`Censo 2020` del
+    INEGI](https://www.inegi.org.mx/programas/ccpv/2020/#Tabulados) para
+    calcular la incidencia por cada 10000 habitantes por entidad y encontrar la
+    entidad con mayor incidencia.
+
+8.  Grafica la incidencia de casos totales por semana epidemiológica usando
+    `ggplot2`.
+
+### Para saber más
+
+La mayor recomendación es el libro `R4DS` (`R` para ciencia de datos) el cual
+puede encontrarse gratuitamente en línea: **nueva edición (inglés)**:
+<https://r4ds.had.co.nz/> **edición previa (español)**:
+<https://es.r4ds.hadley.nz/>
