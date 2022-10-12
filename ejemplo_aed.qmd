@@ -1,0 +1,263 @@
+---
+title: "Ejemplo de análisis exploratorio de datos"
+subtitle: "Parte 1: Fundamentos de análisis exploratorio en `R`"
+author: "Rodrigo Zepeda-Tello"
+date: "`r Sys.Date()`"
+abstract: "Mostramos un ejemplo de análisis de datos con `R`"
+title-block-banner: false
+execute:
+  error: true
+  warning: false
+theme: lux  
+toc-title: "Contenido"
+author-title: "Autores"
+published-title: "Última actualización"
+abstract-title: "Resumen"
+backgroundcolor: "#fffff8"
+format:
+    pdf: default
+    html: 
+      self-contained: true
+      theme: litera
+      toc: true
+      toc-location: left
+      toc-depth: 3
+      number-sections: true
+      number-depth: 3
+reference-location: margin
+citation-location: margin
+bibliography: skeleton.bib
+link-citations: yes
+editor: 
+  markdown: 
+    wrap: 80
+---
+
+Antes de cualquier análisis, enlistaremos las librerías que vamos a usar:
+
+```{r}
+#| message: false
+library(tidyverse)   #Análisis exploratorio de datos y gráficas
+library(officer)     #Paquete para que R trabaje con Microsoft Office (Word / Power Point)
+library(readxl)      #Para leer archivos de Excel
+library(flextable)   #Armar tablas en formato word  
+library(sf)          #Para usar mapas
+library(httr)        #Descargar archivos web
+library(lubridate)   #Para calcular fechas
+```
+
+## Datos
+
+Para este análisis usaremos los datos de dengue de la dirección general de epidemiología. Primero utilizaremos los datos del año 2021 [disponibles aquí](https://datosabiertos.salud.gob.mx/gobmx/salud/datos_abiertos/etv/historicos/2021/datos_abiertos_dengue_301221.zip). Y armaremos nuestro análisis. Después cambiaremos los datos por los del 2022 [disponibles acá](https://datosabiertos.salud.gob.mx/gobmx/salud/datos_abiertos/etv/historicos/2022/datos_abiertos_dengue_290922.zip) y realizaremos el mismo reporte.
+
+El propósito del reporte es lo siguiente: 
+
+1. Graficar la incidencia semanal de casos por semana epidemiológica en **SINALOA**-
+2. Determinar la distribución de casos por grupo de edad (`<20`, `20-60`, `60>`) y sexo en **SINALOA** y realizar dicha tabla en Word. 
+3. Generar un mapa de calor para mostrar la incidencia per capita anual por municipio de **SINALOA**. 
+
+Comenzamos leyendo los casos: 
+
+```{r}
+#| message: false
+#Nota que podemos bajar el archivo directo de la página web
+pagina_web <- "https://datosabiertos.salud.gob.mx/gobmx/salud/datos_abiertos/etv/historicos/2021/datos_abiertos_dengue_301221.zip"
+
+#Descagamos los datos
+GET(pagina_web, write_disk("dengue.zip", overwrite=TRUE))
+
+#Los leemos
+dengue <- read_csv("dengue.zip", show_col_types = FALSE)
+```
+
+Por otro lado descargamos el diccionario de datos:
+
+```{r}
+#| message: false
+
+#Bajamos el diccionario
+pagina_diccionario <- "https://datosabiertos.salud.gob.mx/gobmx/salud/datos_abiertos/etv/diccionario_datos_dengue.zip"
+
+#Descagamos los datos
+GET(pagina_diccionario, write_disk("diccionario_datos_dengue.zip", overwrite=TRUE))
+
+#Descomprimimos el archivo
+zip::unzip("diccionario_datos_dengue.zip", exdir = getwd())
+
+#Le cambio de nombre porque sale con problemas
+file.rename("Cat\xa0logos_Dengue.xlsx","Catalogos_Dengue.xlsx")
+
+#Leemos el catálogo de datos en hoja entidad y en hoja municipio
+entidades  <- read_excel("Catalogos_Dengue.xlsx", sheet = "CATÁLOGO ENTIDAD")
+municipios <- read_excel("Catalogos_Dengue.xlsx", sheet = "CATÁLOGO MUNICIPIO")
+
+```
+
+Pegamos a los datos el nombre de la entidad de residencia y de municipio de residencia a partir del diccionario
+
+```{r}
+#Pegamos las bases y luego
+#Cambiamos los nombres a algo más informativo que entidad y abreviatura
+dengue <- dengue %>%
+  left_join(entidades, by = c("ENTIDAD_RES" = "CLAVE_ENTIDAD")) %>%
+  rename(ENTIDAD_RESIDENCIA = ENTIDAD_FEDERATIVA) %>%
+  rename(ABREVIATURA_RESIDENCIA = ABREVIATURA)
+```
+
+Repetimos el proceso para municipio
+
+```{r}
+dengue <- dengue %>%
+  left_join(municipios, 
+            by = c("ENTIDAD_RES" = "CLAVE_ENTIDAD", "MUNICIPIO_RES" = "CLAVE_MUNICIPIO")) %>%
+  rename(MUNICIPIO_RESIDENCIA = MUNICIPIO)
+```
+
+## Incidencia semanal
+
+Calculo la incidencia semanal de casos para ello primero obtengo las semanas:
+
+```{r}
+dengue <- dengue %>%
+  mutate(Semana_epi = epiweek(FECHA_SIGN_SINTOMAS)) %>%
+  mutate(Año_epi = epiyear(FECHA_SIGN_SINTOMAS))
+```
+
+Y luego agrupo a quedarme sólo con Sinaloa y cuento:
+
+```{r}
+incidencia_semanal <- dengue %>%
+  filter(ENTIDAD_RESIDENCIA == "SINALOA") %>%
+  group_by(Semana_epi, Año_epi) %>%
+  tally()
+```
+
+finalmente grafico:
+
+```{r}
+ggplot(incidencia_semanal) +
+  geom_col(aes(x = Semana_epi, y = n), fill = "#F37911") +
+  theme_classic() +
+  labs(
+    x = "Semana epidemiológica",
+    title = "Incidencia semanal de dengue en Sinaloa",
+    y = "Casos nuevos"
+  ) +
+  scale_y_continuous(labels = scales::comma)
+```
+
+## Tabla en Word
+
+Para hacer la tabla primero creamos un `tibble` con los resultados tal como los queremos:
+
+```{r}
+tabla_1 <- dengue %>%
+  filter(ENTIDAD_RESIDENCIA == "SINALOA") %>%
+  mutate(EDAD_GRUPO = cut(EDAD_ANOS, 
+                          breaks = c(0, 20, 60, 120), 
+                          labels = c("0-20","21-60","61 +"),
+                          include.lowest = TRUE)) %>%
+  group_by(SEXO, EDAD_GRUPO) %>%
+  tally() %>%
+  mutate(SEXO = if_else(SEXO == 1, "Hombre","Mujer")) %>%
+  pivot_wider(id_cols = EDAD_GRUPO, names_from = SEXO, values_from = n)
+```
+
+```{r}
+#| echo: false
+tabla_1
+```
+
+La podríamos guardar con `write_excel_csv` pero ahora vamos a aprender a pasarla a `Word` usando `flextable`. Por ahora se vería así:
+
+```{r}
+flextable(tabla_1)
+```
+Podemos arreglar para que sexo tenga un encabezado `add_header_row`:
+
+```{r}
+flextable(tabla_1) %>%
+  add_header_row(
+    colwidths = c(1, 2),
+    values = c("", "Sexo")
+  ) 
+```
+
+Y cambiar el `EDAD_GRUPO` de la primera fila:
+
+```{r}
+flextable(tabla_1) %>%
+  add_header_row(
+    colwidths = c(1, 2),
+    values = c("", "Sexo")
+  ) %>%
+  set_header_labels("EDAD_GRUPO" = "Grupo de edad") 
+```
+
+Así como poner título y nota al pie:+
+
+```{r}
+tabla_1 <- flextable(tabla_1) %>%
+  add_header_row(
+    colwidths = c(1, 2),
+    values = c("", "Sexo")
+  ) %>%
+  set_header_labels("EDAD_GRUPO" = "Grupo de edad") %>%
+  add_footer_lines(
+    "Datos de la Dirección General de Epidemiología"
+  ) %>%
+  set_caption(caption = "Casos de dengue en Sinaloa") %>%
+  theme_vanilla()
+```
+
+```{r}
+#| echo: false
+tabla_1
+```
+
+Finalmente guardamos en Word:
+
+```{r}
+tabla_1 %>%
+  save_as_docx(path = "Tabla_1.docx")
+```
+
+## Mapa de calor
+
+Leemos los datos del [marco geoestadístico del INEGI](https://www.inegi.org.mx/app/biblioteca/ficha.html?upc=889463849568): 
+
+```{r}
+municipios <- read_sf("sinaloa/conjunto_de_datos/25mun.shp")
+```
+
+y les juntamos los casos de dengue contados por municipio:
+
+```{r}
+#Conteo por municipio
+municipio_dengue <- dengue %>%
+  filter(ENTIDAD_RESIDENCIA == "SINALOA") %>%
+  group_by(MUNICIPIO_RES, MUNICIPIO_RESIDENCIA) %>%
+  tally()
+```
+
+Unimos al mapa
+```{r}
+municipios <- municipios %>%
+  left_join(municipio_dengue, by = c("CVE_MUN" = "MUNICIPIO_RES"))
+```
+
+Finalmente mapeamos:
+
+```{r}
+ggplot(municipios) +
+  geom_sf(aes(fill = n), color = "white", lwd = 0.5) +
+  theme_void() +
+  scale_fill_viridis_c(option = "turbo") +
+  geom_sf_text(aes(label = NOMGEO), color = "white", size = 1.4) +
+  labs(
+    title = "Dengue en Sinaloa"
+  )
+```
+
+
+

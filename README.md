@@ -12,11 +12,11 @@ Notas para un curso de R.
 2. [Gráficas con ggplot2 (parte 1)](https://rodrigozepeda.github.io/CursoR/Gr%C3%A1ficas_con_ggplot2_parte_1.html)
 3. [Gráficas con ggplot2 (parte 2)](https://rodrigozepeda.github.io/CursoR/Gr%C3%A1ficas_con_ggplot2_parte_2.html)
 3. [Análisis exploratorio de datos (parte 1)](https://rodrigozepeda.github.io/CursoR/analisis_exploratorio_p1.html)
-3. [Estadística Descriptiva (viejo)](https://rodrigozepeda.github.io/CursoR/Estadística_Descriptiva.html)
+4. [Ejemplo de análisis exploratorio de datos](https://rodrigozepeda.github.io/CursoR/ejemplo_aed.html)
+4. [Tutorial de Quarto (por Pablo López Landeros)](https://pablolopez2733.github.io/Quarto-Tutorial/)
 4. [Análisis de encuestas](https://rodrigozepeda.github.io/CursoR/AnalisisEncuestas.html)
 4. [Regresiones (parte 1)](https://rodrigozepeda.github.io/CursoR/Regresiones1.html)
 5. [Regresiones (parte 2)](https://rodrigozepeda.github.io/CursoR/Regresiones_2.html)
-6. [Cadenas de Markov](https://rodrigozepeda.github.io/CursoR/Cadenas_de_Markov.html)
 
 ## Contacto
 
