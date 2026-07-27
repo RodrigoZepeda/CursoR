@@ -1176,11 +1176,11 @@ ggplot(datos_histograma) +
 
 donde los `breaks` indican a `R` dónde hacer los cortes (volveremos más adelante). 
 
-Si quisiéramos verlo como porcentaje y no cómo conteo basta con agregar una opción (muy específica que a nadie se le va a ocurrir sin googlearlo) de `y = (..count..)/sum(..count..)` en el `aes` como sigue:
+Si quisiéramos verlo como porcentaje y no cómo conteo basta con agregar una opción (muy específica que a nadie se le va a ocurrir sin googlearlo) de `y = (after_stat(count))/sum(after_stat(count))` en el `aes` como sigue:
 
 ```{r}
 ggplot(datos_histograma) +
-  geom_histogram(aes(x = estaturas, y = (..count..)/sum(..count..)), 
+  geom_histogram(aes(x = estaturas, y = (after_stat(count))/sum(after_stat(count))), 
                  color = "white",
                  breaks = c(1.3, 1.4, 1.5, 1.6, 1.7, 1.8))
 ```
@@ -1249,13 +1249,13 @@ ggplot(datos_diabetes) +
                  fill = "#cef0ff",  color = "#1D1B1B")
 ```
 
-FInalmente, podemos hacer que el histograma muestre no el número de casos totales en la base sino la proporción de los casos mediante `y = ..density..`. La diferencia entre `..density..` y `(..count..)/sum(..count..)` es que ``..density..` está hecho para que la suma de las áreas de los rectángulos dé $1$ mientras que en `(..count..)/sum(..count..)` la suma de las alturas de los rectángulos es la que da $1$. 
+FInalmente, podemos hacer que el histograma muestre no el número de casos totales en la base sino la proporción de los casos mediante `y = after_stat(density)`. La diferencia entre `after_stat(density)` y `(after_stat(count))/sum(after_stat(count))` es que `after_stat(density)` está hecho para que la suma de las áreas de los rectángulos dé $1$ mientras que en `(after_stat(count))/sum(after_stat(count))` la suma de las alturas de los rectángulos es la que da $1$. 
 
 ```{r}
-#..density.. nos da el % de casos de manera normalizada
+#after_stat(density) nos da el % de casos de manera normalizada
 #para que los rectángulos sumen sus áreas a área 1
 ggplot(datos_diabetes) + 
-  geom_histogram(aes(x = chol, y = ..density..), 
+  geom_histogram(aes(x = chol, y = after_stat(density)), 
                  bins = 50, fill = "#cef0ff",  color = "#1D1B1B")
 ```
 
@@ -1264,7 +1264,7 @@ Podemos agregar, además, una densidad kernel que nos dé una idea de cómo se v
 ```{r}
 #Gráfica de histograma con densidad kernel
 ggplot(datos_diabetes) + 
-  geom_histogram(aes(x = chol, y = ..density..), 
+  geom_histogram(aes(x = chol, y = after_stat(density)), 
                  bins = 50,
                  fill = "#cef0ff",  color = "#1D1B1B") + 
   geom_density(aes(x = chol))
@@ -1276,7 +1276,7 @@ ggplot(datos_diabetes) +
 #Gráfica de histograma con densidad kernel
 ggplot(datos_diabetes) + 
   geom_density(aes(x = chol)) +
-  geom_histogram(aes(x = chol, y = ..density..), 
+  geom_histogram(aes(x = chol, y = after_stat(density)), 
                  bins = 50,
                  fill = "#cef0ff",  color = "#1D1B1B")  
 ```
@@ -1286,11 +1286,11 @@ Continuando con la edición podemos cambiar los parámetros de `color` y `size` 
 ```{r}
 #Cambio de color y tipo de línea a la densidad
 ggplot(datos_diabetes) + 
-  geom_histogram(aes(x = chol, y = ..density..), 
+  geom_histogram(aes(x = chol, y = after_stat(density)), 
                  bins = 50,
                  fill = "#cef0ff",  color = "#1D1B1B") + 
   geom_density(aes(x = chol), color = "deepskyblue4",
-               linetype = "dotted", size = 1)
+               linetype = "dotted", linewidth = 1)
 ```
 
 Finalmente, modificamos los temas:
@@ -1298,11 +1298,11 @@ Finalmente, modificamos los temas:
 ```{r}
 #Graficación con barras de ancho 0.05
 ggplot(datos_diabetes) + 
-  geom_histogram(aes(x = chol, y = ..density..), 
+  geom_histogram(aes(x = chol, y = after_stat(density)), 
                  bins = 50,
                  fill = "#cef0ff",  color = "#1D1B1B") + 
   geom_density(aes(x = chol), color = "deepskyblue4",
-               linetype = "dotted", size = 1) +
+               linetype = "dotted", linewidth = 1) +
   labs(
     x        = "Colesterol",
     y        = "",
@@ -1329,10 +1329,10 @@ Y agregamos una línea vertical a la gráfica exactamente en la media:
 ```{r}
 #Agregamos indicadora del promedio
 ggplot(datos_diabetes) + 
-  geom_histogram(aes(x = chol, y = ..density..), bins = 50,
+  geom_histogram(aes(x = chol, y = after_stat(density)), bins = 50,
                  fill = "#cef0ff",  color = "#1D1B1B") + 
   geom_density(aes(x = chol), color = "deepskyblue4",
-               linetype = "dotted", size = 1) +
+               linetype = "dotted", linewidth = 1) +
   labs(
     x        = "Colesterol",
     y        = "",
@@ -1347,10 +1347,10 @@ Podemos cambiar el color de la línea así como el tipo:
 ```{r}
 #Agregamos indicadora del promedio
 ggplot(datos_diabetes) + 
-  geom_histogram(aes(x = chol, y = ..density..), bins = 50,
+  geom_histogram(aes(x = chol, y = after_stat(density)), bins = 50,
                  fill = "#cef0ff",  color = "#1D1B1B") + 
   geom_density(aes(x = chol), color = "deepskyblue4",
-               linetype = "dotted", size = 1) +
+               linetype = "dotted", linewidth = 1) +
   labs(
     x        = "Colesterol",
     y        = "",
@@ -1359,7 +1359,7 @@ ggplot(datos_diabetes) +
   ) + 
   theme_bw() +
   geom_vline(aes(xintercept = promedio_colesterol),
-             color = "tomato3", linetype = "dashed", size = 1)
+             color = "tomato3", linetype = "dashed", linewidth = 1)
 ```
 
 Finalmente, podemos agregar una anotación junto a la media que nos indique que dicha es la media. Para ello usamos el comando `annotate` indicando que agregaremos un texto (`"text"`) y las coordenadas del mismo.  
@@ -1367,10 +1367,10 @@ Finalmente, podemos agregar una anotación junto a la media que nos indique que 
 ```{r}
 #Agregamos indicadora del promedio
 ggplot(datos_diabetes) + 
-  geom_histogram(aes(x = chol, y = ..density..), bins = 50,
+  geom_histogram(aes(x = chol, y = after_stat(density)), bins = 50,
                  fill = "#cef0ff",  color = "#1D1B1B") + 
   geom_density(aes(x = chol), color = "deepskyblue4",
-               linetype = "dotted", size = 1) +
+               linetype = "dotted", linewidth = 1) +
   labs(
     x        = "Colesterol",
     y        = "",
@@ -1379,7 +1379,7 @@ ggplot(datos_diabetes) +
   ) + 
   theme_bw() +
   geom_vline(aes(xintercept = promedio_colesterol),
-             color = "tomato3", linetype = "dashed", size = 1) +
+             color = "tomato3", linetype = "dashed", linewidth = 1) +
   annotate("label", x = promedio_colesterol, 
            y = 0.0001, label = "Media = 208", color = "tomato3")
 ```
@@ -1389,10 +1389,10 @@ La función de `scale_y_continuous` permite agregar etiquetas al eje vertical (`
 ```{r}
 #Agregamos indicadora del promedio
 ggplot(datos_diabetes) + 
-  geom_histogram(aes(x = chol, y = ..density..), bins = 50,
+  geom_histogram(aes(x = chol, y = after_stat(density)), bins = 50,
                  fill = "#cef0ff",  color = "#1D1B1B") + 
   geom_density(aes(x = chol), color = "deepskyblue4",
-               linetype = "dotted", size = 1) +
+               linetype = "dotted", linewidth = 1) +
   labs(
     x        = "Colesterol",
     y        = "",
@@ -1401,7 +1401,7 @@ ggplot(datos_diabetes) +
   ) + 
   theme_bw() +
   geom_vline(aes(xintercept = promedio_colesterol),
-             color = "tomato3", linetype = "dashed", size = 1) +
+             color = "tomato3", linetype = "dashed", linewidth = 1) +
   annotate("label", x = promedio_colesterol, 
            y = 0.0001, label = "Media = 208",  color = "tomato3") +
   scale_y_continuous(labels = scales::percent)
@@ -1418,10 +1418,10 @@ ggplot(datos_diabetes) +
 q025 <- quantile(datos_diabetes$chol, 0.025, na.rm = T)
 q975 <- quantile(datos_diabetes$chol, 0.975, na.rm = T)
 ggplot(datos_diabetes) + 
-  geom_histogram(aes(x = chol, y = ..density..), binwidth = 10,
+  geom_histogram(aes(x = chol, y = after_stat(density)), binwidth = 10,
                  fill = "#cef0ff",  color = "#1D1B1B") + 
   geom_density(aes(x = chol), color = "deepskyblue4",
-               linetype = "dotted", size = 1) +
+               linetype = "dotted", linewidth = 1) +
   labs(
     x        = "Colesterol",
     y        = "",
@@ -1430,11 +1430,11 @@ ggplot(datos_diabetes) +
   ) + 
   theme_bw() +
   geom_vline(aes(xintercept = promedio_colesterol),
-             color = "tomato3", linetype = "dashed", size = 1) +
+             color = "tomato3", linetype = "dashed", linewidth = 1) +
   geom_vline(aes(xintercept = q025),
-             color = "tomato3", linetype = "dashed", size = 1) +
+             color = "tomato3", linetype = "dashed", linewidth = 1) +
   geom_vline(aes(xintercept = q975),
-             color = "tomato3", linetype = "dashed", size = 1) +
+             color = "tomato3", linetype = "dashed", linewidth = 1) +
   annotate("label", x = promedio_colesterol, y = 0.0001, label = "Media = 208", 
            color = "tomato3") +
   annotate("label", x = q025, y = 0.0001, label = glue::glue("2.5% = {q025}"), 
@@ -1453,7 +1453,7 @@ ggplot(datos_diabetes) +
 #| echo: false
 #Graficación con barras de ancho 0.05
 ggplot(datos_diabetes) + 
-  geom_histogram(aes(x = height, y = ..density..), color = "black",
+  geom_histogram(aes(x = height, y = after_stat(density)), color = "black",
                fill = "#fffff8", bins = 10) +
   geom_density(aes(x = height), color = "red",
                fill = "deepskyblue3", alpha = 0.5) +
@@ -1515,19 +1515,19 @@ Grafica un histograma de las variables `A`, `B`, `C` y `D` de dicha base con un 
 #| echo: false
 bw <- 1
 
-plotA <- ggplot(mis.datos) + geom_histogram(aes(x = A, y = (..count..)/sum(..count..)), fill = "tomato3", color = "black", binwidth = bw) +
+plotA <- ggplot(mis.datos) + geom_histogram(aes(x = A, y = (after_stat(count))/sum(after_stat(count))), fill = "tomato3", color = "black", binwidth = bw) +
   ylab("Proporción") +   theme(plot.background = element_rect(fill = "#fffff8"),
         panel.background = element_rect(fill = "#fffff8"))
 
-plotB <- ggplot(mis.datos) + geom_histogram(aes(x = B, y = (..count..)/sum(..count..)), fill = "forestgreen", color = "black", binwidth = bw) +   theme(plot.background = element_rect(fill = "#fffff8"),
+plotB <- ggplot(mis.datos) + geom_histogram(aes(x = B, y = (after_stat(count))/sum(after_stat(count))), fill = "forestgreen", color = "black", binwidth = bw) +   theme(plot.background = element_rect(fill = "#fffff8"),
         panel.background = element_rect(fill = "#fffff8")) +
   ylab("Proporción")
 
-plotC <- ggplot(mis.datos) + geom_histogram(aes(x = C, y = (..count..)/sum(..count..)), fill = "purple", color = "black", binwidth = bw) +
+plotC <- ggplot(mis.datos) + geom_histogram(aes(x = C, y = (after_stat(count))/sum(after_stat(count))), fill = "purple", color = "black", binwidth = bw) +
   ylab("Proporción") +   theme(plot.background = element_rect(fill = "#fffff8"),
         panel.background = element_rect(fill = "#fffff8"))
 
-plotD <- ggplot(mis.datos) + geom_histogram(aes(x = D, y = (..count..)/sum(..count..)), fill = "deepskyblue3", color = "black", binwidth = bw) +
+plotD <- ggplot(mis.datos) + geom_histogram(aes(x = D, y = (after_stat(count))/sum(after_stat(count))), fill = "deepskyblue3", color = "black", binwidth = bw) +
   ylab("Proporción") +   
   theme(plot.background = element_rect(fill = "#fffff8"),
         panel.background = element_rect(fill = "#fffff8"))
@@ -1658,7 +1658,7 @@ a.  Un histograma **calcula solo** el eje `y` (es el conteo). No hay que dársel
 
 b.  `binwidth` y `bins` son dos formas distintas de decir lo mismo (`binwidth` es el ancho de cada barra, `bins` es cuántas barras quieres). Si le das las dos, `R` te avisa que va a ignorar una. Deja sólo `binwidth = 5`.
 
-c.  `porcentaje` no es una columna de la base ni una variable calculada. Para eso `ggplot2` tiene variables internas que se piden con `after_stat`: `aes(x = edad, y = after_stat(count) / sum(after_stat(count)))`. (En las notas de arriba verás la forma vieja `..density..` y `..count..`, que todavía funciona pero ya está marcada como obsoleta en las versiones actuales de `ggplot2`.)
+c.  `porcentaje` no es una columna de la base ni una variable calculada. Para eso `ggplot2` tiene variables internas que se piden con `after_stat`: `aes(x = edad, y = after_stat(count) / sum(after_stat(count)))`. (Si te topas con código viejo de `ggplot2` vas a ver esto mismo escrito como `..count..` y `..density..`, entre puntos. Esa forma todavía funciona pero ya está marcada como obsoleta: si la usas, `R` te va a llenar la consola de advertencias.)
 
 d.  `jurisdiccion` es **texto**, y un histograma sólo funciona con variables **numéricas**: no se puede preguntar cuántas jurisdicciones caen entre "Centro" y "Norte". Para contar categorías se usa `geom_bar`, que es justo lo que viste en el ejercicio anterior.
 :::
@@ -1830,9 +1830,9 @@ ggplot(sinave) +
     plot.background  = element_rect(fill = "green"),                    #Fondo de los títulos
     axis.text.x      = element_text(color = "red", size = 5),           #Letras de los ejes
     axis.text.y      = element_text(color = "forestgreen"),             #Letras de los ejes
-    axis.ticks       = element_line(color = "red", size = 2),           #Los | abajo de los ejes
-    axis.line.x      = element_line(color = "orange", size = 2),        #Línea del eje
-    axis.line.y      = element_line(color = "yellow", size = 3),        #Otra línea del eje
+    axis.ticks       = element_line(color = "red", linewidth = 2),           #Los | abajo de los ejes
+    axis.line.x      = element_line(color = "orange", linewidth = 2),        #Línea del eje
+    axis.line.y      = element_line(color = "yellow", linewidth = 3),        #Otra línea del eje
     plot.title       = element_text(color = "blue", size = 20),         #Título
     plot.subtitle    = element_text(color = "gray25", face = "italic"), #Subtítulo
     plot.caption     = element_text(color = "purple"),                  #Caption

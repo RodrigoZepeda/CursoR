@@ -1019,11 +1019,14 @@ x + y #Ya funciona
 Por último, es necesario resaltar la importancia del directorio. Para ello crea una nueva carpeta en tu escritorio de nombre `"Mi_curso_de_R"`. Mueve el archivo `"MisVariables.rda"` dentro de la carpeta. Borra todo e intenta leer de nuevo el archivo:
 
 ```{r}
-#| echo: false
-#| eval: false
-#| message: false
-subdir <- tempdir()
-file.move("MisVariables.rda", paste0(subdir,"/", "MisVariables.rda"))
+#| include: false
+#Escondemos el archivo en una carpeta temporal para que el load de abajo
+#falle igual que le va a fallar a quien siga las instrucciones del texto.
+#Usamos tempdir() en lugar de una variable porque el rm(list = ls()) del
+#siguiente bloque borraría la variable.
+file.copy("MisVariables.rda", file.path(tempdir(), "MisVariables.rda"),
+          overwrite = TRUE)
+file.remove("MisVariables.rda")
 ```
 
 ```{r}
@@ -1047,9 +1050,11 @@ setwd("C:\Users\Rodrigo\Desktop\Mi_curso_de_R") #Rodrigo = Mi usuario
 ```
 
 ```{r}
-#| echo: false
-#| message: false
-file.move(paste0(subdir,"/", "MisVariables.rda"), "MisVariables.rda")
+#| include: false
+#Regresamos el archivo a su lugar para que el load de abajo sí funcione
+file.copy(file.path(tempdir(), "MisVariables.rda"), "MisVariables.rda",
+          overwrite = TRUE)
+file.remove(file.path(tempdir(), "MisVariables.rda"))
 ```
 
 ```{r}

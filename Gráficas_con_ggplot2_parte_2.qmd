@@ -73,7 +73,7 @@ Empecemos elaborando el primer histograma a partir de los datos de `diabetes`:
 datos_diabetes <- read_csv("datasets/diabetes.csv")
 
 histograma_1 <- ggplot(datos_diabetes) +
-  geom_histogram(aes(x = chol, y = ..density..), 
+  geom_histogram(aes(x = chol, y = after_stat(density)), 
                  bins = 50, color = "white", fill = "deepskyblue3") +
   labs(
     y = "",
@@ -93,7 +93,7 @@ continuemos con el segundo:
 
 ```{r}
 histograma_2 <- ggplot(datos_diabetes) +
-  geom_histogram(aes(x = stab.glu, y = ..density..), 
+  geom_histogram(aes(x = stab.glu, y = after_stat(density)), 
                  bins = 50, color = "white", fill = "deepskyblue3") +
   labs(
     y = "",
@@ -514,7 +514,7 @@ heartdf = tibble(
 #Generamos la gráfica
 ggplot(data = heartdf, aes(x, y)) + 
 	geom_polygon(aes(group = 1), color = "#DDCCAA", 
-	             fill = "white", size = 2) +
+	             fill = "white", linewidth = 2) +
   theme_classic() + 
   coord_fixed() +
   labs(

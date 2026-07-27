@@ -234,7 +234,7 @@ tibble(
   ) +
   theme_bw() +
   geom_line(aes(y = x, x = 3*x + 5), data = tibble(x = c(0, 5, 10, 15)),
-            color = "#58508d", size = 1) +
+            color = "#58508d", linewidth = 1) +
   geom_point(aes(y = x, x = 3*x + 5), data = tibble(x = c(0, 5, 10, 15)),
             color = "#58508d", size = 3) +
   geom_point(aes(y = x, x = 3*x + 5), data = tibble(x = c(0, 5, 10, 15)),
@@ -275,7 +275,7 @@ tibble(
   ) +
   theme_bw() +
   geom_line(aes(y = x, x = 3*x + 5), data = tibble(x = c(0, 5, 10, 15)),
-            color = "#58508d", size = 1) +
+            color = "#58508d", linewidth = 1) +
   geom_point(aes(y = x, x = 3*x + 5), data = tibble(x = c(0, 5, 10, 15)),
             color = "#58508d", size = 3) +
   geom_point(aes(y = x, x = 3*x + 5), data = tibble(x = c(0, 5, 10, 15)),
@@ -418,10 +418,10 @@ obs_y_modelo <- emb_pob %>%
 #Graficamos
 ggplot(obs_y_modelo) +
   geom_ribbon(aes(x = PovPct, ymin = .pred_lower, ymax = .pred_upper), 
-              fill = "#003f5c", size = 1, alpha = 0.5) +
+              fill = "#003f5c", linewidth = 1, alpha = 0.5) +
   geom_point(aes(x = PovPct, y = Brth15to17), color = "#bc5090", size = 3) +
   geom_line(aes(x = PovPct, y = .pred), 
-            color = "#003f5c", size = 1) +
+            color = "#003f5c", linewidth = 1) +
   labs(
     x = "Porcentaje en pobreza",
     y = "Tasa bruta de natalidad (por cada 1,000 mujeres adolescentes)",
@@ -946,10 +946,10 @@ obs_y_modelo <- emb_pob %>%
 #Graficamos
 ggplot(obs_y_modelo) +
   geom_ribbon(aes(x = PovPct, ymin = `2.5%`, ymax = `97.5%`), 
-              fill = "#003f5c", size = 1, alpha = 0.5) +
+              fill = "#003f5c", linewidth = 1, alpha = 0.5) +
   geom_point(aes(x = PovPct, y = Brth15to17), color = "#ffa600", size = 3) +
   geom_line(aes(x = PovPct, y = predichos), 
-            color = "#003f5c", size = 1) +
+            color = "#003f5c", linewidth = 1) +
   labs(
     x = "Porcentaje en pobreza",
     y = "Tasa bruta de natalidad (por cada 1,000 mujeres adolescentes)",

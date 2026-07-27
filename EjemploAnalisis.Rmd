@@ -82,7 +82,7 @@ Se realizó un histograma con $25$ rectángulos y un ajuste por densidad kernel 
 ile.data %>% 
   filter(!is.na(año)) %>% 
   ggplot() +
-  geom_histogram(aes(x = edad, y = ..density.., fill = as.character(año)), 
+  geom_histogram(aes(x = edad, y = after_stat(density), fill = as.character(año)), 
                  bins = 25, color = "white") +
   geom_density(aes(x = edad), color = "black", size = 1) +
   theme_minimal() + 
