@@ -1,10 +1,11 @@
 # CursoR
 Notas para un curso de R.
 
-## Links curso OPS/INSP (México) 2022
+## Links curso INSP (México) 2026
 
 + Link de **Dropbox** para las bases de datos y los scripts del curso: [https://www.dropbox.com/sh/yd73542zaptsjti/AACkyqBKuhJiR9mLEAVtXz2Wa?dl=0](https://www.dropbox.com/sh/yd73542zaptsjti/AACkyqBKuhJiR9mLEAVtXz2Wa?dl=0)
-+ Link de **Posit Cloud (antes RStudio Cloud)** para los scripts realizados durante el curso: [https://rstudio.cloud/content/4644886](https://rstudio.cloud/content/4644886)
++ Link de **GitHub** para las bases de datos: [https://github.com/RodrigoZepeda/CursoR/tree/master/datasets](https://github.com/RodrigoZepeda/CursoR/tree/master/datasets)
++ Si tienes problemas para instalar `R` o `RStudio` puedes trabajar desde el navegador con **Posit Cloud** (antes RStudio Cloud): [https://posit.cloud](https://posit.cloud)
 
 ## Índice:
 0. [Instalación](https://rodrigozepeda.github.io/CursoR/Instalacion.html)
@@ -31,12 +32,8 @@ Notas para un curso de R.
 
 
 
-> **Pablo López-Landeros**
-> 
-> _Twitter:_ [@Landeros_p33](https://twitter.com/Landeros_p33)
+> **Noé Osorio**
 >
-> _Github:_ [@pablolopez2733](https://github.com/pablolopez2733/)
->
-> _Correo:_ [pablolopez2733@gmail.com](mailto:pablolopez2733@gmail.com)
+> _Correo:_ [ecostat.nog@gmail.com](mailto:ecostat.nog@gmail.com)
 
 

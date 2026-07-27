@@ -27,7 +27,7 @@ format:
 reference-location: margin
 citation-location: margin
 bibliography: skeleton.bib
-link-citations: yes
+link-citations: true
 editor: 
   markdown: 
     wrap: 80

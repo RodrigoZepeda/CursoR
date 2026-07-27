@@ -18,7 +18,7 @@ output:
     citation_package: natbib
     latex_engine: xelatex
 bibliography: skeleton.bib
-link-citations: yes
+link-citations: true
 editor_options: 
   chunk_output_type: console
 ---

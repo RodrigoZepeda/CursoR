@@ -26,7 +26,7 @@ format:
 reference-location: margin
 citation-location: margin
 bibliography: skeleton.bib
-link-citations: yes
+link-citations: true
 ---
 
 ```{r}
@@ -46,7 +46,7 @@ http://ncss-tech.github.io/stats_for_soil_survey/chapters/1_introduction/1_intro
 
 ## ¿`R`?
 
-Yo me enfrenté a `R` por primera vez hace más de 8 años cuando un grupo de investigadores con quienes trabajaba compartieron su código en `R`. Fue horrible. El código estaba mal comentado, elaborado sin ninguna lógica de programación (yo, según esto, ya sabía programar en ese entonces) y no funcionaba. Quizá, si ya conoces el programa, tu experiencia ha sido similar: en general cuando nos enfrentamos a `R` nos enfrentamos a cosas que otras personas escribieron para salir del aprieto sin mucha explicación. ¡Es lo peor del mundo porque no se entiende nada! El propósito de estas notas (¿y clase?) es dual: acompañarte en un acercamiento a `R` desde cero y perderle el miedo a dicho programa. 
+Yo me enfrenté a `R` por primera vez hace más de 12 años cuando un grupo de investigadores con quienes trabajaba compartieron su código en `R`. Fue horrible. El código estaba mal comentado, elaborado sin ninguna lógica de programación (yo, según esto, ya sabía programar en ese entonces) y no funcionaba. Quizá, si ya conoces el programa, tu experiencia ha sido similar: en general cuando nos enfrentamos a `R` nos enfrentamos a cosas que otras personas escribieron para salir del aprieto sin mucha explicación. ¡Es lo peor del mundo porque no se entiende nada! El propósito de estas notas (¿y clase?) es dual: acompañarte en un acercamiento a `R` desde cero y perderle el miedo a dicho programa. 
 
 ```{r}
 #| column: margin
@@ -266,7 +266,12 @@ En general las computadoras actuales son de [**64 bits**](https://en.wikipedia.o
 La forma de saber cuántos bits tiene tu computadora Windows es yendo a `Configuración > Sistema > Acerca de` como indican [estas instrucciones de Microsoft](https://support.microsoft.com/es-es/windows/-qu%C3%A9-versi%C3%B3n-del-sistema-operativo-windows-tengo-628bec99-476a-2c13-5296-9dd081cdd808)
 :::
 
-- En el caso de **Mac** selecciona `Download R for (Mac) OS X` y luego elige   ``r paste0("R-", R.Version()$major,".",R.Version()$minor,".pkg")``. En Mac puede que necesites instalar adicionalmente [XQuartz](https://www.xquartz.org) (según tu versión de Mac). Si tu Mac es una versión antigua (mayor a 6 años), sigue las instrucciones específicas de `CRAN`.  
+- En el caso de **Mac** selecciona `Download R for macOS`. Ahí verás **dos** instaladores y tienes que elegir el que corresponde al procesador de tu computadora:
+
+  + Si tu Mac es de las nuevas (procesador **Apple Silicon**: M1, M2, M3, M4 o más reciente) elige ``r paste0("R-", R.Version()$major,".",R.Version()$minor,"-arm64.pkg")``.
+  + Si tu Mac es de las viejitas (procesador **Intel**) elige ``r paste0("R-", R.Version()$major,".",R.Version()$minor,"-x86_64.pkg")``.
+
+  Para saber cuál tienes, ve al menú de la manzanita ` > Acerca de esta Mac` y fíjate en el renglón de `Chip` (Apple Silicon) o `Procesador` (Intel). En Mac puede que necesites instalar adicionalmente [XQuartz](https://www.xquartz.org) (según tu versión de Mac). Si tu Mac es una versión antigua (mayor a 6 años), sigue las instrucciones específicas de `CRAN`.
 
 :::{.callout-note}
 ### Nota usuarios de Mac
@@ -291,12 +296,16 @@ Da enter, cierra la `Terminal` y reinicia `R`.
 - En el caso de **Linux** al elegir `Download R for Linux` tendrás la opción de buscar tu distribución específica. Al elegirla, aparecerán instrucciones para tu terminal de comandos; síguelas. En el caso de Linux, según los paquetes de `R` que elijamos instalar en la computadora requerirás instalar paquetería adicional para tu distribución de Linux. `R` te informará de la paquetería necesaria conforme la requiera.  
 
 :::{.callout-tip}
-Si tienes problemas para instalar puedes usar [Posit Cloud (antes RStudio Cloud)](https://rstudio.cloud).
+Si tienes problemas para instalar puedes usar [Posit Cloud (antes RStudio Cloud)](https://posit.cloud), que corre `R` y `RStudio` desde el navegador sin instalar nada.
 :::
 
 ### Rtools (Windows)
 
-`RTools` es una herramienta para poder instalar paquetes de `R`. Algunas versiones de Windows lo requieren. Entra [al sitio de RTools](https://cran.r-project.org/bin/windows/Rtools/), elige la opción que corresponde a tu versión de `R` (puedes verla con `R.version`) y descarga el instalador `Rtools42 installer` o `rtools40-x86_64.exe` según tu versión. 
+`RTools` es una herramienta para poder instalar paquetes de `R`. Algunas versiones de Windows lo requieren. Entra [al sitio de RTools](https://cran.r-project.org/bin/windows/Rtools/), elige la opción que corresponde a tu versión de `R` (puedes verla con `R.version`) y descarga el instalador correspondiente.
+
+::: {.callout-important}
+La versión de `RTools` **debe coincidir** con la de tu `R`. Como estas notas se hicieron con `r R.Version()$version.string`, aquí te tocaría ``r paste0("RTools", R.Version()$major, substr(R.Version()$minor, 1, 1))``. La regla es sencilla: si tu `R` es la versión `4.5.x` necesitas `RTools45`, si es `4.6.x` necesitas `RTools46` y así sucesivamente.
+:::
 
 ## RStudio
 
@@ -311,13 +320,17 @@ Si tienes problemas para instalar puedes usar [Posit Cloud (antes RStudio Cloud)
 knitr::include_graphics('images/rstudio.png')
 ```
 
-`RStudio` es una interfaz gráfica (IDE) para `R`. Puedes pensar a `R` como el _Bloc de Notas_ y a `RStudio` como _Word_. El _Bloc_ tiene todas las capacidades que necesitas para poder escribir; empero, es muchísimo mejor trabajar tus _documentos / novelas / autobiografías_ en _Word_. De la misma manera, `R` tiene todas las capacidades para hacer estadística y análisis de datos _pero un formato horrible_ y `RStudio` se ha convertido en la más popular forma de usar `R`. Por supuesto que no es la única; algunas alternativas son [Visual Studio Code](https://code.visualstudio.com/), [Eclipse con StatET](https://marketplace.eclipse.org/content/statet-r) y [RKWard](https://rkward.kde.org). En general es posible seguir estas notas sin que tengas `RStudio` pero, si es tu primera vez programando, no lo recomiendo.
+`RStudio` es una interfaz gráfica (IDE) para `R` desarrollada por la empresa **Posit** (que hasta 2022 se llamaba _RStudio, PBC_; por eso vas a ver los dos nombres por todos lados: el programa sigue llamándose `RStudio`, la empresa ya no). Puedes pensar a `R` como el _Bloc de Notas_ y a `RStudio` como _Word_. El _Bloc_ tiene todas las capacidades que necesitas para poder escribir; empero, es muchísimo mejor trabajar tus _documentos / novelas / autobiografías_ en _Word_. De la misma manera, `R` tiene todas las capacidades para hacer estadística y análisis de datos _pero un formato horrible_ y `RStudio` se ha convertido en la más popular forma de usar `R`. Por supuesto que no es la única; algunas alternativas son [Visual Studio Code](https://code.visualstudio.com/), [Eclipse con StatET](https://marketplace.eclipse.org/content/statet-r) y [RKWard](https://rkward.kde.org). En general es posible seguir estas notas sin que tengas `RStudio` pero, si es tu primera vez programando, no lo recomiendo.
 
 :::{.callout-tip}
 Si ya tienes experiencia con lenguajes como Julia, Rust, Java ó alguno de los mil C que existen, no tendrás ningún problema usando [el editor de tu preferencia](https://www.vim.org/).
 :::
 
-Para descargar `RStudio` ve a [su página](https://www.rstudio.com) y da clic en `Download RStudio`. Baja tu pantalla hasta donde dice `Installers for Supported Platforms` y elige tu plataforma: `Windows`, `Mac OS X` ó tu sabor de `Linux` preferido de la versión `Desktop` gratuita. Una vez descargado el archivo, ábrelo y sigue las instrucciones que aparecen en pantalla.  
+Para descargar `RStudio` ve a [https://posit.co/download/rstudio-desktop/](https://posit.co/download/rstudio-desktop/). La página tiene dos pasos: el paso `1` es instalar `R` (que ya hiciste) y el paso `2` es el botón de descarga de `RStudio Desktop`, que detecta solo tu sistema operativo. Si quieres elegir a mano tu plataforma (`Windows`, `macOS` ó tu sabor de `Linux` preferido) baja tu pantalla hasta la tabla `All Installers and Tarballs`. Siempre usa la versión `Desktop` gratuita (la de paga se llama `RStudio Workbench` y no la necesitamos). Una vez descargado el archivo, ábrelo y sigue las instrucciones que aparecen en pantalla.
+
+::: {.callout-note}
+`RStudio` se numera por año, no como `R`. Las versiones se ven así: `2026.04.1+512` (año, mes y número de parche) y además tienen nombre de flor. No te preocupes por cuál te toca: la página siempre te ofrece la más reciente y ésa es la que queremos.
+:::
 
 ## Primeros pasos en `RStudio`
 

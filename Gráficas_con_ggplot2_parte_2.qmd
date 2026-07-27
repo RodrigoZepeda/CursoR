@@ -27,7 +27,7 @@ format:
 reference-location: margin
 citation-location: margin
 bibliography: skeleton.bib
-link-citations: yes
+link-citations: true
 editor: 
   markdown: 
     wrap: 80
@@ -694,6 +694,128 @@ ggplot(datos_diabetes) +
   theme_bw()
   
 ```
+
+## Ejercicio a mano: dibuja el acomodo de `plot_grid`
+
+::: callout-important
+**A lápiz y papel.** Aquí no vas a dibujar las gráficas por dentro, sólo **los rectángulos**: cuántos hay, de qué tamaño y en qué posición. Es mucho más rápido de lo que parece y te ahorra un montón de prueba y error.
+:::
+
+Supón que ya tienes tres gráficas guardadas en las variables `A`, `B` y `C`. Para cada bloque, dibuja en tu hoja el acomodo que resulta (un rectángulo grande dividido en pedazos, con la letra de cada gráfica adentro):
+
+```{r}
+#| eval: false
+#a)
+plot_grid(A, B, ncol = 2)
+```
+
+```{r}
+#| eval: false
+#b)
+plot_grid(A, B, ncol = 1)
+```
+
+```{r}
+#| eval: false
+#c)
+plot_grid(A, B, C, ncol = 2)
+```
+
+```{r}
+#| eval: false
+#d)
+plot_grid(A, B, ncol = 2, rel_widths = c(3, 1))
+```
+
+```{r}
+#| eval: false
+#e)
+plot_grid(A, plot_grid(B, C, ncol = 1), ncol = 2)
+```
+
+::: {.callout-note collapse="true"}
+### Respuestas
+
+a.  Dos gráficas **lado a lado**, del mismo ancho: `A` a la izquierda, `B` a la derecha.
+
+b.  Dos gráficas **una encima de la otra**: `A` arriba, `B` abajo. Con `ncol = 1` todo se apila en una sola columna.
+
+c.  Cuatro lugares en una rejilla de 2×2, pero sólo tienes tres gráficas: `A` y `B` arriba, `C` abajo a la izquierda y **el lugar de abajo a la derecha queda vacío**. Es el error más común de `plot_grid`: te queda un hueco blanco y no entiendes por qué.
+
+d.  Igual que el `a`, pero `A` ocupa **tres cuartas partes** del ancho y `B` sólo una cuarta. Los números de `rel_widths` son proporciones relativas, no centímetros ni pulgadas: `c(3, 1)` es lo mismo que `c(30, 10)` o que `c(0.75, 0.25)`.
+
+e.  Éste es el truco importante: `plot_grid` **se puede meter dentro de sí mismo**. Del lado izquierdo va `A` completa (ocupando todo el alto) y del lado derecho van `B` arriba y `C` abajo, apiladas. Así se arman los tableros de indicadores con una gráfica principal grande y dos chiquitas al lado.
+
+    ```
+    +-------------+-------------+
+    |             |      B      |
+    |      A      +-------------+
+    |             |      C      |
+    +-------------+-------------+
+    ```
+
+    Es exactamente la misma idea que se usa en el ejercicio de cierre de esta sección para pegarle el logo de UNICEF a la gráfica.
+:::
+
+## Ejercicio: encuentra el error (graficación avanzada)
+
+Predice el error, córrelo, lee el mensaje completo y arréglalo:
+
+```{r}
+#| eval: false
+#a) Queremos juntar dos gráficas
+plot_grid(histograma_1 + histograma_2, ncol = 2)
+```
+
+```{r}
+#| eval: false
+#b) Queremos el título con una palabra en rojo
+ggplot(datos_diabetes) +
+  geom_point(aes(x = weight, y = height)) +
+  labs(title = "Peso contra <span style='color:red;'>altura</span>")
+```
+
+```{r}
+#| eval: false
+#c) Queremos resaltar sólo a las personas con colesterol alto
+ggplot(datos_diabetes) +
+  geom_point(aes(x = weight, y = chol)) +
+  gghighlight(chol > 300)
+```
+
+```{r}
+#| eval: false
+#d) Queremos usar la fuente Manrope
+ggplot(datos_diabetes) +
+  geom_point(aes(x = weight, y = height)) +
+  theme(text = element_text(family = "Manrope"))
+```
+
+::: {.callout-note collapse="true"}
+### Respuestas
+
+a.  Las gráficas se separan **con coma**, no con `+`. El `+` sirve para pegar capas *dentro* de una misma gráfica; para juntar gráficas distintas es `plot_grid(histograma_1, histograma_2, ncol = 2)`.
+
+b.  El `<span style=...>` es HTML, y `ggplot2` por sí solo no lo interpreta: te va a imprimir el código tal cual, con picoparéntesis y todo. Para que lo lea hay que pedirlo explícitamente con `ggtext`, agregando `theme(plot.title = element_markdown())`.
+
+c.  Éste no falla necesariamente, pero es **conceptualmente** el error del que hay que cuidarse: `gghighlight` **no filtra**, sólo pinta de gris lo que no cumple la condición. Los puntos con colesterol bajo **siguen ahí** y siguen contando para las escalas de los ejes. Si lo que querías era quedarte sólo con los de colesterol alto, `gghighlight` no es la herramienta. (Si además `R` te dice `could not find function "gghighlight"`, es que te faltó `library(gghighlight)`.)
+
+d.  Te va a salir un `font family 'Manrope' not found` (o simplemente la va a ignorar y usar la fuente de siempre). Las fuentes no se invocan por su nombre nada más: primero hay que registrarlas con `font_add_google("Manrope", "Manrope")` y activar `showtext_auto()`, como se explica en la sección de cambio de fuente.
+:::
+
+## Ejercicio con apoyo de una IA (graficación avanzada)
+
+::: callout-important
+De nuevo: pega código y mensajes de error, **nunca** datos identificables de personas ni bases confidenciales de tu institución.
+:::
+
+1.  **El acomodo.** Descríbele a una IA el tablero que dibujaste en el inciso `e` del ejercicio a mano (*"quiero una gráfica grande a la izquierda y dos chiquitas apiladas a la derecha, usando `cowplot`"*) y pídele el código. ¿Le atinó al anidamiento o intentó resolverlo con `ncol` y `rel_widths` a la brava? Compara con tu dibujo.
+
+2.  **Traduce un error de verdad.** Corre el inciso `d` del ejercicio anterior (el de la fuente `Manrope`), copia el mensaje **completo** y pídele: *"Explícame este mensaje de `R` como si nunca hubiera programado y dime exactamente qué renglones tengo que agregar."*. Aplica su solución y verifica que la fuente **de veras** cambió, comparando la gráfica antes y después. Es fácil creer que se arregló cuando en realidad `R` está usando la fuente por defecto en silencio.
+
+3.  **Cázala inventando (nivel avanzado).** Pídele: *"Dame la función de `cowplot` que agrega automáticamente las letras a), b), c) a cada panel."* Aquí sí existe algo parecido, así que el ejercicio es distinto: verifica con `?nombre_de_la_funcion` que la función exista **y** que los argumentos que te dio sean los reales. Es muy común que la función sea correcta pero los argumentos estén inventados o correspondan a una versión vieja del paquete.
+
+4.  **Pídele lo imposible.** Descríbele una gráfica que **no** se pueda hacer con los datos que tienes (por ejemplo, pedirle una tendencia por mes cuando tu base sólo tiene información anual). ¿Te dijo que no se puede, o te inventó un código que interpola meses de la nada? Escribe en dos renglones qué habrías reportado si no te hubieras dado cuenta.
 
 ## Ejercicios de cierre de la sección
 

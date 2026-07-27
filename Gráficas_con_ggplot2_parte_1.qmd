@@ -27,7 +27,7 @@ format:
 reference-location: margin
 citation-location: margin
 bibliography: skeleton.bib
-link-citations: yes
+link-citations: true
 editor: 
   markdown: 
     wrap: 80
@@ -63,7 +63,7 @@ install.packages("ggplot2")
 
 ## ¿Qué es `ggplot2`?
 
-`R` cuenta con su propia forma de hacer gráficas mediante el comando `plot`. Sin embargo, las gráficas que puedes hacer con plot son, salvo en el caso de regresiones, mucho más sencillas que las producidas por el paquete `ggplot`. Dicho paquete fue desarrollado inicialmente por [Hadley Wickham](http://hadley.nz) y actualmente [continúa en desarrollo](https://github.com/tidyverse/ggplot2) por más de 198 colaboradores distintos. Por su belleza y facilidad, nosotros nos enfocaremos en gráficas con `ggplot2`. 
+`R` cuenta con su propia forma de hacer gráficas mediante el comando `plot`. Sin embargo, las gráficas que puedes hacer con plot son, salvo en el caso de regresiones, mucho más sencillas que las producidas por el paquete `ggplot`. Dicho paquete fue desarrollado inicialmente por [Hadley Wickham](http://hadley.nz) y actualmente [continúa en desarrollo](https://github.com/tidyverse/ggplot2) por más de 340 colaboradores distintos. Por su belleza y facilidad, nosotros nos enfocaremos en gráficas con `ggplot2`. 
 
 ::: callout-note
 Algunas de las referencias que vale la pena tengas en mente para graficar con
@@ -457,7 +457,179 @@ plot_grid(grafica(), grafica(data_name = "datasets/IMSS_BCG_2020.csv", year = 20
           ncol = 1)
 ```
 
-### R Intermedio 
+### Ejercicio a mano: dibuja la gráfica antes de correrla
+
+::: callout-important
+Este ejercicio es **a lápiz y papel**. Necesitas una hoja (de preferencia cuadriculada) y no tocar la computadora hasta el final. Suena tonto pero es el ejercicio que más rápido te enseña a leer código de `ggplot2`: si puedes dibujar lo que va a salir, entendiste el código.
+:::
+
+Copia y corre **solamente** este bloque, que crea una base chiquita con datos hipotéticos de cinco jurisdicciones sanitarias:
+
+```{r}
+jurisdicciones <- data.frame(
+  jurisdiccion = c("A", "B", "C", "D", "E"),
+  casos        = c(12, 30, 18, 45, 25),
+  poblacion    = c(20, 50, 30, 80, 40)   #en miles de habitantes
+)
+```
+
+Ahora, **sin correr nada más**, dibuja en tu hoja lo que va a producir cada uno de los siguientes bloques. Para cada uno anota: (i) qué va en el eje `x` y qué en el `y`, (ii) cuántas marcas vas a ver, (iii) más o menos dónde cae cada una y (iv) si hay leyenda del lado derecho o no.
+
+```{r}
+#| eval: false
+#a)
+ggplot(jurisdicciones) +
+  geom_point(aes(x = poblacion, y = casos))
+```
+
+```{r}
+#| eval: false
+#b) Cambiamos de lugar la x y la y
+ggplot(jurisdicciones) +
+  geom_point(aes(x = casos, y = poblacion))
+```
+
+```{r}
+#| eval: false
+#c) ¿De qué color van a salir los puntos y qué aparece a la derecha?
+ggplot(jurisdicciones) +
+  geom_point(aes(x = poblacion, y = casos, color = "red"))
+```
+
+```{r}
+#| eval: false
+#d) ¿Y ahora?
+ggplot(jurisdicciones) +
+  geom_point(aes(x = poblacion, y = casos), color = "red")
+```
+
+```{r}
+#| eval: false
+#e) ¿Qué le pasa al eje y? ¿Se ven los 5 puntos?
+ggplot(jurisdicciones) +
+  geom_point(aes(x = poblacion, y = casos)) +
+  ylim(0, 20)
+```
+
+Ya que dibujaste las cinco, córrelas y compara con tus dibujos.
+
+::: {.callout-note collapse="true"}
+### Respuestas
+
+Los incisos `a` y `b` son la misma nube de puntos, sólo que reflejada: los ejes se intercambian. Es la misma información pero cuenta una historia distinta, y por eso siempre hay que decidir a conciencia qué variable va en cada eje (la convención es que en `x` va lo que explica y en `y` lo que se explica).
+
+```{r}
+#| echo: false
+plot_grid(
+  ggplot(jurisdicciones) + geom_point(aes(x = poblacion, y = casos)) +
+    labs(title = "a)") + theme_bw(),
+  ggplot(jurisdicciones) + geom_point(aes(x = casos, y = poblacion)) +
+    labs(title = "b)") + theme_bw(),
+  ncol = 2)
+```
+
+Los incisos `c` y `d` son **la trampa más importante de todo `ggplot2`**. En el `c` el `color` está **adentro** del `aes`, así que `ggplot2` entiende que le estás pidiendo colorear *según una variable*; como la "variable" que le diste es el texto `"red"` (igual para las cinco filas), te pinta todo de un solo color (que ni siquiera es rojo, es el primer color de su paleta) y te agrega una leyenda que dice `"red"`. En el `d`, el `color` está **afuera** del `aes` y ahí sí significa "píntame todo de rojo", sin leyenda.
+
+```{r}
+#| echo: false
+plot_grid(
+  ggplot(jurisdicciones) + geom_point(aes(x = poblacion, y = casos, color = "red")) +
+    labs(title = "c) color DENTRO del aes") + theme_bw(),
+  ggplot(jurisdicciones) + geom_point(aes(x = poblacion, y = casos), color = "red") +
+    labs(title = "d) color FUERA del aes") + theme_bw(),
+  ncol = 2)
+```
+
+> **La regla:** adentro del `aes` van las **columnas de tu base**; afuera del `aes` van los **valores fijos** (un color, un tamaño, una transparencia).
+
+En el inciso `e` el `ylim(0, 20)` recorta el eje: los puntos con más de 20 casos **desaparecen** de la gráfica (y `R` te avisa con un `Removed 3 rows containing missing values`). Sólo se ven dos de los cinco puntos. Ojo con esto: es facilísimo publicar una gráfica que sin querer esconde la mitad de los datos.
+
+```{r}
+#| echo: false
+#| warning: false
+ggplot(jurisdicciones) + geom_point(aes(x = poblacion, y = casos)) +
+  ylim(0, 20) + labs(title = "e) ¡Se perdieron 3 puntos!") + theme_bw()
+```
+:::
+
+### Ejercicio: encuentra el error
+
+Cada uno de los siguientes bloques quiere hacer una gráfica de puntos de `poblacion` contra `casos` con la base `jurisdicciones` del ejercicio anterior, pero **todos están mal**. Para cada uno: predice qué error va a dar, córrelo, lee el mensaje completo y arréglalo.
+
+```{r}
+#| eval: false
+#a)
+ggplot(jurisdicciones) geom_point(aes(x = poblacion, y = casos))
+```
+
+```{r}
+#| eval: false
+#b)
+ggplot(jurisdicciones)
+  + geom_point(aes(x = poblacion, y = casos))
+```
+
+```{r}
+#| eval: false
+#c)
+ggplot(jurisdicciones) +
+  geom_point(x = poblacion, y = casos)
+```
+
+```{r}
+#| eval: false
+#d)
+ggplot(jurisdicciones) +
+  geom_point(aes(x = Poblacion, y = Casos))
+```
+
+```{r}
+#| eval: false
+#e)
+ggplot(jurisdicciones) +
+  geom_point(aes(x = poblacion; y = casos))
+```
+
+```{r}
+#| eval: false
+#f)
+ggplot() +
+  geom_point(jurisdicciones, aes(x = poblacion, y = casos))
+```
+
+::: {.callout-note collapse="true"}
+### Respuestas
+
+a.  Falta el `+` entre capas. En `ggplot2` **cada capa se pega con un `+`**. Correcto: `ggplot(jurisdicciones) + geom_point(...)`.
+
+b.  El `+` quedó al **inicio** del renglón. `R` lee el primer renglón, ve que ya está completo y lo ejecuta (te dibuja el lienzo vacío); luego lee el segundo y no entiende qué le estás sumando. El `+` **siempre va al final del renglón anterior**, nunca al principio del siguiente.
+
+c.  Falta el `aes`. Sin él, `ggplot2` no sabe que `poblacion` y `casos` son columnas de la base y las busca como si fueran variables sueltas del ambiente. Correcto: `geom_point(aes(x = poblacion, y = casos))`.
+
+d.  Mayúsculas. Las columnas se llaman `poblacion` y `casos`, no `Poblacion` ni `Casos`. Si dudas de cómo se llaman exactamente, escribe `names(jurisdicciones)`.
+
+e.  Punto y coma en lugar de coma. Los argumentos de una función se separan **con coma**.
+
+f.  Los argumentos van al revés. En los `geom_` el primer argumento es el `mapping` (el `aes`), no los datos, así que hay que nombrar el de datos: `geom_point(data = jurisdicciones, aes(x = poblacion, y = casos))`.
+:::
+
+### Ejercicio con apoyo de una IA
+
+::: callout-important
+Recuerda: **nunca** pegues en una IA datos identificables de personas ni bases confidenciales de tu institución. Para estos ejercicios pega el código y, si acaso, unas cuantas filas de datos inventados.
+:::
+
+1.  **Descríbela con palabras.** Sin escribir código, pídele a una IA: *"Escríbeme código de `R` con `ggplot2` que haga una gráfica de puntos de la base `jurisdicciones`, que tiene las columnas `jurisdiccion`, `casos` y `poblacion`. Quiero `poblacion` en el eje x, `casos` en el eje y, puntos verdes de tamaño 3, tema `minimal` y título 'Casos contra población'."* Corre lo que te dé y revisa **punto por punto** si cumplió las seis cosas que pediste. Anota cuáles sí y cuáles no.
+
+2.  **Que te explique.** Pídele que te explique, renglón por renglón y en español sencillo, el código de la gráfica del ejercicio `3` de `R Básico` (la de B.C.G. con `geom_text_repel`). Después verifica **una** de sus explicaciones contra la ayuda oficial escribiendo `?geom_text_repel` en la consola.
+
+3.  **Cázala inventando.** Pídele: *"Dame un `geom_` de `ggplot2` que haga una gráfica de puntos donde el tamaño del punto sea proporcional a la población, tipo mapa de burbujas."* Es probable que se invente una función. Verifica **toda** función que te dé escribiendo `?nombre` en la consola: si `R` contesta `No documentation for ...`, no existe (o vive en un paquete que no tienes instalado). ¿Qué te inventó?
+
+4.  **Que critique tu gráfica.** Toma la gráfica que hiciste en el ejercicio `2` de `R Básico` (IMC contra radio de colesterol), tómale captura de pantalla o descríbesela, y pregúntale: *"¿Qué le falta a esta gráfica para que se entienda sola, sin que yo la explique?"*. De sus sugerencias, aplica **sólo** las que te parezcan correctas y justifica por escrito por qué descartaste las demás.
+
+5.  **La prueba de fuego.** Pídele que te genere código para una gráfica **con una base de datos que tú no le diste** (por ejemplo: *"grafícame las coberturas de vacunación de México por año"*). Córrelo. ¿De dónde sacó los datos? ¿Se los inventó? ¿Puedes rastrear la fuente? Escribe en dos renglones por qué una gráfica bonita con datos inventados es más peligrosa que no tener gráfica.
+
+### R Intermedio
 
 En la base de `diabetes`, utiliza `scale_y_continuous` en particular la opción de `sec.axis` para agregar un segundo eje `y` del lado derecho donde la altura esté en metros (no pulgadas). Repite el proceso con `scale_x_continuous` para agregar un eje `x` en la parte superior con el peso en kilogramos.
 
@@ -805,9 +977,136 @@ ggplot(imss2019) +
   scale_y_continuous(labels = scales::comma)
 ```
 
+### Ejercicio a mano: dibuja las barras
+
+::: callout-important
+**A lápiz y papel** otra vez. Corre nada más el bloque que crea la base y después cierra la computadora.
+:::
+
+```{r}
+dosis_aplicadas <- data.frame(
+  jurisdiccion = c("Norte", "Sur", "Centro"),
+  dosis        = c(300, 500, 200)
+)
+```
+
+Dibuja en tu hoja lo que produce cada bloque. Anota siempre: cuántas barras hay, **en qué orden aparecen de izquierda a derecha** y qué altura tiene cada una.
+
+```{r}
+#| eval: false
+#a)
+ggplot(dosis_aplicadas) +
+  geom_col(aes(x = jurisdiccion, y = dosis))
+```
+
+```{r}
+#| eval: false
+#b)
+ggplot(dosis_aplicadas) +
+  geom_col(aes(x = dosis, y = jurisdiccion))
+```
+
+```{r}
+#| eval: false
+#c) Cuidado: aquí es geom_bar, no geom_col
+ggplot(dosis_aplicadas) +
+  geom_bar(aes(x = jurisdiccion))
+```
+
+```{r}
+#| eval: false
+#d)
+ggplot(dosis_aplicadas) +
+  geom_col(aes(x = "", y = dosis, fill = jurisdiccion))
+```
+
+::: {.callout-note collapse="true"}
+### Respuestas
+
+**a)** Tres barras, de alturas 200, 300 y 500... pero **no en el orden en que las escribiste**. `ggplot2` ordena las categorías de texto **alfabéticamente**, así que de izquierda a derecha van `Centro` (200), `Norte` (300) y `Sur` (500). Si la mayoría de la gente dibujó `Norte`, `Sur`, `Centro`, ya aprendieron algo importante: **el orden de tus barras no es el orden de tu base**. Para mandar tú el orden se usa `factor(jurisdiccion, levels = c("Norte", "Sur", "Centro"))` dentro del `aes`.
+
+```{r}
+#| echo: false
+ggplot(dosis_aplicadas) + geom_col(aes(x = jurisdiccion, y = dosis)) +
+  labs(title = "a) Ojo: van en orden alfabético") + theme_bw()
+```
+
+**b)** Las mismas tres barras pero **acostadas** (horizontales), porque intercambiaste qué va en cada eje. Para nombres largos de jurisdicción o de entidad ésta suele ser la mejor opción: no hay que rotar el texto.
+
+```{r}
+#| echo: false
+ggplot(dosis_aplicadas) + geom_col(aes(x = dosis, y = jurisdiccion)) +
+  labs(title = "b) Barras horizontales") + theme_bw()
+```
+
+**c)** Tres barras **todas de altura 1**. Aquí está la diferencia que más confunde: `geom_col` grafica el valor que tú le das en la `y`, mientras que `geom_bar` **cuenta cuántas filas** hay de cada categoría e ignora la `y`. Como en tu base hay exactamente una fila por jurisdicción, todas las barras miden 1. Regla práctica: **si ya tienes la cifra calculada usa `geom_col`; si quieres que `R` cuente los renglones usa `geom_bar`.**
+
+```{r}
+#| echo: false
+ggplot(dosis_aplicadas) + geom_bar(aes(x = jurisdiccion)) +
+  labs(title = "c) geom_bar cuenta filas: todas miden 1") + theme_bw()
+```
+
+**d)** Una **sola** barra apilada de altura 1000 (la suma de las tres), partida en tres pedazos de colores. Al poner `x = ""` le dijiste que todas las jurisdicciones comparten la misma posición en `x`, y el `fill` las separa por color dentro de la misma barra.
+
+```{r}
+#| echo: false
+ggplot(dosis_aplicadas) + geom_col(aes(x = "", y = dosis, fill = jurisdiccion)) +
+  labs(title = "d) Una sola barra apilada", x = "") + theme_bw()
+```
+:::
+
+### Ejercicio: encuentra el error (barras)
+
+Todos estos quieren graficar las `dosis` por `jurisdiccion` de la base anterior. Predice el error, córrelo, léelo y arréglalo:
+
+```{r}
+#| eval: false
+#a)
+ggplot(dosis_aplicadas) +
+  geom_col(aes(x = jurisdiccion, y = dosis), fill = jurisdiccion)
+```
+
+```{r}
+#| eval: false
+#b)
+ggplot(dosis_aplicadas) +
+  geom_col(aes(x = jurisdiccion, y = dosis)) +
+  labs(x = "Jurisdicción")
+  labs(y = "Dosis aplicadas")
+```
+
+```{r}
+#| eval: false
+#c)
+ggplot(dosis_aplicadas) +
+  geom_col(aes(x = jurisdiccion, y = "dosis"))
+```
+
+```{r}
+#| eval: false
+#d) Queremos las etiquetas del eje x rotadas 45 grados
+ggplot(dosis_aplicadas) +
+  geom_col(aes(x = jurisdiccion, y = dosis)) +
+  theme(axis.text.x = element_text(angle = 45)) +
+  theme_bw()
+```
+
+::: {.callout-note collapse="true"}
+### Respuestas
+
+a.  El `fill = jurisdiccion` está **afuera** del `aes` pero `jurisdiccion` **es una columna**, no un color fijo. Las columnas van adentro del `aes`: `geom_col(aes(x = jurisdiccion, y = dosis, fill = jurisdiccion))`. (Es la misma regla del ejercicio de puntos, pero al revés.)
+
+b.  Falta el `+` al final del primer `labs`. Sin él, `R` termina la gráfica ahí y luego ejecuta un segundo `labs` suelto que no está pegado a nada. Mejor todavía: junta los dos en uno solo, `labs(x = "Jurisdicción", y = "Dosis aplicadas")`.
+
+c.  `"dosis"` entre comillas es el **texto** "dosis", no la columna. Como es el mismo texto para las tres filas, todas las barras salen iguales. Quítale las comillas.
+
+d.  Éste **no da error**, y por eso es el peor: el `theme_bw()` va **después** del `theme()` y lo sobrescribe por completo, así que la rotación de 45 grados nunca se aplica. Los `theme_algo()` completos siempre van **antes** de los `theme()` con ajustes finos. Es el mismo comentario que aparece en el código de la sección de arriba.
+:::
+
 ## Histogramas con `ggplot2`
 
-### Un histograma es una gráfica de barras especial 
+### Un histograma es una gráfica de barras especial
 
 El comando `geom_histogram` sirve para crear histogramas. Un histograma es un tipo de gráfico de barras que acumula en cada barra conteos de cuántos cayeron en ese sitio. Para entender mejor, veamos un ejemplo. Para ello copia el siguiente código el cual genera una base de datos expuesta a continuación:
 
@@ -1246,7 +1545,131 @@ ggdraw(arrangeGrob(plotA, plotB, plotC, plotD,
 
 ¿Podemos concluir la forma de la distribución a partir del histograma? Es decir ¿hay distribuciones sesgadas a la izquierda, a la derecha, uniformes, centradas o con colas pesadas?
 
-Realiza el mismo histograma pero ahora con un ancho de banda de `0.25` ¿por qué hubo cambios? Analiza la base de datos (los valores en función de la columna `A`) y concluye. 
+Realiza el mismo histograma pero ahora con un ancho de banda de `0.25` ¿por qué hubo cambios? Analiza la base de datos (los valores en función de la columna `A`) y concluye.
+
+### Ejercicio a mano: construye el histograma con lápiz
+
+::: callout-important
+Este ejercicio es **completamente a mano**. No corras nada hasta el último punto.
+:::
+
+Éstas son las edades (hipotéticas) de 12 personas que acudieron a una jornada de vacunación:
+
+```{r}
+#| eval: false
+edades <- data.frame(
+  edad = c(23, 27, 31, 34, 35, 36, 38, 41, 42, 44, 52, 58)
+)
+```
+
+1.  **Cuenta a mano.** Llena esta tabla de conteos (una raya por cada persona que caiga en cada intervalo). El intervalo `[20, 30)` incluye al 20 pero **no** al 30:
+
+    | Intervalo  | Rayitas | Total |
+    |:-----------|:--------|:-----:|
+    | `[20, 30)` |         |       |
+    | `[30, 40)` |         |       |
+    | `[40, 50)` |         |       |
+    | `[50, 60)` |         |       |
+    |            | **Suma**|       |
+
+2.  **Dibújalo.** Con esa tabla, dibuja el histograma en tu hoja: el eje `x` va de 20 a 60 y el eje `y` de 0 al total más grande que hayas contado. ¿Cuál es la barra más alta? ¿Hacia dónde está cargada la distribución?
+
+3.  **Predice qué cambia.** Sin dibujarlo, contesta: si en vez de intervalos de 10 años usaras intervalos de **5** años, ¿cuántas barras tendrías? ¿la barra más alta seguiría teniendo la misma altura? ¿por qué?
+
+4.  **Ahora sí, comprueba.** Corre el código y compara con tus dibujos:
+
+```{r}
+#| eval: false
+ggplot(edades) +
+  geom_histogram(aes(x = edad), binwidth = 10, boundary = 20,
+                 fill = "deepskyblue3", color = "white") +
+  theme_bw()
+```
+
+::: {.callout-note collapse="true"}
+### Respuestas
+
+Los conteos son: `[20,30)` = **2** (23 y 27), `[30,40)` = **5** (31, 34, 35, 36 y 38), `[40,50)` = **3** (41, 42 y 44) y `[50,60)` = **2** (52 y 58). Suman 12, que es justo cuánta gente hay: **si tu suma no da 12, contaste mal**. Esa verificación siempre se puede hacer y siempre conviene hacerla.
+
+```{r}
+#| echo: false
+edades <- data.frame(
+  edad = c(23, 27, 31, 34, 35, 36, 38, 41, 42, 44, 52, 58)
+)
+ggplot(edades) +
+  geom_histogram(aes(x = edad), binwidth = 10, boundary = 20,
+                 fill = "deepskyblue3", color = "white") +
+  labs(x = "Edad (años)", y = "Personas",
+       title = "Con intervalos de 10 años") +
+  theme_bw()
+```
+
+Con intervalos de 5 años tendrías el doble de barras (8 en lugar de 4) y **todas serían más bajitas o iguales**, porque las mismas 12 personas ahora se reparten en más cajitas. La barra de `[30,40)` que medía 5 se parte en `[30,35)` = 2 y `[35,40)` = 3:
+
+```{r}
+#| echo: false
+ggplot(edades) +
+  geom_histogram(aes(x = edad), binwidth = 5, boundary = 20,
+                 fill = "tomato3", color = "white") +
+  labs(x = "Edad (años)", y = "Personas",
+       title = "Con intervalos de 5 años: misma gente, otra historia") +
+  theme_bw()
+```
+
+> **La moraleja:** el ancho del intervalo **no** es un detalle estético. Los mismos 12 datos pueden verse concentrados o dispersos según cómo los cortes, y con 12 observaciones ningún histograma te va a decir gran cosa sobre la forma de la distribución. Desconfía de cualquier histograma cuyo ancho de banda no se justifique.
+:::
+
+### Ejercicio: encuentra el error (histogramas)
+
+Predice el error, córrelo, léelo y arréglalo. Usa la base `edades` del ejercicio anterior:
+
+```{r}
+#| eval: false
+#a) Queremos un histograma de las edades
+ggplot(edades) +
+  geom_histogram(aes(x = edad, y = edad))
+```
+
+```{r}
+#| eval: false
+#b) Queremos barras de ancho 5
+ggplot(edades) +
+  geom_histogram(aes(x = edad), binwidth = 5, bins = 30)
+```
+
+```{r}
+#| eval: false
+#c) Queremos el histograma en porcentaje
+ggplot(edades) +
+  geom_histogram(aes(x = edad, y = porcentaje))
+```
+
+```{r}
+#| eval: false
+#d) Queremos un histograma de la jurisdicción
+ggplot(dosis_aplicadas) +
+  geom_histogram(aes(x = jurisdiccion))
+```
+
+::: {.callout-note collapse="true"}
+### Respuestas
+
+a.  Un histograma **calcula solo** el eje `y` (es el conteo). No hay que dárselo, y menos la misma variable de la `x`. Correcto: `geom_histogram(aes(x = edad))`.
+
+b.  `binwidth` y `bins` son dos formas distintas de decir lo mismo (`binwidth` es el ancho de cada barra, `bins` es cuántas barras quieres). Si le das las dos, `R` te avisa que va a ignorar una. Deja sólo `binwidth = 5`.
+
+c.  `porcentaje` no es una columna de la base ni una variable calculada. Para eso `ggplot2` tiene variables internas que se piden con `after_stat`: `aes(x = edad, y = after_stat(count) / sum(after_stat(count)))`. (En las notas de arriba verás la forma vieja `..density..` y `..count..`, que todavía funciona pero ya está marcada como obsoleta en las versiones actuales de `ggplot2`.)
+
+d.  `jurisdiccion` es **texto**, y un histograma sólo funciona con variables **numéricas**: no se puede preguntar cuántas jurisdicciones caen entre "Centro" y "Norte". Para contar categorías se usa `geom_bar`, que es justo lo que viste en el ejercicio anterior.
+:::
+
+### Ejercicio con apoyo de una IA (histogramas)
+
+1.  **Que elija por ti y desconfía.** Pídele a una IA: *"Tengo 12 edades y quiero hacer un histograma en `ggplot2`. ¿Qué ancho de banda me recomiendas y por qué?"*. Después pregúntale lo mismo pero diciéndole que tienes **12,000** edades. ¿Cambió su recomendación? ¿Te dio una razón o sólo un número? Contrasta su respuesta con lo que tú ya concluiste en el ejercicio a mano.
+
+2.  **El histograma tramposo.** Pídele: *"Dame código de `ggplot2` para un histograma que haga ver que la mayoría de la población es joven, usando la base `edades`"*. Corre lo que te dé y compáralo con el histograma honesto que hiciste tú. ¿Qué manipuló: el ancho de banda, los límites de los ejes, la escala? Escribe en dos renglones cómo detectarías esa misma manipulación en una gráfica que te llegue en un informe.
+
+3.  **Que traduzca la gráfica a palabras.** Descríbele (o mándale captura de) el histograma de colesterol de esta sección y pídele que te escriba el **pie de figura** de un artículo. Revisa que no invente cifras, que no diga "significativo" sin prueba estadística de por medio y que mencione la fuente de los datos. Corrige lo que haga falta y quédate con tu versión.
 
 ## Gráficas de trayectorias
 ```{r}
@@ -1491,7 +1914,7 @@ ggplot(sinave) +
 
 ### Ejercicios
 
-1. Agrega a la gráfica anterior una anotación el 24 de diciembre del 2022 indicando que ese día ocurrió la primer vacuna. 
+1. Agrega a la gráfica anterior una anotación el 24 de diciembre del 2020 indicando que ese día se aplicó la primera vacuna contra COVID-19 en México.
 
 2. Cambia el tema de la gráfica anterior por cualquier otra combinación de cuatro colores (en lugar del verde, azul, amarillo y gris)
 
@@ -1529,7 +1952,135 @@ ggplot(datos_jal,
   scale_y_continuous(labels = scales::comma) 
 ```
 
-## Ejercicio de cierre de la sección 
+### Ejercicio a mano: dibuja la trayectoria
+
+::: callout-important
+**A lápiz y papel.** Corre sólo el bloque de la base y guarda la computadora.
+:::
+
+```{r}
+brote <- data.frame(
+  semana = c(1, 2, 3, 4, 5, 6),
+  casos  = c(10, 40, 90, 60, 30, 10)
+)
+```
+
+Dibuja lo que sale de cada bloque. Anota cuántos picos tiene la curva, en qué semana está el máximo y si se ven o no los puntos individuales:
+
+```{r}
+#| eval: false
+#a)
+ggplot(brote) +
+  geom_line(aes(x = semana, y = casos))
+```
+
+```{r}
+#| eval: false
+#b)
+ggplot(brote) +
+  geom_line(aes(x = semana, y = casos)) +
+  geom_point(aes(x = semana, y = casos))
+```
+
+```{r}
+#| eval: false
+#c) ¿Qué gráfica sale de los MISMOS datos pero en desorden?
+brote_desordenado <- brote[c(3, 1, 5, 2, 6, 4), ]
+
+ggplot(brote_desordenado) +
+  geom_line(aes(x = semana, y = casos))
+```
+
+```{r}
+#| eval: false
+#d) La misma base desordenada, pero con geom_path en vez de geom_line
+ggplot(brote_desordenado) +
+  geom_path(aes(x = semana, y = casos))
+```
+
+::: {.callout-note collapse="true"}
+### Respuestas
+
+**a)** y **b)** son la misma curva de brote: sube de 10 a 90 hasta la semana 3 y luego baja hasta volver a 10 en la semana 6. La única diferencia es que en `b` se ven los seis puntos marcados encima de la línea. Poner los puntos casi siempre vale la pena: le dice a quien lee **dónde tienes mediciones reales** y dónde la línea sólo está uniendo.
+
+```{r}
+#| echo: false
+plot_grid(
+  ggplot(brote) + geom_line(aes(x = semana, y = casos)) +
+    labs(title = "a) sólo línea") + theme_bw(),
+  ggplot(brote) + geom_line(aes(x = semana, y = casos)) +
+    geom_point(aes(x = semana, y = casos)) +
+    labs(title = "b) línea + puntos") + theme_bw(),
+  ncol = 2)
+```
+
+**c)** Sale **exactamente la misma gráfica que en `a`**, aunque las filas estén revueltas. Esto sorprende a mucha gente: `geom_line` **ordena los datos por el eje `x`** antes de unirlos. Es decir, no une los puntos en el orden en que están en tu base, sino de izquierda a derecha.
+
+**d)** Aquí sí sale un garabato. `geom_path` une los puntos **en el orden exacto en que aparecen en la base**, sin ordenarlos. Por eso la línea va y viene.
+
+```{r}
+#| echo: false
+brote_desordenado <- brote[c(3, 1, 5, 2, 6, 4), ]
+plot_grid(
+  ggplot(brote_desordenado) + geom_line(aes(x = semana, y = casos)) +
+    labs(title = "c) geom_line: ordena por x") + theme_bw(),
+  ggplot(brote_desordenado) + geom_path(aes(x = semana, y = casos)) +
+    labs(title = "d) geom_path: respeta el orden") + theme_bw(),
+  ncol = 2)
+```
+
+> **¿Y esto para qué me sirve?** Para series de tiempo casi siempre quieres `geom_line`. `geom_path` sirve cuando el orden *sí* es la información: por ejemplo para dibujar la trayectoria de un huracán, el recorrido de una brigada, o una gráfica donde el eje `x` es la prevalencia y el `y` la mortalidad y quieres ver cómo se movió un país año con año.
+:::
+
+### Ejercicio: encuentra el error (trayectorias)
+
+```{r}
+#| eval: false
+#a) Queremos una línea del número de casos por semana
+ggplot(brote) +
+  geom_line(aes(x = semana))
+```
+
+```{r}
+#| eval: false
+#b) Queremos la línea en rojo y más gruesa
+ggplot(brote) +
+  geom_line(aes(x = semana, y = casos, color = "red", size = 2))
+```
+
+```{r}
+#| eval: false
+#c) Queremos marcar la semana pico con una línea vertical
+ggplot(brote) +
+  geom_line(aes(x = semana, y = casos)) +
+  geom_hline(xintercept = 3, linetype = "dashed")
+```
+
+```{r}
+#| eval: false
+#d) Queremos que el eje y empiece en cero
+ggplot(brote) +
+  geom_line(aes(x = semana, y = casos)) +
+  ylim(0)
+```
+
+::: {.callout-note collapse="true"}
+### Respuestas
+
+a.  Falta la `y`. Sin ella `ggplot2` no sabe qué altura darle a la línea. Correcto: `aes(x = semana, y = casos)`.
+
+b.  `color` y `size` son valores **fijos**, así que van **afuera** del `aes`: `geom_line(aes(x = semana, y = casos), color = "red", linewidth = 2)`. Como está escrito, te va a salir una línea de un color raro con dos leyendas absurdas. (Nota además que para líneas el argumento moderno es `linewidth`, no `size`: `size` sigue funcionando pero `ggplot2` te avisa que ya está obsoleto para líneas.)
+
+c.  `geom_hline` dibuja líneas **horizontales** y por eso su argumento es `yintercept`. Para una línea **vertical** en la semana 3 se usa `geom_vline(xintercept = 3, linetype = "dashed")`.
+
+d.  `ylim` necesita **dos** números, el mínimo y el máximo: `ylim(0, 100)`. Si sólo quieres fijar el piso y que `R` decida el techo, usa `expand_limits(y = 0)` o `ylim(0, NA)`.
+
+    ::: callout-tip
+    Que el eje `y` empiece en cero **no es un capricho**: en gráficas de barras es obligatorio, porque el ojo compara alturas y un eje cortado exagera diferencias pequeñas. En gráficas de línea es discutible y a veces conviene acercarse a los datos, pero entonces hay que decirlo explícitamente en el pie de figura.
+    :::
+:::
+
+## Ejercicio de cierre de la sección
 
 > Para este ejercicio puedes usar cualquier base(s) de datos que tú desees. La única petición es que no haya que limpiar los datos: si necesitas hacerlo por ahorita hazlo en Excel o elige una base distinta que no lo requiera. 
 
@@ -1541,7 +2092,27 @@ Si no tienes datos para usar te recomiendo `vacunacion_puebla_menores_1_anio.csv
 :::
 
   + En la siguiente liga puedes encontrar código de `R` para generar 50 tipos distintos de gráficas: [http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html](http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html)
-  
+
+### Antes de correr nada: dibújalas
+
+Como parte del ejercicio de cierre, **antes** de escribir una sola línea de código haz el boceto de tus dos gráficas en una hoja: los ejes, más o menos las alturas, el título y qué quieres que la gente concluya al verla. Después escribe el código para llegar ahí.
+
+Es el orden contrario al que todo el mundo usa (primero graficar y luego ver qué salió), y es el que sirve. Si no puedes dibujar la gráfica, es que todavía no sabes qué quieres decir con ella; y si no sabes qué quieres decir, ningún `theme()` te va a salvar.
+
+Al final compara tu boceto con la gráfica que te quedó: ¿se parecen? Si no, ¿fue porque el código no hizo lo que pensabas o porque los datos no decían lo que suponías? Las dos respuestas son valiosas y son muy distintas.
+
+### Ejercicio de cierre con apoyo de una IA
+
+Hazlo **después** de haber terminado tus dos gráficas por tu cuenta. El chiste es comparar, no ahorrarte el trabajo.
+
+1.  **Compite contra ella.** Descríbele a una IA la misma gráfica que ya hiciste (las columnas de tu base, qué va en cada eje, qué quieres resaltar) y pídele el código de `ggplot2`. Corre su versión junto a la tuya. ¿Cuál se entiende mejor sin explicación? ¿Qué le copiarías y qué no?
+
+2.  **Revisión de accesibilidad.** Pídele: *"¿Los colores de este código de `ggplot2` se distinguen para una persona con daltonismo? Si no, propón una paleta alternativa."*. Verifica su respuesta tú: instala `colorBlindness` y usa `colorBlindness::cvdPlot(mi_grafica)`, o revisa la paleta en [https://colorbrewer2.org](https://colorbrewer2.org) marcando la casilla de *colorblind safe*. Éste es un caso donde vale la pena hacerle caso a la IA **y** comprobarlo, porque es un detalle que se olvida siempre.
+
+3.  **Que le busque errores a tu gráfica, no a tu código.** Mándale tu gráfica terminada y pregúntale: *"¿Qué podría malinterpretar alguien que vea esta gráfica sin contexto?"*. De todo lo que te diga, quédate únicamente con lo que puedas verificar viendo tus propios datos.
+
+4.  **Lo que la IA no puede hacer.** Contesta por escrito, en tres o cuatro renglones: de las decisiones que tomaste para tus dos gráficas (qué variable graficar, qué periodo, qué denominador, si el eje empieza en cero, qué se resalta y qué se deja en gris), ¿cuáles requieren saber de **salud pública** y no de `R`? Ésas son exactamente las que no puedes delegarle a nadie, ni a una IA ni a quien te ayude con el código.
+
 ## Para saber más
 
 El [libro de `ggplot2`](https://ggplot2-book.org/) es una excelente referencia para la parte de graficación así como [las notas en español de `rafalab`](https://rafalab.github.io/dslibro/ggplot2.html). Por otro lado el libro de [Fundamentals of Data Visualization](https://clauswilke.com/dataviz/) analiza más a fondo cómo presentar datos de formas que convenzan al público. Para armar historias a partir de los datos ve el libro de [Story-telling with data](https://www.storytellingwithdata.com/books)  
