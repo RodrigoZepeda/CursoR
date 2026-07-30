@@ -42,7 +42,14 @@ book:
     - graficas-ggplot2-1.qmd
     - graficas-ggplot2-2.qmd
     - analisis-exploratorio-1.qmd
-    - ejemplo-analisis-exploratorio.qmd
+    # ejemplo-analisis-exploratorio.qmd está fuera del libro TEMPORALMENTE.
+    # Descarga los datos de dengue de datosabiertos.salud.gob.mx y ese sitio
+    # tiene el certificado SSL vencido, así que el capítulo entero truena en
+    # cascada (21 errores). No se desactiva la verificación del certificado a
+    # propósito: sería enseñar una mala práctica. Para reactivarlo basta con
+    # descomentar este renglón cuando arreglen el certificado, o dejar una copia
+    # local de los datos en datasets/ y repuntar la lectura.
+    # - ejemplo-analisis-exploratorio.qmd
     - estadistica-descriptiva.qmd
     - analisis-encuestas.qmd
     - modelos.qmd
