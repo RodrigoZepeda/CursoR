@@ -1,39 +1,89 @@
 # CursoR
-Notas para un curso de R.
 
-## Links curso INSP (México) 2026
+Notas del curso de `R` del **Instituto Nacional de Salud Pública** (INSP), 2026.
 
-+ Link de **Dropbox** para las bases de datos y los scripts del curso: [https://www.dropbox.com/sh/yd73542zaptsjti/AACkyqBKuhJiR9mLEAVtXz2Wa?dl=0](https://www.dropbox.com/sh/yd73542zaptsjti/AACkyqBKuhJiR9mLEAVtXz2Wa?dl=0)
-+ Link de **GitHub** para las bases de datos: [https://github.com/RodrigoZepeda/CursoR/tree/master/datasets](https://github.com/RodrigoZepeda/CursoR/tree/master/datasets)
-+ Si tienes problemas para instalar `R` o `RStudio` puedes trabajar desde el navegador con **Posit Cloud** (antes RStudio Cloud): [https://posit.cloud](https://posit.cloud)
+**El libro se lee aquí: <https://rodrigozepeda.github.io/CursoR/>**
 
-## Índice:
-0. [Instalación](https://rodrigozepeda.github.io/CursoR/Instalacion.html)
-1. [Introducción](https://rodrigozepeda.github.io/CursoR/Introducción_a_R.html)
-2. [Gráficas con ggplot2 (parte 1)](https://rodrigozepeda.github.io/CursoR/Gr%C3%A1ficas_con_ggplot2_parte_1.html)
-3. [Gráficas con ggplot2 (parte 2)](https://rodrigozepeda.github.io/CursoR/Gr%C3%A1ficas_con_ggplot2_parte_2.html)
-3. [Análisis exploratorio de datos (parte 1)](https://rodrigozepeda.github.io/CursoR/analisis_exploratorio_p1.html)
-4. [Ejemplo de análisis exploratorio de datos](https://rodrigozepeda.github.io/CursoR/ejemplo_aed.html)
-4. [Tutorial de Quarto (por Pablo López Landeros)](https://pablolopez2733.github.io/Quarto-Tutorial/)
-4. [Análisis de encuestas](https://rodrigozepeda.github.io/CursoR/AnalisisEncuestas.html)
-4. [Regresiones (parte 1)](https://rodrigozepeda.github.io/CursoR/Regresiones1.html)
-5. [Regresiones (parte 2)](https://rodrigozepeda.github.io/CursoR/Regresiones_2.html)
+## Estructura
+
+Este repositorio es un [libro de Quarto](https://quarto.org/docs/books/). Contiene
+**sólo la documentación** (los archivos `.qmd`): las bases de datos no están aquí.
+
+```
+_quarto.yml        Configuración del libro y el orden de los capítulos
+index.qmd          Portada
+*.qmd              Un archivo por capítulo
+references.bib     Bibliografía
+_freeze/           Resultados ya calculados de los bloques de código
+.github/workflows/ Publicación automática en GitHub Pages
+```
+
+## Los datos
+
+Las bases pesan casi 1 GB, así que **viven en Dropbox, no en el repositorio**:
+
++ <https://www.dropbox.com/sh/yd73542zaptsjti/AACkyqBKuhJiR9mLEAVtXz2Wa?dl=0>
+
+Para trabajar localmente descomprímelas en una carpeta `datasets/` en la raíz del
+proyecto. Está en `.gitignore`, así que no se van a subir por accidente.
+
+## Cómo se publica
+
+Cada `push` a `master` dispara el workflow de GitHub Actions que construye el libro
+y lo publica en GitHub Pages. El workflow **no instala `R` ni descarga las bases**:
+usa los resultados congelados en `_freeze/`.
+
+> [!IMPORTANT]
+> **Si cambias el código de un capítulo**, corre `quarto render` en tu computadora
+> y commitea el `_freeze/` actualizado. Si sólo cambias texto, no necesitas hacer
+> nada. Cuando un capítulo cambió pero su `_freeze/` no, el workflow falla a
+> propósito en lugar de publicar resultados viejos en silencio.
+
+Para forzar que un capítulo se vuelva a calcular desde cero:
+
+```bash
+rm -rf _freeze/nombre-del-capitulo && quarto render
+```
+
+### Nota sobre el idioma del sistema
+
+`R` necesita un *locale* UTF-8 para compilar el libro. Si te sale un error de
+`unable to translate ... to native encoding`, corre:
+
+```bash
+export LANG=es_ES.UTF-8 LC_ALL=es_ES.UTF-8 && quarto render
+```
+
+## Contenido
+
+0. Presentación
+1. Preparación e instalación de `R` y `RStudio`
+2. Introducción a `R`
+3. Ciclos y condicionales
+4. Gráficas con `ggplot2` (parte 1)
+5. Gráficas con `ggplot2` (parte 2)
+6. Análisis exploratorio de datos
+7. Ejemplo de análisis exploratorio
+8. Limpieza de bases y estadística descriptiva
+9. Análisis de encuestas (ENSANUT)
+10. Modelos: qué son y cómo se construyen
+11. Regresiones (parte 1)
+12. Regresiones (parte 2)
+13. Cadenas de Markov
+14. Ejemplo de reporte
+
+Material externo de consulta:
+[Tutorial de Quarto](https://pablolopez2733.github.io/Quarto-Tutorial/) (por Pablo
+López Landeros).
 
 ## Contacto
 
 > **Rodrigo Zepeda-Tello**
-> 
-> _Twitter:_ [@RodZepeda](https://twitter.com/RodZepeda)
 >
 > _Github:_ [@RodrigoZepeda](https://github.com/RodrigoZepeda/)
 >
-> _Correo:_ [rzepeda17@gmail.com](mailto:rzepeda17@gmail.com) y [rodrigo.zepeda@imss.gob.mx](mailto:rodrigo.zepeda@imss.gob.mx)
-
-
-
+> _Correo:_ [rzepeda17@gmail.com](mailto:rzepeda17@gmail.com)
 
 > **Noé Osorio**
 >
 > _Correo:_ [ecostat.nog@gmail.com](mailto:ecostat.nog@gmail.com)
-
-

@@ -1,0 +1,62 @@
+# Presentación {.unnumbered}
+
+Éstas son las notas del curso de `R` del **Instituto Nacional de Salud Pública** (INSP), edición 2026.
+
+El curso está pensado para personas que trabajan en salud pública y que **no saben programar**. No damos por hecho que hayas escrito código antes, ni que te acuerdes de la estadística de la licenciatura. Si ya usas `Stata`, `SPSS`, `SAS` o `Excel`, vas a reconocer muchas cosas; si nunca has usado nada de eso, también puedes seguirlo.
+
+## Cómo usar estas notas
+
+Puedes moverte entre capítulos con la **barra lateral** (que te muestra el índice completo del curso en todo momento), con las **flechas de abajo** de cada página, o con el **buscador** de la esquina superior izquierda. El índice de la derecha te ubica dentro del capítulo en el que estás.
+
+Si vienes de cero, el orden de los capítulos es el orden sugerido. Si ya sabes algo de `R`, salta directo a lo que te interese.
+
+::: callout-tip
+## Los ejercicios son el curso
+
+Cada capítulo trae ejercicios de cuatro tipos, y **todos importan**:
+
+- **Ejercicios normales**, para practicar lo que acabas de leer.
+- **Ejercicios a mano**, con lápiz y papel y la computadora cerrada. Suenan raros pero son los que más rápido enseñan: si puedes predecir qué va a contestar `R` o dibujar la gráfica que va a salir, entendiste el código.
+- **Ejercicios de "encuentra el error"**, con código roto a propósito. Vas a pasar más tiempo de tu vida arreglando código que escribiéndolo, así que vale la pena practicarlo.
+- **Ejercicios con apoyo de una inteligencia artificial**, para que aprendas a usarla **y a revisarle la tarea**. Estas herramientas se equivocan con mucho aplomo.
+
+Las respuestas vienen en cajitas plegables que puedes abrir cuando ya lo intentaste.
+:::
+
+::: callout-important
+## Nunca le pegues datos de pacientes a una IA
+
+En los ejercicios con inteligencia artificial vas a pegar código y mensajes de error, **nunca** datos personales identificables (nombres, CURP, expedientes, domicilios) ni bases confidenciales de tu institución. Lo que escribes ahí sale de tu computadora y puede quedar guardado en un servidor de otro país.
+:::
+
+## Los datos
+
+Las bases de datos que usa el curso **no viven en este repositorio** (juntas pesan casi un gigabyte). Las puedes descargar de:
+
+- **Dropbox**: <https://www.dropbox.com/sh/yd73542zaptsjti/AACkyqBKuhJiR9mLEAVtXz2Wa?dl=0>
+
+Para que el código de las notas funcione tal cual, descomprime las bases en una carpeta `datasets/` **junto a tu script**. Es decir, si tu proyecto está en `~/Desktop/Mi_curso_de_R/`, las bases van en `~/Desktop/Mi_curso_de_R/datasets/`.
+
+::: callout-note
+Algunos capítulos leen sus datos directamente de Internet con una URL. Ésos funcionan sin que descargues nada, siempre que tengas conexión.
+:::
+
+## Antes de empezar
+
+Ve al capítulo de [preparación e instalación](instalacion.qmd) para instalar `R` y `RStudio`. Si tienes problemas para instalar, ahí también se explica cómo trabajar desde el navegador sin instalar nada.
+
+## Contacto
+
+> **Rodrigo Zepeda-Tello**
+>
+> Correo: [rzepeda17@gmail.com](mailto:rzepeda17@gmail.com)
+>
+> GitHub: [\@RodrigoZepeda](https://github.com/RodrigoZepeda/)
+
+> **Noé Osorio**
+>
+> Correo: [ecostat.nog@gmail.com](mailto:ecostat.nog@gmail.com)
+
+## Licencia y erratas
+
+El código de estas notas es libre. Si encuentras un error (que los hay), lo más útil que puedes hacer es [abrir un *issue* en GitHub](https://github.com/RodrigoZepeda/CursoR/issues) o escribirnos. Cada página tiene, en la barra lateral derecha, una liga para ver su código fuente y otra para reportar un problema.

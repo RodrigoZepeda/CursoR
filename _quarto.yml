@@ -1,0 +1,77 @@
+project:
+  type: book
+  output-dir: _book
+  # Los resultados de R se congelan en _freeze/ y se versionan. Así GitHub
+  # Actions publica el libro sin necesitar R, los paquetes ni las bases de
+  # datos (que viven en Dropbox, no en el repositorio).
+
+execute:
+  freeze: auto
+  error: true
+  warning: false
+
+lang: es
+
+book:
+  title: "Curso de `R`"
+  subtitle: "Instituto Nacional de Salud Pública, 2026"
+  author:
+    - "Rodrigo Zepeda-Tello"
+    - "Noé Osorio"
+  date: today
+  date-format: "D [de] MMMM [de] YYYY"
+  favicon: images/rlogo.png
+  site-url: https://rodrigozepeda.github.io/CursoR/
+  repo-url: https://github.com/RodrigoZepeda/CursoR/
+  repo-branch: master
+  repo-actions: [source, issue]
+  search:
+    location: sidebar
+    type: textbox
+  sidebar:
+    style: docked
+    collapse-level: 1
+    border: true
+  page-navigation: true
+  back-to-top-navigation: true
+  chapters:
+    - index.qmd
+    - instalacion.qmd
+    - introduccion-a-r.qmd
+    - ciclos.qmd
+    - graficas-ggplot2-1.qmd
+    - graficas-ggplot2-2.qmd
+    - analisis-exploratorio-1.qmd
+    - ejemplo-analisis-exploratorio.qmd
+    - estadistica-descriptiva.qmd
+    - analisis-encuestas.qmd
+    - modelos.qmd
+    - regresiones-1.qmd
+    - regresiones-2.qmd
+    - cadenas-de-markov.qmd
+    - file: ejemplo-reporte-ile.qmd
+      text: "Ejemplo de reporte"
+    - references.qmd
+
+bibliography: references.bib
+link-citations: true
+
+format:
+  html:
+    theme:
+      light: litera
+      dark: darkly
+    backgroundcolor: "#fffff8"
+    css: style.css
+    toc: true
+    toc-title: "En esta página"
+    toc-depth: 3
+    number-sections: true
+    number-depth: 3
+    code-copy: true
+    code-overflow: wrap
+    fig-align: center
+    reference-location: margin
+    citation-location: margin
+    # self-contained se omite a propósito: en un libro los recursos se
+    # comparten entre capítulos y embeberlos multiplicaría el peso del sitio.

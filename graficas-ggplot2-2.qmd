@@ -1,0 +1,904 @@
+---
+title: "Gráficas con `ggplot2`"
+subtitle: "Parte 2: Graficación avanzada en `R`"
+aliases:
+  - "/Gráficas_con_ggplot2_parte_2.html"
+---
+
+::: {.callout-note appearance="simple"}
+## Resumen
+
+Mostramos algunas funciones avanzadas de `ggplot2`: cómo formatear el texto con otros colores usando `gridtext`, cómo agregar en la misma gráfica datos de dos fuentes distintas, cómo juntar gráficas usando `cowplot` y cómo agregar logotipos a gráficas.
+:::
+
+```{r}
+#| echo: false
+#| message: false
+library("ggplot2")
+library("gridExtra")
+library("cowplot")
+library("tidyverse")
+library("kableExtra")
+```
+
+::: callout-note
+Los datos **no están en el repositorio**; los descargas de [Dropbox](https://www.dropbox.com/sh/ajgteruqo1wf47d/AADMfTnIUeIFSn_3whMVYgjfa?dl=0) y los descomprimes en una carpeta `datasets/` junto a tu script (ver la [presentación](index.qmd#los-datos)).
+:::
+
+::: callout-warning
+Si aún no sabes usar `ggplot2` te recomiendo revisar la [parte 1 de estas notas](graficas-ggplot2-1.qmd)
+:::
+
+
+## Unión de gráficos con `cowplot`
+
+Muchas veces interesa tener una gráfica que conjunte dos imágenes distintas. Por ejemplo la siguiente imagen muestra dos histogramas lado a lado en una sola gráfica. 
+
+```{r}
+#| cache: true
+#| echo: false
+#| message: false
+#| fig-cap:  "Dos gráficas en una sola"
+knitr::include_graphics('images/hist_hist.png')
+```
+
+Para poder juntarlos es necesario: 1) hacer cada histograma por separado y 2) usar el paquete `cowplot` para juntarlos. 
+
+Empecemos elaborando el primer histograma a partir de los datos de `diabetes`:
+
+```{r}
+#| message: false
+datos_diabetes <- read_csv("datasets/diabetes.csv")
+
+histograma_1 <- ggplot(datos_diabetes) +
+  geom_histogram(aes(x = chol, y = after_stat(density)), 
+                 bins = 50, color = "white", fill = "deepskyblue3") +
+  labs(
+    y = "",
+    x = "Niveles de colesterol"
+  ) +
+  scale_y_continuous(labels = scales::percent) +
+  theme_classic()
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+histograma_1
+```
+continuemos con el segundo:
+
+```{r}
+histograma_2 <- ggplot(datos_diabetes) +
+  geom_histogram(aes(x = stab.glu, y = after_stat(density)), 
+                 bins = 50, color = "white", fill = "deepskyblue3") +
+  labs(
+    y = "",
+    x = "Niveles de glucosa"
+  ) +
+  scale_y_continuous(labels = scales::percent) +
+  theme_classic()
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+histograma_2
+```
+
+Finalmente con `plot_grid` dentro de `cowplot` las juntamos:
+
+```{r}
+#| warning: false
+#| message: false
+library(cowplot) #para usar plot_grid
+plot_grid(histograma_1, histograma_2, ncol = 2) #ncol indica cuántas columnas
+```
+
+```{r}
+#| message: false
+#| warning: false
+#| echo: false
+ggsave("images/hist_hist.png", plot = plot_grid(histograma_1, histograma_2),
+       width = 10, height = 4)
+```
+
+El paquete `cowplot` permite incluso combinar más de dos gráficos y establecer las alturas. 
+
+### Ejercicios 
+
+```{r}
+#| cache: true
+#| echo: false
+#| message: false
+#| fig-cap:  "Ejemplo avanzado de combinación de gráficos"
+knitr::include_graphics('images/cowplot_ex.png')
+```
+
+1. Para armar el siguiente gráfico se utilizaron `histograma_1`, `histograma_2` y una tercera gráfica de `colesterol` contra `glucosa` de esta forma (color `deepskyblue4`):
+
+```{r}
+#| echo: false
+#| warning: false
+col_glu <- ggplot(datos_diabetes) +
+  geom_point(aes(x = chol, y = stab.glu), color = "deepskyblue4") +
+  theme_bw() +
+  labs(
+    x = "",
+    y = ""
+  ) 
+```
+
+```{r}
+#| echo: false
+#| warning: false
+col_glu
+```
+
+La gráfica de colesterol contra glucosa se almacenó en la variable `col_glu` la cual luego se utilizó en el `plot_grid` con la siguiente instrucción:
+
+```{r}
+#| eval: false
+plot_grid(histograma_1,            #Primer histograma
+          ggplot() + theme_void(), #Genera un gráfico vacío 
+          col_glu,                 #Gráfica de glucosa vs colesterol
+          histograma_2 + coord_flip(), #coord_flip voltea el histograma
+          ncol = 2,                #dos columnas
+          rel_widths  = c(1, 0.5), #Establece el ancho relativo
+          rel_heights = c(0.5, 1)) #Establece la altura relativa
+```
+
+```{r}
+#| echo: false
+#| warning: false
+ggsave("images/cowplot_ex.png",
+  plot_grid(histograma_1,            #Primer histograma
+            ggplot() + theme_void(), #Genera un cuadro vacío 
+            col_glu,                 #Gráfica de glucosa vs colesterol
+            histograma_2 + coord_flip(), #coord_flip voltea el histograma
+            ncol = 2,                #dos columnas
+            rel_widths  = c(1, 0.5), #Establece el ancho relativo
+            rel_heights = c(0.5, 1)), #Establece la altura relativa
+  width = 8,
+  height = 8, bg = "white")
+```
+
+> Reproduce la gráfica 
+
+
+::: callout-tip
+Más información de `cowplot` la puedes encontrar [en sus tutoriales](https://wilkelab.org/cowplot/articles/plot_grid.html)
+:::
+
+## Formateo de títulos con `ggtext`
+
+La librería `ggtext` sirve para poner **negritas**, _cursivas_ y cambiar colores en los textos. Probemos con la base de datos `datasets/BCG_Sin_Son_2020_IMSS.csv` que contiene información de las dosis de `BCG` en Sinaloa y Sonora aplicadas en el IMSS.
+
+```{r}
+#| message: false
+#Lectura de datos
+bcg_ss <- read_csv("datasets/BCG_Sin_Son_2020_IMSS.csv")
+
+#Gráfico de tendencias
+ggplot(bcg_ss) +
+  geom_line(aes(x = Año, y = Dosis, color = Entidad)) +
+  scale_color_manual("Entidad", values = c("Sinaloa" = "deepskyblue4",
+                                           "Sonora" = "deeppink3")) +
+  theme_minimal() +
+  labs(
+    x = "Año",
+    y = "Dosis de B.C.G. (Bacillus Calmette–Guérin)",
+    title = "Dosis de B.C.G aplicadas en el IMSS en Sonora y Sinaloa",
+    caption = "Fuente: Datos abiertos del IMSS"
+  )
+```
+
+A través de `ggtext` podemos colorear sólo secciones del título poniéndolas entre las etiquetas `<span style = 'color:nombredelcolor;'>` y `</span>`. Podemos poner *negritas* usando dos asteriscos como en whatsapp, `**`lo que va en negritas`**`, y _cursivas_ con guiones bajos, `_`lo que va en cursivas`_`. Para poner espacios verticales basta con escribir un `<br>` y eso de inmediato da un espacio. Finalmente para que los temas apliquen hay que cambiar a `element_markdown` las opciones donde queremos aplicar el tema dentro del `theme` (nuestro caso `plot.title`, `axis.title.y` y `plot.capiton` pero también se puede en `axis.title.x` y `plot.subtitle`). 
+
+```{r}
+library(ggtext)
+
+#Gráfico de tendencias
+ggplot(bcg_ss) +
+  geom_line(aes(x = Año, y = Dosis, color = Entidad)) +
+  scale_color_manual("Entidad", values = c("Sinaloa" = "deepskyblue4",
+                                           "Sonora" = "deeppink3")) +
+  theme_minimal() +
+  labs(
+    x = "Año",
+    y = "Dosis de B.C.G. (_Bacillus Calmette-Guérin_)",
+    title = 
+      "**Dosis de B.C.G aplicadas en el IMSS en 
+    <span style = 'color:deeppink3;'>Sonora</span> y 
+    <span style = 'color:deepskyblue4;'>Sinaloa</span>.**",
+    caption = "**Fuente:** Datos abiertos del IMSS"
+  ) +
+  theme(
+    plot.title   = element_markdown(),
+    axis.title.y = element_markdown(),
+    plot.caption = element_markdown()
+  )
+```
+
+dentro de los `element_markdown` se pueden cambiar los tamaños de fuentes como lo hicimos en la sección pasada con `element_text`: son lo mismo. También podemos esconder la leyenda con `legend.position = "none"` dentro del `theme`:
+
+```{r}
+library(ggtext)
+
+#Gráfico de tendencias
+ggplot(bcg_ss) +
+  geom_line(aes(x = Año, y = Dosis, color = Entidad)) +
+  scale_color_manual("Entidad", values = c("Sinaloa" = "deepskyblue4",
+                                           "Sonora" = "deeppink3")) +
+  theme_minimal() +
+  labs(
+    x = "Año",
+    y = "Dosis de B.C.G.<br>(_Bacillus Calmette-Guérin_)",
+    title = 
+      "Dosis de B.C.G aplicadas en 
+    <span style = 'color:deeppink3;'>**Sonora**</span> y 
+    <span style = 'color:deepskyblue4;'>**Sinaloa**</span><br>",
+    caption = "**Fuente:** Datos abiertos del IMSS"
+  ) +
+  theme(
+    plot.title   = element_markdown(size = 18),
+    axis.title.y = element_markdown(),
+    plot.caption = element_markdown(),
+    legend.position = "none"
+  )
+```
+
+### Ejercicio
+
+La base de datos `datasets/hpv_unicef.csv` contiene información del objetivo `target` de vacunación  (primera dosis en mujeres) para el papiloma humano y las dosis que en realidad implementaron `doses` en 2021 para los países que se tiene registro. 
+
+```{r}
+#| message: false
+hpv <- read_csv("datasets/hpv_unicef.csv")
+```
+
+Podemos notar en la base que México tenía un objetivo de `1094757` y aplicó `13512`. La siguiente gráfica subraya a México dentro de los datos: 
+
+```{r}
+ggplot(hpv) + 
+  geom_point(aes(x = target, y = doses), color = "gray25", 
+             size = 1) +
+  geom_point(aes(x = 1094757, y = 13512), color = "tomato3", 
+             size = 2, data = NULL) +
+  scale_x_continuous(labels = scales::comma) +
+  scale_y_continuous(labels = scales::comma) +
+  theme_minimal() +
+  labs(
+    x = "Dosis objetivo",
+    y = "Dosis aplicadas",
+  )
+```
+
+Modifica la gráfica para que el resultado sea el siguiente:
+
+```{r}
+#| echo: false
+ggplot(hpv) + 
+  geom_point(aes(x = target, y = doses), color = "gray25", 
+             size = 1) +
+  geom_point(aes(x = 1094757, y = 13512), color = "tomato3", 
+             size = 2, data = NULL) +
+  scale_x_continuous(labels = scales::comma) +
+  scale_y_continuous(labels = scales::comma) +
+  theme_minimal() +
+  labs(
+    x = "Dosis _objetivo_",
+    y = "Dosis _aplicadas_",
+    title = "**Primeras dosis _objetivo_ y _aplicadas_ de vacuna conta el VPH**",
+    subtitle = "En 2021 <span style='color:tomato3;'>**México**</span> tenía un objetivo de _1,094,757_ y se aplicaron _13,512_",
+    caption = "**Fuente:** Datos de inmunización de UNICEF en <span style='color:blue;'>data.unicef.org</span>"
+  ) +
+  theme(
+    plot.caption = element_markdown(),
+    plot.title = element_markdown(),
+    plot.subtitle = element_markdown(),
+    axis.title.x = element_markdown(),
+    axis.title.y = element_markdown()
+  )
+```
+
+## Uso de múltiples bases de datos en la misma gráfica
+
+La base de datos `datasets/hpv_unicef_ultima_dosis.csv` contiene la información de cobertura `doses` y cobertura objetivo `target` de la **última dosis** de la vacuna de VPH en mujeres. La base `datasets/hpv_unicef.csv` contiene la misma información pero para la **primera dosis**. Hagamos una nube de puntos con ambas bases en conjunto. Para ello podemos usar `ggplot` pero ahora especificaremos dentro del `geom_point` el parámetro `data`
+
+```{r}
+#| message: false
+primera_dosis <- read_csv("datasets/hpv_unicef.csv")
+ultima_dosis  <- read_csv("datasets/hpv_unicef_ultima_dosis.csv")
+```
+
+Realizamos la gráfica nota que hay que poner dos `geom_point`s uno para cada fuente de datos `data`:
+
+```{r}
+#Aquí puedes poner la base que quieras o dejar vacío
+ggplot() +
+  geom_point(aes(x = target, y = doses), data = primera_dosis) +
+  geom_point(aes(x = target, y = doses), data = ultima_dosis) +
+  scale_x_continuous(labels = scales::comma) +
+  scale_y_continuous(labels = scales::comma)
+```
+
+Podemos agregar una leyenda para que `R` distinga las primeras de las últimas. Si bien eso no depende de la base de datos podemos meterlo dentro del `aes` junto con el nombre a asignar:
+
+```{r}
+#Aquí puedes poner la base que quieras o dejar vacío
+ggplot() +
+  geom_point(aes(x = target, y = doses, color = "Primera"), 
+             data = primera_dosis, alpha = 0.5) +
+  geom_point(aes(x = target, y = doses, color = "Última"), 
+             data = ultima_dosis, alpha = 0.5) +
+  scale_x_continuous(labels = scales::comma) +
+  scale_y_continuous(labels = scales::comma)
+```
+
+Para visualizar mehor la información cambiaré la escala a escala logarítmica:
+
+```{r}
+#Aquí puedes poner la base que quieras o dejar vacío
+ggplot() +
+  geom_point(aes(x = target, y = doses, color = "Primera"), 
+             data = primera_dosis, alpha = 0.5) +
+  geom_point(aes(x = target, y = doses, color = "Última"), 
+             data = ultima_dosis, alpha = 0.5) +
+  scale_x_log10(labels = scales::comma) +
+  scale_y_log10(labels = scales::comma)
+```
+
+Finalmente terminamos la personalización para tener la gráfica final:
+
+```{r}
+#Aquí puedes poner la base que quieras o dejar vacío
+ggplot() +
+  geom_point(aes(x = target, y = doses, color = "Primera"), 
+             data = primera_dosis, alpha = 0.5, size = 2) +
+  geom_point(aes(x = target, y = doses, color = "Última"), 
+             data = ultima_dosis, alpha = 0.5, size = 2) +
+  scale_x_log10(labels = scales::comma) +
+  scale_y_log10(labels = scales::comma) +
+  labs(
+    x = "Dosis objetivo",
+    y = "Dosis aplicadas",
+    title = "Dosis objetivo y aplicadas para la vacuna contra el VPH",
+    subtitle = "Primera y última dosis aplicadas en mujeres",
+    caption = "Fuente: Datos de inmunización de UNICEF"
+  ) +
+  scale_color_manual("Dosis", values = c("Primera" = "#FAA916",
+                                         "Última" = "#96031A")) +
+  theme_linedraw()
+```
+
+### Ejercicio
+
+Las bases de datos `unicef_dtp_1.csv` y `unicef_dtp_3.csv` contienen la covertura de inmunización (DTP1 y DTP3 respectivamente) por país y año. Reproduce la siguiente gráfica donde la leyenda se pasó abajo mediante el comando `legend.position = "bottom"` dentro de `theme`. Los colores son: `"DPT-1" = "#214F4B"` y `"DPT-3" = "#16C172"`.
+
+::: callout-tip
+Necesitas tanto `scale_color_manual` como `scale_fill_manual`. 
+:::
+
+```{r}
+#| message: false
+#| echo: false
+dtp1 <- read_csv("datasets/unicef_dtp_1.csv")
+dtp3 <- read_csv("datasets/unicef_dtp_3.csv")
+
+ggplot() +
+  geom_col(aes(x = country, y = `2021`, fill = "DPT-1"), data = dtp1) +
+  geom_point(aes(x = country, y = `2021`, color = "DPT-3"), data = dtp3) +
+  theme_light() +
+  labs(
+    x = "", 
+    y = "Cobertura (%)",
+    title = "Cobertura de vacunación de DPT1 y DPT3 por país",
+    caption = "Fuente: UNICEF datos de inmunización"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 2.5),
+    legend.position = "bottom"
+  ) +
+  scale_color_manual("Vacuna", values = c("DPT-1" = "#214F4B", "DPT-3" = "#16C172")) +
+  scale_fill_manual("Vacuna", values = c("DPT-1" = "#214F4B", "DPT-3" = "#16C172"))
+```
+
+
+## Agregar logotipos
+
+Los logotipos usualmente vienen en dos formatos distintos. Muchas veces vienen como `svg`. Las `svg` son los formatos preferidos pues son imágenes
+que no se pixelean aunque les hagas zoom. En ocasiones el `svg` no está disponible en cuyo caso el logo puede venir en cualquier formato de imagen `png`, `jpeg`, etc. Las instrucciones para trabajar con uno o con otro son muy similares y haremos ambos casos usando los logos del IMSS `IMSS_Logo.png` y `Logotipo_del_IMSS.svg` en la carpeta `images`. 
+
+En ambos casos usaremos las librerías `magick` y `ggimage`: 
+
+```{r}
+#| message: false
+library(magick)  #Leer la imagen 
+library(cowplot) #Poner la imagen en ggplot2
+```
+
+En el caso de la imagen en `svg` podemos leerla como:
+
+```{r}
+img <- image_read_svg("imagenes/Logotipo_del_IMSS.svg", width = 1000)
+```
+
+donde el parámetro `width` controla qué tan bien se ve la imagen: a mayor `width` menor pixeleo del logo (pero también más tiempo de procesamiento). 
+
+Ojo la imagen no se va a ver aún pero ya la tenemos almacenada en `img`. 
+
+```{r}
+#| column: margin
+#| fig-width: 3.5
+#| fig-height: 3.5
+#| cache: true
+#| echo: false
+#| message: false
+#| out-width: "150px"
+#| fig-cap:  "El logo del IMSS que guardamos en `img`"
+knitr::include_graphics("imagenes/Logotipo_del_IMSS.svg")
+```
+Para agregar el logo necesitamos una gráfica en la cual nos interese poner el logotipo. Yo trabajaré con el histograma que hicimos antes que utiliza la base de datos de diabetes:
+
+```{r}
+#| message: false
+#Si ya tenías los datos no es necesario volver a leerlos
+datos_diabetes <- read_csv("datasets/diabetes.csv")
+
+#Grafico el histograma. No le estoy poniendo formato porque
+#en lo que quiero enfocarme es en el logotipo
+ggplot(datos_diabetes) + 
+  geom_histogram(aes(x = chol)) 
+```
+
+Para poner la imagen es suficiente con usar `draw_image` y especificar las coordenadas `x` y `y` donde queremos que vaya. El parámetro `scale` controla qué tan grande o pequeña la queremos: 
+
+```{r}
+#| message: false
+ggplot(datos_diabetes) + 
+  geom_histogram(aes(x = chol)) +
+  draw_image(img, x = 400, y= 40, scale=50)
+```
+
+exactamente el mismo proceso puede replicarse si el logo viene en `png`:
+
+```{r}
+#| message: false
+
+#Aquí no se pone width pues el png ya tiene un width predefinido
+img_png <- image_read("imagenes/IMSS_Logo.png")
+
+#Realizamos la gráfica
+ggplot(datos_diabetes) + 
+  geom_histogram(aes(x = chol)) +
+  draw_image(img_png, x = 400, y= 40, scale=50)
+```
+
+### Ejercicio
+
+1. Agrega el logo del Instituto Nacional de Salud Pública  ([link de descarga](https://upload.wikimedia.org/wikipedia/commons/4/48/Logotipo_del_Instituto_Nacional_de_Salud_P%C3%BAblica_de_M%C3%A9xico.jpg)) a la siguiente gráfica en el centro del corazón: 
+
+```{r}
+#Armamos la base de datos
+heartdf = tibble(
+	t = seq(0, 2*pi, pi/60),
+	x = 16*sin(t)^3,
+	y = 13*cos(t) - 5*cos(2*t) - 2*cos(3*t) - cos(4*t)
+)
+
+#Generamos la gráfica
+ggplot(data = heartdf, aes(x, y)) + 
+	geom_polygon(aes(group = 1), color = "#DDCCAA", 
+	             fill = "white", linewidth = 2) +
+  theme_classic() + 
+  coord_fixed() +
+  labs(
+    x = "",
+    y = ""
+  ) + 
+  theme(axis.ticks = element_blank())
+```
+
+## Cambio de fuente
+
+La librería `showtext` es bastante útil para cambiar el tipo de fuente en los textos de un `ggplot`. Para ello es necesario llamar a la librería: 
+
+```{r}
+#| message: false
+library(showtext)
+```
+
+Para agregar una fuente elige el nombre de la fuente de Google. La lista completa de fuentes puedes hallarla en [https://fonts.google.com/](https://fonts.google.com/):
+
+```{r}
+font_add_google("Schoolbell", "Schoolbell")
+```
+
+para que `R` sepa que hay que usar `showtext` agrega esta línea:
+
+```{r}
+showtext_auto()
+```
+
+Finalmente en tu gráfica agrega dentro del `element_text` de `theme` la fuente con su nombre. Por ejemplo a la siguiente base de datos:
+
+```{r}
+#Genera una base de datos inventada
+set.seed(34659)
+datos <- data.frame(x = rnorm(100))
+
+#Grafica
+ggplot(datos) +
+  geom_histogram(aes(x = x)) +
+  labs(
+    title = "Histograma"
+  )
+```
+le podemos cambiar el texto sólo del título:
+
+```{r}
+#Grafica
+ggplot(datos) +
+  geom_histogram(aes(x = x), bins = 10, color = "white") +
+  labs(
+    title = "Histograma"
+  ) +
+  theme(
+    plot.title = element_text(family = "Schoolbell", size = 20)
+  )
+```
+
+Los cambios pueden hacerse de manera idéntica con `plot.subtitle`, `plot.caption`, `axis.text` y `axis.title`. 
+
+### Ejercicio
+
+1. Descarga la fuente `Peralta` y replica la siguiente gráfica usando los `datos` generados anteriormente.
+
+```{r}
+#Genera una base de datos inventada
+set.seed(34659)
+datos <- data.frame(x = rnorm(100))
+
+font_add_google("Peralta","Peralta")
+
+ggplot(datos) +
+  geom_histogram(aes(x = x), bins = 10, color = "white") +
+  theme_classic() +
+  labs(
+    title = "Título",
+    y = "Eje y",
+    x = "Eje x",
+    caption = "Pie de figura",
+    subtitle = "Subtítulo"
+  ) +
+  theme(
+    plot.title    = element_text(family = "Peralta", size = 20),
+    plot.subtitle = element_text(family = "Peralta", size = 14),
+    plot.caption  = element_text(family = "Peralta", size = 10),
+    axis.text = element_text(family = "Peralta"),
+    axis.title = element_text(family = "Peralta"),
+  )
+```
+
+## Uso de `gghighlight` para resaltar valores
+
+Considera la misma base de datos `IMSS_BCG_2020.csv` que utilizamos la vez pasada donde graficamos las `Dosis BCG` aplicadas en el IMSS. 
+
+```{r}
+#| message: false
+bcg <- read_csv("datasets/IMSS_BCG_2020.csv")
+
+ggplot(bcg) +
+  geom_col(aes(x = Del, y = `Dosis BCG`), 
+           fill = "deepskyblue4") +
+  theme_minimal() +
+  labs(
+    x = "Delegación",
+    y = "Dosis aplicadas",
+    subtitle = "Año 2020",
+    title = "Dosis B.C.G. aplicadas en el IMSS"
+  ) +
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1, vjust = 0.5))
+```
+
+Supongamos que nos interesa resaltar aquellas delegaciones con más de `20000` dosis aplicadas. El paquete de [`gghighlight`](https://cran.r-project.org/web/packages/gghighlight/vignettes/gghighlight.html) ayuda con esto. Basta con poner `gghighlight` después del `geom` para hacerlo:
+
+```{r}
+library(gghighlight)
+
+ggplot(bcg) +
+  geom_col(aes(x = Del, y = `Dosis BCG`), 
+           fill = "deepskyblue4") +
+  gghighlight(`Dosis BCG` > 20000) + 
+  theme_minimal() +
+  labs(
+    x = "Delegación",
+    y = "Dosis aplicadas",
+    subtitle = "Año 2020",
+    title = "Dosis B.C.G. aplicadas en el IMSS"
+  ) +
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1, vjust = 0.5))
+```
+
+Hay distintas opciones dentro de `gghighlight` en particular para cambiar el color y la transparencia de los no subrayados:
+
+```{r}
+#alpha es la transparencia (entre 0 y 1)
+#fill es el relleno puede ser NULL si no deseas que cambie el color
+ggplot(bcg) +
+  geom_col(aes(x = Del, y = `Dosis BCG`), 
+           fill = "tomato3") +
+  gghighlight(`Dosis BCG` > 20000,  
+              unhighlighted_params = list(fill = "deepskyblue4", alpha = 1)) + 
+  theme_minimal() +
+  labs(
+    x = "Delegación",
+    y = "Dosis aplicadas",
+    subtitle = "Año 2020",
+    title = "Dosis B.C.G. aplicadas en el IMSS"
+  ) +
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1, vjust = 0.5))
+```
+
+### Ejercicio 
+
+En la siguiente gráfica a partir de los datos de `diabetes` colorea aquellos puntos donde el índice de masa corporal dado por `(weight * 0.453592) /(height * 0.0254)^2` sea mayor a 25 (exceso de peso) para obtener una gráfica similar a la siguiente con tus [colores favoritos](http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf).
+
+> **Recuerda** que para pasar el peso `weight` de libras a kilogramos hay que multiplicarlo por `0.453592` y para pasar la altura `height` a metros es necesario multiplicarla por `0.0254`. 
+
+```{r}
+#| echo: false
+#| message: false
+#Lectura de la base
+datos_diabetes <- read_csv("datasets/diabetes.csv")
+
+#Gráfica
+ggplot(datos_diabetes) +
+  geom_point(aes(x = weight*0.453592, y = height*0.0254), 
+             color = "red") +
+  gghighlight((weight * 0.453592) /(height * 0.0254)^2 >= 25) + 
+  labs(
+    x = "Peso (kg)",
+    y = "Altura (m)", 
+    title = "Peso contra altura en población afroamericana",
+    caption = "Fuente: Universidad de Virginia",
+  ) +
+  theme_bw()
+  
+```
+
+## Ejercicio a mano: dibuja el acomodo de `plot_grid`
+
+::: callout-important
+**A lápiz y papel.** Aquí no vas a dibujar las gráficas por dentro, sólo **los rectángulos**: cuántos hay, de qué tamaño y en qué posición. Es mucho más rápido de lo que parece y te ahorra un montón de prueba y error.
+:::
+
+Supón que ya tienes tres gráficas guardadas en las variables `A`, `B` y `C`. Para cada bloque, dibuja en tu hoja el acomodo que resulta (un rectángulo grande dividido en pedazos, con la letra de cada gráfica adentro):
+
+```{r}
+#| eval: false
+#a)
+plot_grid(A, B, ncol = 2)
+```
+
+```{r}
+#| eval: false
+#b)
+plot_grid(A, B, ncol = 1)
+```
+
+```{r}
+#| eval: false
+#c)
+plot_grid(A, B, C, ncol = 2)
+```
+
+```{r}
+#| eval: false
+#d)
+plot_grid(A, B, ncol = 2, rel_widths = c(3, 1))
+```
+
+```{r}
+#| eval: false
+#e)
+plot_grid(A, plot_grid(B, C, ncol = 1), ncol = 2)
+```
+
+::: {.callout-note collapse="true"}
+### Respuestas
+
+a.  Dos gráficas **lado a lado**, del mismo ancho: `A` a la izquierda, `B` a la derecha.
+
+b.  Dos gráficas **una encima de la otra**: `A` arriba, `B` abajo. Con `ncol = 1` todo se apila en una sola columna.
+
+c.  Cuatro lugares en una rejilla de 2×2, pero sólo tienes tres gráficas: `A` y `B` arriba, `C` abajo a la izquierda y **el lugar de abajo a la derecha queda vacío**. Es el error más común de `plot_grid`: te queda un hueco blanco y no entiendes por qué.
+
+d.  Igual que el `a`, pero `A` ocupa **tres cuartas partes** del ancho y `B` sólo una cuarta. Los números de `rel_widths` son proporciones relativas, no centímetros ni pulgadas: `c(3, 1)` es lo mismo que `c(30, 10)` o que `c(0.75, 0.25)`.
+
+e.  Éste es el truco importante: `plot_grid` **se puede meter dentro de sí mismo**. Del lado izquierdo va `A` completa (ocupando todo el alto) y del lado derecho van `B` arriba y `C` abajo, apiladas. Así se arman los tableros de indicadores con una gráfica principal grande y dos chiquitas al lado.
+
+    ```
+    +-------------+-------------+
+    |             |      B      |
+    |      A      +-------------+
+    |             |      C      |
+    +-------------+-------------+
+    ```
+
+    Es exactamente la misma idea que se usa en el ejercicio de cierre de esta sección para pegarle el logo de UNICEF a la gráfica.
+:::
+
+## Ejercicio: encuentra el error (graficación avanzada)
+
+Predice el error, córrelo, lee el mensaje completo y arréglalo:
+
+```{r}
+#| eval: false
+#a) Queremos juntar dos gráficas
+plot_grid(histograma_1 + histograma_2, ncol = 2)
+```
+
+```{r}
+#| eval: false
+#b) Queremos el título con una palabra en rojo
+ggplot(datos_diabetes) +
+  geom_point(aes(x = weight, y = height)) +
+  labs(title = "Peso contra <span style='color:red;'>altura</span>")
+```
+
+```{r}
+#| eval: false
+#c) Queremos resaltar sólo a las personas con colesterol alto
+ggplot(datos_diabetes) +
+  geom_point(aes(x = weight, y = chol)) +
+  gghighlight(chol > 300)
+```
+
+```{r}
+#| eval: false
+#d) Queremos usar la fuente Manrope
+ggplot(datos_diabetes) +
+  geom_point(aes(x = weight, y = height)) +
+  theme(text = element_text(family = "Manrope"))
+```
+
+::: {.callout-note collapse="true"}
+### Respuestas
+
+a.  Las gráficas se separan **con coma**, no con `+`. El `+` sirve para pegar capas *dentro* de una misma gráfica; para juntar gráficas distintas es `plot_grid(histograma_1, histograma_2, ncol = 2)`.
+
+b.  El `<span style=...>` es HTML, y `ggplot2` por sí solo no lo interpreta: te va a imprimir el código tal cual, con picoparéntesis y todo. Para que lo lea hay que pedirlo explícitamente con `ggtext`, agregando `theme(plot.title = element_markdown())`.
+
+c.  Éste no falla necesariamente, pero es **conceptualmente** el error del que hay que cuidarse: `gghighlight` **no filtra**, sólo pinta de gris lo que no cumple la condición. Los puntos con colesterol bajo **siguen ahí** y siguen contando para las escalas de los ejes. Si lo que querías era quedarte sólo con los de colesterol alto, `gghighlight` no es la herramienta. (Si además `R` te dice `could not find function "gghighlight"`, es que te faltó `library(gghighlight)`.)
+
+d.  Te va a salir un `font family 'Manrope' not found` (o simplemente la va a ignorar y usar la fuente de siempre). Las fuentes no se invocan por su nombre nada más: primero hay que registrarlas con `font_add_google("Manrope", "Manrope")` y activar `showtext_auto()`, como se explica en la sección de cambio de fuente.
+:::
+
+## Ejercicio con apoyo de una IA (graficación avanzada)
+
+::: callout-important
+De nuevo: pega código y mensajes de error, **nunca** datos identificables de personas ni bases confidenciales de tu institución.
+:::
+
+1.  **El acomodo.** Descríbele a una IA el tablero que dibujaste en el inciso `e` del ejercicio a mano (*"quiero una gráfica grande a la izquierda y dos chiquitas apiladas a la derecha, usando `cowplot`"*) y pídele el código. ¿Le atinó al anidamiento o intentó resolverlo con `ncol` y `rel_widths` a la brava? Compara con tu dibujo.
+
+2.  **Traduce un error de verdad.** Corre el inciso `d` del ejercicio anterior (el de la fuente `Manrope`), copia el mensaje **completo** y pídele: *"Explícame este mensaje de `R` como si nunca hubiera programado y dime exactamente qué renglones tengo que agregar."*. Aplica su solución y verifica que la fuente **de veras** cambió, comparando la gráfica antes y después. Es fácil creer que se arregló cuando en realidad `R` está usando la fuente por defecto en silencio.
+
+3.  **Cázala inventando (nivel avanzado).** Pídele: *"Dame la función de `cowplot` que agrega automáticamente las letras a), b), c) a cada panel."* Aquí sí existe algo parecido, así que el ejercicio es distinto: verifica con `?nombre_de_la_funcion` que la función exista **y** que los argumentos que te dio sean los reales. Es muy común que la función sea correcta pero los argumentos estén inventados o correspondan a una versión vieja del paquete.
+
+4.  **Pídele lo imposible.** Descríbele una gráfica que **no** se pueda hacer con los datos que tienes (por ejemplo, pedirle una tendencia por mes cuando tu base sólo tiene información anual). ¿Te dijo que no se puede, o te inventó un código que interpola meses de la nada? Escribe en dos renglones qué habrías reportado si no te hubieras dado cuenta.
+
+## Ejercicios de cierre de la sección
+
+El archivo `datasets/vacuna_unicef_regional.csv` contiene la información de la cobertura de las inmunizaciones a nivel región desde 1980 por tipo de vacuna. Utiliza todo lo que sabes para reproducir la siguiente gráfica que utiliza la fuente `Manrope`. Los colores utilizados son:
+
+```{r}
+#| eval: false
+"LACR" = "#2c525c", 
+"EAPR" = "#0a6569",
+"ECAR" = "#00786a", 
+"ESAR" = "#1b8a5e",
+"MENA" = "#509947", 
+"ROSA" = "#84a428",
+"WCAR" = "#bfa900", 
+"Non-programme" = "#ffa600",
+"Global" = "black"
+```
+
+el color de fondo de la gráfica es `#fffff8`, el tema es `classic` y el relleno de los `strip.background` es `#2c525c`.
+
+> **Nota** La región de México es `LACR` (Latinoamérica y el Caribe). 
+
+::: callout-tip
+Dentro del `gghighlight` para que respete los `facets` utiliza `calculate_per_facet = TRUE` y para eliminar la etiqueta `use_direct_label = FALSE`
+:::
+
+::: callout-tip
+Necesitas usar `plot_grid` para juntar el gráfico que sólo contiene el logo (en `imagenes`) con el gráfico que contiene la info de vacunas. 
+:::
+
+
+```{r}
+#| message: false
+#| echo: false
+#| fig-height: 18
+#| fig-width: 8
+unicef <- read_csv("datasets/vacuna_unicef_regional.csv")
+
+font_add_google("Manrope", "Manrope")
+
+plot1 <- ggplot(unicef) + 
+  geom_line(aes(x = year, y = coverage, color = region)) +
+  gghighlight(region == "LACR", 
+              calculate_per_facet = TRUE, 
+              use_direct_label = FALSE,
+              unhighlighted_params = list(colour = NULL,
+                                          alpha = 0.2)) +
+  facet_wrap(~vaccine, ncol = 2) +
+  labs(
+    x = "",
+    y = "",
+    title = "\nCobertura de vacunación\n",
+    caption = glue::glue(
+      "**Regiones:<br>**", 
+      "<span style='color:#2c525c;'>**LACR**</span> (Latinoamérica y el Caribe), ",
+      "<span style='color:#0a6569;'>**EAPR**</span> (Asia del este y Pacífico), ",
+      "<span style='color:#00786a;'>**ECAR**</span> (Europa y Asia central), ",
+      "<span style='color:#1b8a5e;'>**ESAR**</span> (África del este y del sur),<br>",
+      "<span style='color:#509947;'>**MENA**</span> (Medio Oriente y norte de África), ",
+      "<span style='color:#84a428;'>**ROSA**</span> (Asia del sur), ",
+      "<span style='color:#bfa900;'>**WCAR**</span> (África del oeste y central), ",
+      "<span style='color:black;'>**Global**</span> (Mundial),<br>",
+      "<span style='color:#ffa600;'>**Non-programme**</span> (Fuera del programa).")
+  ) +
+  theme_classic() +
+  theme(
+    legend.position  = "none",
+    plot.caption     = element_markdown(),
+    plot.title       = element_text(size = 35, family = "Manrope", hjust = 0.5),
+    strip.background = element_rect(fill = "#2c525c"),
+    strip.text       = element_text(color = "white", family = "Manrope"),
+    plot.background  = element_rect(fill = "#fffff8", color = NULL),
+    panel.background = element_rect(fill = "#fffff8"),
+    axis.text = element_text(family = "Manrope"),
+    axis.title = element_text(family = "Manrope")
+  ) +
+  scale_color_manual("Región",
+                     values = c("LACR" = "#2c525c", "EAPR" = "#0a6569",
+                                "ECAR" = "#00786a", "ESAR" = "#1b8a5e",
+                                "MENA" = "#509947", "ROSA" = "#84a428",
+                                "WCAR" = "#bfa900", "Non-programme" = "#ffa600",
+                                "Global" = "black"))
+
+img <- image_read_svg("imagenes/UNICEF_Logo.svg", width = 1000)
+
+plot_logo <- ggplot() + 
+  draw_image(img, x = 0, y= 0, scale=1) +
+  theme_void() + 
+  theme(
+    plot.background  = element_rect(fill = "#fffff8", color = "#fffff8"),
+    panel.background = element_rect(fill = "#fffff8", color = "#fffff8")
+  )
+
+panel2 <- plot_grid(
+  ggplot() + 
+    theme_void() + 
+    theme(
+      plot.background  = element_rect(fill = "#fffff8", color = "#fffff8"),
+      panel.background = element_rect(fill = "#fffff8", color = "#fffff8")
+    ), 
+  plot_logo, rel_widths = c(1, 0.5))
+
+plot_grid(plot1, panel2, ncol = 1, rel_heights = c(0.9, 0.1))
+```
+
+
+
+

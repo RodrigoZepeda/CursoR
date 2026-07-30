@@ -1,5 +1,27 @@
+/* Bloques de código: esquinas redondeadas y algo de aire.
+   Se usa una variable de Bootstrap para que el fondo respete el tema claro y
+   el oscuro en lugar de quedarse fijo en gris claro. */
 pre {
-  background-color: #F7F7F7;
   border-radius: 5px;
-  padding: 10px 10px 10px 10px;
+  padding: 10px;
+}
+
+pre:not(.sourceCode) {
+  background-color: var(--bs-tertiary-bg, #f7f7f7);
+}
+
+/* Las tablas de los ejercicios "a mano" son para copiarlas en el cuaderno,
+   así que sus celdas vacías necesitan ser visibles. */
+table th:empty,
+table td:empty {
+  min-width: 5rem;
+  height: 1.9rem;
+}
+
+/* Que las tablas y los bloques anchos hagan scroll dentro de su propio
+   contenedor en lugar de forzar scroll horizontal a toda la página. */
+.cell-output-display > table {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
 }

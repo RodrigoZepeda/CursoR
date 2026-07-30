@@ -1,0 +1,75 @@
+name: Publicar el libro
+
+# Publica el libro en GitHub Pages.
+#
+# Este workflow NO instala R, ni los paquetes, ni descarga las bases de datos.
+# Puede hacerlo porque los resultados de todos los bloques de código están
+# congelados en la carpeta _freeze/, que sí se versiona. Quarto lee de ahí y
+# sólo tiene que armar el HTML.
+#
+# La consecuencia práctica: cuando cambies el CÓDIGO de un capítulo tienes que
+# correr `quarto render` en tu computadora y commitear el _freeze/ actualizado.
+# Si no lo haces, este workflow va a fallar con "Cannot find Rscript" o similar,
+# que es justo lo que queremos (mejor que publicar resultados viejos en
+# silencio). Los cambios que sólo son de texto no requieren nada especial.
+
+on:
+  push:
+    branches: [master]
+    paths-ignore:
+      - 'README.md'
+      - '.gitignore'
+  workflow_dispatch:
+
+# Permisos que pide el despliegue a Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Si se acumulan varios pushes, deja correr el último y cancela los anteriores
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  construir:
+    name: Construir el libro
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: 1.10.18
+
+      - name: Verificar que exista el _freeze
+        run: |
+          if [ ! -d "_freeze" ]; then
+            echo "::error::No existe la carpeta _freeze/. Corre 'quarto render' localmente y commitea _freeze/ antes de publicar."
+            exit 1
+          fi
+          echo "Capítulos congelados encontrados:"
+          find _freeze -maxdepth 1 -mindepth 1 -type d -printf '  %f\n' | sort
+
+      - name: Renderizar el libro
+        run: quarto render --to html
+
+      - name: Preparar el artefacto de Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _book
+
+  publicar:
+    name: Publicar en GitHub Pages
+    needs: construir
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.despliegue.outputs.page_url }}
+    steps:
+      - name: Desplegar
+        id: despliegue
+        uses: actions/deploy-pages@v4

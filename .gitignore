@@ -3,3 +3,34 @@
 .RData
 .Ruserdata
 .DS_Store
+
+# --- Datos ---
+# Las bases del curso NO viven en el repositorio: pesan casi 1 GB y se
+# distribuyen por Dropbox. Ver la liga en index.qmd.
+# Los resultados ya calculados quedan guardados en _freeze/, así que GitHub
+# Actions puede publicar el libro sin necesitar estos archivos.
+datasets/
+
+# --- Salida de Quarto ---
+_book/
+.quarto/
+**/*.quarto_ipynb
+
+# _freeze/ SÍ se versiona a propósito: es lo que permite que CI publique el
+# libro sin instalar R, los paquetes ni descargar las bases.
+
+# --- Subproductos de los renders ---
+Example1.csv
+MisVariables.rda
+# Escritos por regresiones-2 al demostrar cómo exportar
+Diags.pdf
+Tabla.docx
+# Escritos por estadistica-descriptiva al demostrar cómo exportar
+MortalidadMiocardio.csv
+MortalidadMiocardio.rds
+
+# --- Restos del sistema anterior (knitr/rmarkdown por archivo) ---
+*_cache/
+*_files/
+
+/.quarto/
