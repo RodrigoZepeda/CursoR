@@ -1,4 +1,14 @@
-*.csv filter=lfs diff=lfs merge=lfs -text
-*.bin filter=lfs diff=lfs merge=lfs -text
-*.csv !text !filter !merge !diff
-*.bin !text !filter !merge !diff
+# Este repositorio ya NO usa Git LFS.
+#
+# Antes mandaba todos los *.csv a LFS, lo cual tenía sentido cuando las bases de
+# datos vivían aquí. Ahora que las bases se distribuyen por Dropbox, el único csv
+# que queda pesa 332 bytes, así que LFS sólo estorbaba: consumía cuota y llegó a
+# bloquear los push al agotarse.
+
+# Normaliza los finales de línea de los archivos de texto del curso.
+*.qmd   text
+*.R     text
+*.bib   text
+*.yml   text
+*.css   text
+*.md    text
