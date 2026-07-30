@@ -39,8 +39,10 @@ book:
     - instalacion.qmd
     - introduccion-a-r.qmd
     - ciclos.qmd
-    - graficas-ggplot2-1.qmd
-    - graficas-ggplot2-2.qmd
+    - file: graficas-ggplot2-1.qmd
+      text: "Gráficas con ggplot2 (1)"
+    - file: graficas-ggplot2-2.qmd
+      text: "Gráficas con ggplot2 (2)"
     - analisis-exploratorio-1.qmd
     # ejemplo-analisis-exploratorio.qmd está fuera del libro TEMPORALMENTE.
     # Descarga los datos de dengue de datosabiertos.salud.gob.mx y ese sitio
