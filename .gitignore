@@ -28,6 +28,8 @@ Tabla.docx
 # Escritos por estadistica-descriptiva al demostrar cómo exportar
 MortalidadMiocardio.csv
 MortalidadMiocardio.rds
+# Dispositivo gráfico que abren algunos paquetes al graficar
+Rplots.pdf
 # Descargados por ejemplo-analisis-exploratorio al correr
 dengue.zip
 diccionario_datos_dengue.zip
