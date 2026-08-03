@@ -57,6 +57,8 @@ book:
     - modelos.qmd
     - regresiones-1.qmd
     - regresiones-2.qmd
+    - file: series-de-tiempo-dengue.qmd
+      text: "Series de tiempo (dengue)"
     - cadenas-de-markov.qmd
     - file: ejemplo-reporte-ile.qmd
       text: "Ejemplo de reporte"

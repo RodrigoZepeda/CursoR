@@ -1,0 +1,891 @@
+---
+title: "Series de tiempo"
+subtitle: "Dengue en Puerto Rico: de la regresión lineal al ARIMA y al bsts"
+---
+
+::: {.callout-note appearance="simple"}
+## Resumen
+
+Usamos veinte años de casos semanales de dengue para entender por qué una regresión lineal no sirve para pronosticar series de tiempo. Descomponemos la estacionalidad con un escalograma, y vemos cómo el `ARIMA` y el `bsts` resuelven los dos problemas que la regresión lineal no puede: la **dependencia** entre observaciones y el **crecimiento de la incertidumbre**. Comparamos los tres con el `WIS`.
+:::
+
+```{r}
+#| message: false
+#| warning: false
+library(tidyverse)
+library(broom)        #para tidy()
+library(NobBS)        #trae los datos de dengue
+library(scoringutils) #evaluación de pronósticos
+library(forecast)     #ARIMA
+library(bsts)         #modelos estructurales bayesianos
+library(WaveletComp)  #escalograma
+```
+
+::: callout-warning
+## Dos detalles de instalación que te van a ahorrar un mal rato
+
+**El orden de las librerías importa aquí.** `scoringutils` y `forecast` definen
+los dos una función para imprimir pronósticos, y la que se carga al último gana.
+Si pones `scoringutils` después de `forecast`, los pronósticos del `ARIMA` dejan
+de imprimirse bien. Cárgalo **antes**, como arriba.
+
+**Y hay que apagar el paralelismo de `data.table`:**
+
+```{r}
+data.table::setDTthreads(1)
+```
+
+`scoringutils` usa `data.table` por dentro, y en algunas computadoras el
+paralelismo de `data.table` choca con el de los paquetes bayesianos (`bsts` trae
+su propio motor en C++) y **tumba la sesión de `R`** sin dar error. Ponerlo en un
+solo hilo lo resuelve y no lo vas a notar: aquí no hay nada tan pesado como para
+necesitar varios núcleos.
+:::
+
+::: callout-tip
+Este capítulo es la continuación natural de [Modelos](modelos.qmd) y de
+[Regresiones (parte 1)](regresiones-1.qmd). Aquí vas a ver el flujo de trabajo de
+diez pasos aplicado de principio a fin a un problema real.
+:::
+
+## Los datos
+
+Usaremos los datos de dengue de Puerto Rico que vienen dentro del paquete
+`NobBS` [@NobBS]. La ventaja de que vengan en un paquete es que **no dependen de
+que un sitio web siga vivo**: se instalan con `install.packages("NobBS")` y ya.
+
+```{r}
+data(denguedat, package = "NobBS")
+head(denguedat)
+```
+
+Nota que **no es una serie de tiempo todavía**: es una *lista de casos*, un
+renglón por persona enferma, con la semana en que empezaron los síntomas
+(`onset_week`) y la semana en que el caso se reportó (`report_week`).
+
+```{r}
+nrow(denguedat)
+```
+
+Para tener una serie de tiempo hay que **contar cuántos casos hubo por semana**:
+
+```{r}
+dengue <- denguedat %>%
+  count(onset_week, name = "casos") %>%
+  rename(semana = onset_week) %>%
+  arrange(semana)
+
+head(dengue)
+```
+
+### El retraso de reporte y por qué recortamos el final
+
+Los casos no se reportan el mismo día que la persona se enferma. Veamos cuánto
+tardan:
+
+```{r}
+retraso <- as.numeric(denguedat$report_week - denguedat$onset_week) / 7
+c(mediana = median(retraso), p95 = quantile(retraso, 0.95, names = FALSE))
+```
+
+::: callout-warning
+## Las últimas semanas *siempre* parecen tener menos casos
+
+La mitad de los casos se reportan en la misma semana o la siguiente, pero el 5%
+tarda 4 semanas o más. Eso significa que **las últimas semanas de cualquier base
+de vigilancia están incompletas**: no es que haya menos enfermos, es que sus
+casos todavía no llegan.
+
+Si no lo tomas en cuenta, vas a concluir que un brote está cediendo justo cuando
+más está creciendo. Éste es el error más peligroso de la vigilancia
+epidemiológica en tiempo real, y es tan importante que hay paquetes enteros
+dedicados a corregirlo (a eso se dedica `NobBS`: se llama *nowcasting*).
+
+Como aquí queremos modelar y no hacer *nowcasting*, simplemente **quitamos las
+últimas 6 semanas**, que son las que están claramente truncadas.
+:::
+
+```{r}
+dengue <- head(dengue, nrow(dengue) - 6)
+
+nrow(dengue)
+range(dengue$semana)
+```
+
+### Guardar los datos en `csv`
+
+Ya que la tenemos armada, guardemos la serie para no depender del paquete:
+
+```{r}
+#| eval: false
+write_csv(dengue, "datasets/dengue_puerto_rico_semanal.csv")
+```
+
+```{r}
+#| echo: false
+#| message: false
+if (dir.exists("datasets")) {
+  write_csv(dengue, "datasets/dengue_puerto_rico_semanal.csv")
+}
+```
+
+Y así se vería para volver a leerla después:
+
+```{r}
+#| eval: false
+dengue <- read_csv("datasets/dengue_puerto_rico_semanal.csv")
+```
+
+## Mirar la serie antes de modelar
+
+**Nunca** modeles sin graficar primero (es el paso 2 del flujo de trabajo).
+
+```{r}
+#| fig-cap: "Casos semanales de dengue en Puerto Rico, 1990-2010."
+ggplot(dengue) +
+  geom_line(aes(x = semana, y = casos), color = "#003f5c", linewidth = 0.4) +
+  labs(x = "", y = "Casos semanales",
+       title = "Dengue en Puerto Rico",
+       caption = "Fuente: datos denguedat del paquete NobBS") +
+  scale_y_continuous(labels = scales::label_comma()) +
+  theme_bw()
+```
+
+A ojo se ven dos cosas: hay **picos que se repiten todos los años** y hay
+**epidemias grandes cada varios años**. Vamos a separar esas dos señales.
+
+## Deconstruir la estacionalidad
+
+### El efecto de la semana del año
+
+La forma más directa: ¿en qué semanas del año hay más dengue?
+
+```{r}
+#| fig-cap: "Distribución de casos por semana epidemiológica, sobre los 20 años."
+dengue %>%
+  mutate(semana_anio = as.numeric(format(semana, "%V"))) %>%
+  ggplot() +
+  geom_boxplot(aes(x = semana_anio, y = casos, group = semana_anio),
+               fill = "#bc5090", alpha = 0.6, outlier.size = 0.5) +
+  labs(x = "Semana del año", y = "Casos",
+       title = "El dengue tiene una estación bien marcada") +
+  theme_bw()
+```
+
+El patrón es clarísimo: los casos suben en la segunda mitad del año. Esto es
+**estacionalidad**: una parte de la serie que se repite con periodo fijo.
+
+### Separar tendencia, estacionalidad y resto
+
+`STL` descompone la serie en tres pedazos que **suman** la serie original:
+
+```{r}
+#| fig-cap: "Descomposición STL: la serie es la suma de las tres partes de abajo."
+serie_ts <- ts(dengue$casos, frequency = 52,
+               start = c(1990, 1))
+
+descomp <- stl(serie_ts, s.window = "periodic")
+autoplot(descomp) +
+  labs(x = "Año", title = "Descomposición de la serie de dengue") +
+  theme_bw()
+```
+
+::: callout-note
+Fíjate en las escalas de cada panel: son distintas. La barra gris del lado
+derecho te dice el tamaño relativo de cada componente. Si la barra de un panel es
+grande, ese componente aporta **poco** a la serie total.
+:::
+
+### El escalograma
+
+El *boxplot* de arriba supone que el ciclo dura exactamente un año. ¿Y si hay
+otros ciclos? ¿Y si la estacionalidad **cambia con el tiempo**?
+
+Para eso sirve un **escalograma** (o *wavelet power spectrum*): en lugar de
+preguntar "¿qué tan fuerte es el ciclo anual?", pregunta **"¿qué ciclos hay, y en
+qué épocas?"**. El eje horizontal es el tiempo, el vertical es la duración del
+ciclo, y el color es qué tan fuerte está ese ciclo en ese momento.
+
+```{r}
+#| message: false
+#| results: hide
+onda <- analyze.wavelet(
+  data.frame(x = dengue$casos), "x",
+  loess.span  = 0,       #no quitar tendencia
+  dt          = 1,       #cada observación es 1 semana
+  dj          = 1/12,
+  lowerPeriod = 8,       #de 8 semanas...
+  upperPeriod = 512,     #...a ~10 años
+  make.pval   = TRUE,
+  n.sim       = 10,
+  verbose     = FALSE
+)
+```
+
+```{r}
+#| fig-cap: "Escalograma. El rojo marca los ciclos dominantes; la banda blanca es el ciclo anual."
+#| fig-width: 9
+#| fig-height: 5
+wt.image(onda,
+         main        = "¿Qué ciclos tiene el dengue y cuándo?",
+         periodlab   = "Periodo del ciclo (semanas)",
+         timelab     = "Semanas desde 1990",
+         legend.params = list(lab = "Potencia"))
+```
+
+¿Cuál es el ciclo dominante?
+
+```{r}
+tibble(periodo_semanas = onda$Period, potencia = onda$Power.avg) %>%
+  slice_max(potencia, n = 3) %>%
+  mutate(periodo_anios = periodo_semanas / 52)
+```
+
+::: callout-important
+## Qué nos dice el escalograma
+
+El periodo dominante está alrededor de las **51 semanas**, o sea **un año**. Eso
+confirma numéricamente lo que vimos en el *boxplot*.
+
+Pero el escalograma dice algo que el *boxplot* no puede: **la banda anual no es
+igual de intensa todo el tiempo**. Hay épocas donde el ciclo anual es muy fuerte y
+otras donde casi se apaga, y además se alcanzan a ver franjas en periodos más
+largos (de varios años), que son las epidemias grandes.
+
+Esto importa para modelar: un modelo que suponga que la estacionalidad es
+**siempre la misma** va a quedar corto. Guárdate esta idea, porque es justamente
+la diferencia entre el `ARIMA` que vamos a ajustar y el `bsts`.
+:::
+
+## Partir los datos
+
+Para poder evaluar honestamente (paso 7 del flujo de trabajo), apartamos el
+**último año** y no lo dejamos ver a ningún modelo:
+
+```{r}
+H <- 52  #vamos a pronosticar un año
+
+entrena <- head(dengue, nrow(dengue) - H)
+prueba  <- tail(dengue, H)
+
+#el tiempo como número, para la regresión lineal
+entrena$t <- seq_len(nrow(entrena))
+prueba$t  <- nrow(entrena) + seq_len(H)
+
+c(entrena = nrow(entrena), prueba = nrow(prueba))
+```
+
+## Primer intento: una regresión lineal
+
+Empecemos con lo más simple que conocemos (paso 2: el modelo más simple que
+podría servir). Una recta contra el tiempo:
+
+$$
+\text{casos}_t = \beta_0 + \beta_1 \cdot t + \varepsilon_t
+$$
+
+```{r}
+modelo_lm <- lm(casos ~ t, data = entrena)
+tidy(modelo_lm)
+```
+
+```{r}
+#| fig-cap: "Una recta ajustada a la serie de dengue."
+entrena %>%
+  mutate(ajustado = fitted(modelo_lm)) %>%
+  ggplot() +
+  geom_line(aes(x = semana, y = casos), color = "gray60", linewidth = 0.3) +
+  geom_line(aes(x = semana, y = ajustado), color = "#ff6361", linewidth = 1) +
+  labs(x = "", y = "Casos", title = "La recta no capta absolutamente nada") +
+  theme_bw()
+```
+
+La recta es una línea casi plana en medio de la nube. Pero el problema de fondo
+**no es que se vea fea**: son dos problemas más serios y menos obvios.
+
+### Problema 1: la dependencia
+
+La regresión lineal supone que los errores son **independientes** entre sí: que
+saber cuánto se equivocó el modelo esta semana **no te dice nada** sobre cuánto se
+va a equivocar la siguiente.
+
+En una serie de tiempo eso es falso y es fácil de comprobar. Veamos el residual de
+cada semana contra el de la semana anterior:
+
+```{r}
+#| fig-cap: "Cada residual contra el de la semana anterior. Si fueran independientes, esto sería una nube sin forma."
+res_lm <- residuals(modelo_lm)
+
+tibble(anterior = head(res_lm, -1), actual = tail(res_lm, -1)) %>%
+  ggplot(aes(x = anterior, y = actual)) +
+  geom_point(color = "#003f5c", alpha = 0.4, size = 0.8) +
+  geom_smooth(method = "lm", formula = "y ~ x", color = "#ff6361") +
+  labs(x = "Residual de la semana anterior", y = "Residual de esta semana",
+       title = "Los errores NO son independientes") +
+  theme_bw()
+```
+
+Es casi una recta perfecta. Podemos medirlo con la **autocorrelación**:
+
+```{r}
+#| fig-cap: "Función de autocorrelación (ACF) de los residuales. Las barras deberían quedar dentro de las líneas azules."
+acf(res_lm, main = "ACF de los residuales de la regresión lineal")
+```
+
+```{r}
+acf_lm <- acf(res_lm, plot = FALSE, lag.max = 3)$acf[2:4]
+round(acf_lm, 3)
+```
+
+::: callout-important
+## Ésta es la idea central de las series de tiempo
+
+La autocorrelación en el primer rezago es de **`r round(acf_lm[1], 2)`**. Es
+decir: si esta semana el modelo se quedó corto por 100 casos, la próxima semana se
+va a quedar corto por **unos `r round(acf_lm[1] * 100)` casos**.
+
+Eso es información valiosísima que la regresión lineal **está tirando a la
+basura**. Y no sólo la desperdicia: los errores estándar, los valores `p` y los
+intervalos que reporta están todos calculados suponiendo independencia, así que
+**están mal**.
+
+> Cuando los datos vienen ordenados en el tiempo, lo que pasó ayer te dice algo de
+> lo que va a pasar hoy. Un modelo que no usa eso, está incompleto.
+:::
+
+### Problema 2: la varianza no crece
+
+El segundo problema es más sutil y, para pronosticar, más grave. Pidámosle a la
+regresión que pronostique el año que apartamos:
+
+```{r}
+pred_lm <- predict(modelo_lm, newdata = prueba, se.fit = TRUE)
+
+#desviación de la predicción (incluye el error del modelo y el ruido)
+sd_lm <- sqrt(pred_lm$se.fit^2 + summary(modelo_lm)$sigma^2)
+
+#ancho del intervalo al 95%, en la primera y la última semana pronosticada
+ancho_lm <- 2 * qt(0.975, df = modelo_lm$df.residual) * sd_lm
+round(c(semana_1 = ancho_lm[1], semana_52 = ancho_lm[H]), 1)
+```
+
+::: callout-warning
+## El intervalo mide lo mismo dentro de una semana que dentro de un año
+
+Ése es el problema. La regresión lineal dice estar **igual de segura** de lo que
+va a pasar la semana que entra que de lo que va a pasar dentro de doce meses.
+
+Piénsalo con sentido común: ¿tú confiarías igual en un pronóstico de dengue a una
+semana que a un año? Claro que no. Pero el modelo sí, porque en una regresión
+lineal la incertidumbre depende de **qué tan lejos estás del promedio de las `x`**,
+no de **qué tan lejos estás en el futuro**.
+
+Para una regresión normal esto está bien: predecir el peso de una persona de 1.90 m
+no es "más al futuro" que predecir el de una de 1.70 m. Pero en una serie de
+tiempo, el futuro **sí** se vuelve más incierto conforme te alejas, y el modelo
+tiene que saberlo.
+:::
+
+## El `ARIMA`: modelar la dependencia
+
+Un `ARIMA` ataca justo el problema 1: en vez de suponer que los errores son
+independientes, **modela explícitamente** cómo cada observación depende de las
+anteriores. Su nombre son sus tres piezas:
+
+-   **AR** (*autorregresivo*): el valor de hoy depende de los valores pasados.
+-   **I** (*integrado*): en lugar de modelar la serie, se modelan sus **cambios**
+    (la diferencia entre una semana y la anterior). Es lo que le quita la
+    tendencia.
+-   **MA** (*medias móviles*): el valor de hoy depende de los **errores** pasados.
+
+Para la estacionalidad usaremos **términos de Fourier**, que son senos y cosenos
+con periodo de un año. Es la forma recomendada cuando hay muchas estaciones (52
+semanas son demasiadas para un `ARIMA` estacional clásico):
+
+```{r}
+serie_entrena <- ts(entrena$casos, frequency = 52)
+
+#K = 3 pares de senos y cosenos para la estacionalidad anual
+fourier_dentro <- fourier(serie_entrena, K = 3)
+fourier_fuera  <- fourier(serie_entrena, K = 3, h = H)
+
+modelo_arima <- auto.arima(serie_entrena, seasonal = FALSE, xreg = fourier_dentro)
+modelo_arima
+```
+
+¿Se arregló la dependencia? Veamos los residuales:
+
+```{r}
+#| fig-cap: "ACF de los residuales del ARIMA. Ahora sí caen dentro de las bandas."
+acf(residuals(modelo_arima), main = "ACF de los residuales del ARIMA")
+```
+
+```{r}
+acf(residuals(modelo_arima), plot = FALSE, lag.max = 3)$acf[2:4]
+```
+
+::: callout-tip
+## Esto es lo que significa que un modelo "esté bien"
+
+La autocorrelación pasó de **0.95** a prácticamente **cero**. Los residuales ya no
+tienen estructura: son ruido.
+
+Eso es exactamente lo que uno quiere. Si sobra estructura en los residuales,
+significa que **el modelo dejó información sin usar**. Cuando los residuales
+parecen ruido, ya le exprimiste a los datos lo que se podía.
+:::
+
+Y ahora el pronóstico:
+
+```{r}
+pron_arima <- forecast(modelo_arima, xreg = fourier_fuera, level = c(50, 80, 90, 95))
+
+#ancho del intervalo al 95% en la primera y la última semana
+ancho_arima <- c(pron_arima$upper[1, 4] - pron_arima$lower[1, 4],
+                 pron_arima$upper[H, 4] - pron_arima$lower[H, 4])
+round(ancho_arima, 1)
+```
+
+```{r}
+#| fig-cap: "Pronóstico del ARIMA. El abanico se abre conforme se aleja en el tiempo."
+autoplot(pron_arima) +
+  labs(x = "Semanas (en años de 52)", y = "Casos",
+       title = "Pronóstico ARIMA a un año") +
+  theme_bw()
+```
+
+::: callout-important
+## El ARIMA sí resuelve los dos problemas
+
+1.  **Dependencia**: la autocorrelación de los residuales se fue a cero.
+2.  **Varianza**: el intervalo pasa de medir ~`r round(ancho_arima[1])` casos en la
+    primera semana a ~`r round(ancho_arima[2])` en la semana 52. El modelo
+    **admite que sabe menos** conforme se aleja, que es justo lo que la regresión
+    lineal no hacía.
+
+Ese abanico que se abre es la firma visual de un modelo de series de tiempo bien
+planteado.
+:::
+
+## El `bsts`: estructura y honestidad bayesiana
+
+El `bsts` (*Bayesian Structural Time Series*) parte de otra idea: en vez de
+modelar la dependencia con rezagos, **arma la serie por pedazos** que tienen
+significado, y deja que cada pedazo **evolucione con el tiempo**:
+
+$$
+\text{casos}_t = \underbrace{\text{nivel}_t}_{\text{dónde está}} + \underbrace{\text{estacionalidad}_t}_{\text{en qué época del año}} + \text{ruido}_t
+$$
+
+La diferencia clave con el `ARIMA` es que aquí el nivel y la estacionalidad
+**cambian de una semana a otra**. Justo lo que vimos en el escalograma: que el
+ciclo anual no es igual de fuerte en todas las épocas.
+
+```{r}
+#| results: hide
+#| message: false
+#La semilla va ANTES de construir la estructura: esos comandos también usan
+#números aleatorios, así que si la pones después el resultado cambia entre
+#corridas. El argumento seed = de bsts fija además el muestreo interno.
+set.seed(97531)
+
+estructura <- AddLocalLevel(list(), entrena$casos)
+estructura <- AddSeasonal(estructura, entrena$casos, nseasons = 52)
+
+modelo_bsts <- bsts(entrena$casos,
+                    state.specification = estructura,
+                    niter = 2000,
+                    seed  = 97531,
+                    ping  = 0)
+```
+
+::: callout-note
+El `bsts` es bayesiano: en vez de un solo resultado, produce **mil versiones
+posibles** del modelo (eso es el `niter = 1000`). Las primeras iteraciones se
+descartan porque el algoritmo todavía se está acomodando; a eso se le llama
+*burn-in*.
+
+Por eso tarda más que el `ARIMA`: alrededor de un minuto y medio contra menos de
+un segundo.
+:::
+
+Podemos ver los componentes que estimó:
+
+```{r}
+#| fig-cap: "Los dos componentes que el bsts separó: el nivel y la estacionalidad."
+#| fig-height: 5
+plot(modelo_bsts, "components", burn = 200)
+```
+
+Y el pronóstico:
+
+```{r}
+pron_bsts <- predict(modelo_bsts, horizon = H, burn = 200)
+
+#ancho del intervalo al 95%
+q_bsts <- t(apply(pron_bsts$distribution, 2, quantile,
+                  probs = c(0.025, 0.975)))
+ancho_bsts <- c(q_bsts[1, 2] - q_bsts[1, 1], q_bsts[H, 2] - q_bsts[H, 1])
+round(ancho_bsts, 1)
+```
+
+::: callout-tip
+## Dos caminos distintos, conclusión parecida
+
+Su intervalo pasa de ~`r round(ancho_bsts[1])` casos a
+~`r round(ancho_bsts[2])` en un año: prácticamente **lo mismo** que el `ARIMA`
+(~`r round(ancho_arima[1])` y ~`r round(ancho_arima[2])`).
+
+Eso es tranquilizador, no aburrido. Son dos modelos con filosofías muy distintas
+—uno modela rezagos, el otro componentes que evolucionan— y llegan por separado a
+la misma conclusión sobre **cuánta incertidumbre hay**. Cuando dos métodos
+independientes coinciden, uno confía más en los dos.
+
+Lo que sigue es ver si esa incertidumbre estaba bien calibrada.
+:::
+
+::: callout-warning
+## Una advertencia sobre el `bsts` que te va a ahorrar horas
+
+Aquí usamos `AddLocalLevel`, que supone que el nivel de la serie **se mueve sin
+rumbo fijo**. Existe también `AddLocalLinearTrend`, que además le estima una
+*pendiente* que también se mueve.
+
+Suena mejor, pero para pronosticar a un año es una trampa: el modelo extrapola esa
+pendiente 52 semanas hacia adelante y los intervalos **explotan**. Probándolo con
+dos semillas distintas nos dio coberturas del 100% y del 81% para el mismo
+intervalo al 95%: o sea, el resultado dependía del azar y no de los datos.
+
+> Si tu modelo bayesiano cambia de conclusión al cambiar la semilla, el problema no
+> es la semilla: es que el modelo no está bien identificado con los datos que
+> tienes. Cámbialo por uno más simple.
+:::
+
+## ¿Cuál predice mejor? El `WIS`
+
+Ya tenemos tres pronósticos del mismo año. Necesitamos una forma justa de
+compararlos.
+
+::: callout-warning
+## Nota sobre el nombre
+
+La medida se llama **WIS**, de *Weighted Interval Score* (puntaje de intervalo
+ponderado). A veces se le dice "WIC" por confusión con los criterios de
+información tipo `AIC`, pero **no tiene ninguna relación con ellos**: el `AIC`
+compara qué tan bien un modelo *ajusta* los datos que ya vio, mientras que el
+`WIS` evalúa qué tan buenos son los *pronósticos* sobre datos que no vio.
+:::
+
+### Qué es el `WIS`
+
+Comparar pronósticos con el error promedio (por ejemplo, la diferencia entre lo
+predicho y lo observado) tiene un problema grave: **ignora la incertidumbre**. Un
+modelo que dice "van a ser 100 casos, seguro" y un modelo que dice "van a ser
+entre 20 y 300" pueden tener el mismo error en el centro, pero **no son igual de
+buenos**.
+
+El `WIS` evalúa **el intervalo completo**. Para un intervalo dado, cobra tres
+cosas:
+
+1.  **Qué tan ancho es** el intervalo. Los intervalos anchos son poco útiles, así
+    que pagan una multa por su ancho. Esto evita el truco de decir "entre 0 y un
+    millón" para nunca fallar.
+
+2.  **Qué tanto se quedó corto**: si lo observado cayó **arriba** del intervalo,
+    se cobra la distancia.
+
+3.  **Qué tanto se pasó**: si lo observado cayó **abajo** del intervalo, también
+    se cobra la distancia.
+
+Esto se calcula para varios intervalos a la vez (50%, 80%, 90%, 95%...) y se
+promedia. **Entre más chico el `WIS`, mejor**, igual que un error.
+
+::: callout-tip
+## Lo bonito del `WIS`: se descompone
+
+El `WIS` total se separa exactamente en esas tres partes, y esa descomposición te
+dice **por qué** un modelo es malo:
+
+-   Mucha **dispersión** (`dispersion`) → tus intervalos son demasiado anchos: el
+    modelo no se compromete.
+-   Mucha **subestimación** (`underprediction`) → los casos reales salieron por
+    arriba de tus intervalos: te quedaste corto.
+-   Mucha **sobreestimación** (`overprediction`) → predijiste más de lo que pasó.
+
+Un modelo puede tener buen `WIS` por ser preciso, o mal `WIS` por dos razones
+opuestas. La descomposición te dice cuál te tocó.
+:::
+
+### Preparar los pronósticos
+
+`scoringutils` necesita los pronósticos en formato largo: un renglón por modelo,
+por semana y por **cuantil**. Un cuantil de `0.025` es el piso del intervalo al
+95%, `0.5` es la mediana, y así.
+
+```{r}
+niveles <- c(0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.975)
+```
+
+De la **regresión lineal** los sacamos con la distribución `t`:
+
+```{r}
+q_lm <- sapply(niveles, function(q) {
+  pred_lm$fit + qt(q, df = modelo_lm$df.residual) * sd_lm
+})
+```
+
+Del **ARIMA**, los intervalos que ya calculamos:
+
+```{r}
+q_arima <- cbind(
+  pron_arima$lower[, 4], pron_arima$lower[, 3],
+  pron_arima$lower[, 2], pron_arima$lower[, 1],
+  pron_arima$mean,
+  pron_arima$upper[, 1], pron_arima$upper[, 2],
+  pron_arima$upper[, 3], pron_arima$upper[, 4]
+)
+```
+
+Y del **bsts**, directo de sus mil simulaciones:
+
+```{r}
+q_bsts_todos <- t(apply(pron_bsts$distribution, 2, quantile, probs = niveles))
+```
+
+Los juntamos:
+
+```{r}
+armar <- function(cuantiles, nombre) {
+  tibble(
+    modelo     = nombre,
+    semana     = rep(prueba$semana, times = length(niveles)),
+    observado  = rep(prueba$casos,  times = length(niveles)),
+    nivel      = rep(niveles, each = H),
+    prediccion = as.vector(cuantiles)
+  )
+}
+
+pronosticos <- bind_rows(
+  armar(q_lm,          "Regresion lineal"),
+  armar(q_arima,       "ARIMA"),
+  armar(q_bsts_todos,  "bsts")
+)
+
+head(pronosticos)
+```
+
+### Calcular el `WIS`
+
+```{r}
+#| message: false
+#| warning: false
+evaluacion <- pronosticos %>%
+  as_forecast_quantile(
+    forecast_unit  = c("modelo", "semana"),
+    observed       = "observado",
+    predicted      = "prediccion",
+    quantile_level = "nivel"
+  ) %>%
+  score() %>%
+  summarise_scores(by = "modelo")
+
+evaluacion %>%
+  select(modelo, wis, dispersion, underprediction, overprediction) %>%
+  arrange(wis)
+```
+
+::: callout-important
+## Cómo se lee esta tabla
+
+El **`bsts` gana** (el `WIS` más chico), seguido de cerca por el `ARIMA`, y la
+regresión lineal queda muy atrás. Fíjate en las distancias: entre `bsts` y `ARIMA`
+hay unos pocos puntos, mientras que de ahí a la regresión lineal hay un abismo.
+
+**La lección no es "usa `bsts`"**, es *"usa un modelo de series de tiempo"*. Los
+dos que sí modelan la dependencia terminan parecidos; el que no la modela pierde
+por mucho, sin importar cuál de los otros dos elijas.
+
+Y la descomposición dice **por qué** pierde:
+
+-   La regresión lineal tiene la **dispersión más baja** (los intervalos más
+    angostos de los tres) y a la vez la **subestimación más alta**. Traducido:
+    estuvo muy segura y muy equivocada. Es el peor escenario posible en salud
+    pública, porque un pronóstico angosto se lee como confiable.
+
+-   Los otros dos "pagan" un poco más de dispersión —sus intervalos son más
+    anchos— y a cambio se quedan **mucho** menos cortos. Ése es el intercambio que
+    el `WIS` mide: vale la pena admitir incertidumbre si eso te evita fallar feo.
+
+Nota que la sobreestimación es casi cero en los tres: **ninguno se pasó**. Todos se
+quedaron cortos, unos más que otros.
+:::
+
+### La prueba definitiva: la cobertura
+
+Hay una forma todavía más directa de ver quién decía la verdad. Un intervalo al
+50% debería contener el valor real **el 50% de las veces**. Uno al 90%, el 90%.
+Veamos:
+
+```{r}
+evaluacion %>%
+  select(modelo, interval_coverage_50, interval_coverage_90) %>%
+  arrange(desc(interval_coverage_90))
+```
+
+::: callout-warning
+## El orden se mantiene... pero los tres se quedan cortos
+
+La regresión lineal es otra vez la peor: sus intervalos al 50% atinaron sólo el
+**17%** de las veces y los del 90% atinaron el **58%**. Cuando decía "estoy 90%
+seguro", se equivocaba **cuatro de cada diez veces**.
+
+Pero mira los otros dos con cuidado, porque aquí viene lo incómodo: el `bsts`, que
+es el mejor, apenas llega a **40%** y **71%**. También se queda corto de lo que
+promete.
+
+**Ninguno de los tres modelos está bien calibrado.** Y eso no es un error de
+programación: es que el año que apartamos tuvo una epidemia más grande que casi
+todo lo que había en los veinte años previos. Ningún modelo que sólo mire el
+pasado de la serie podía anticiparla, porque **la información no estaba en la
+serie**: estaba en el clima, en el serotipo circulante, en la inmunidad de la
+población.
+:::
+
+::: callout-important
+## La conclusión honesta de este capítulo
+
+Es tentador terminar con "y entonces usa `bsts`". La conclusión de verdad es más
+útil y menos cómoda:
+
+1.  Modelar la dependencia **sí sirve**: bajó el `WIS` de 80 a ~52 y subió la
+    cobertura del 58% al 71%.
+2.  Aun así, **el mejor modelo sigue estando mal calibrado**. Si reportaras estos
+    intervalos como si fueran del 90%, estarías prometiendo de más.
+3.  La forma de saberlo **no fue mirar las gráficas**, que se ven bonitas en los
+    tres casos. Fue medir la cobertura contra datos que los modelos no vieron.
+
+> Un intervalo que no cubre lo que dice cubrir no es conservador ni cauteloso: es
+> **incorrecto**. Y si alguien planea camas de hospital con él, el error se paga en
+> la vida real.
+
+Ése es el paso 10 del [flujo de trabajo](modelos.qmd): reportar el resultado
+**junto con sus límites**. Aquí el límite es que estos modelos sirven para
+semanas, no para anticipar una epidemia a un año.
+:::
+
+### Verlo todo junto
+
+```{r}
+#| fig-cap: "Los tres pronósticos contra lo que realmente pasó."
+#| fig-height: 5
+bandas <- pronosticos %>%
+  filter(nivel %in% c(0.025, 0.5, 0.975)) %>%
+  mutate(cual = case_when(nivel == 0.025 ~ "bajo",
+                          nivel == 0.5   ~ "medio",
+                          TRUE           ~ "alto")) %>%
+  select(-nivel) %>%
+  pivot_wider(names_from = cual, values_from = prediccion)
+
+ggplot(bandas) +
+  geom_ribbon(aes(x = semana, ymin = bajo, ymax = alto),
+              fill = "#003f5c", alpha = 0.25) +
+  geom_line(aes(x = semana, y = medio), color = "#003f5c") +
+  geom_line(aes(x = semana, y = observado), color = "#ff6361", linewidth = 0.8) +
+  facet_wrap(~modelo, ncol = 1, scales = "free_y") +
+  labs(x = "", y = "Casos",
+       title = "Pronóstico a un año contra lo observado",
+       subtitle = "En rojo lo que pasó; en azul el pronóstico con su intervalo al 95%") +
+  theme_bw()
+```
+
+## Ejercicios
+
+### A mano
+
+1.  Antes de correr nada: si la autocorrelación de los residuales en el primer
+    rezago es `0.95`, y esta semana el modelo se quedó corto por **200** casos,
+    ¿por cuánto esperas que se quede corto la semana que entra? ¿Y dentro de dos
+    semanas, si el efecto se multiplica?
+
+2.  Dibuja en tu cuaderno cómo se vería el intervalo de pronóstico (el abanico) de
+    los tres modelos, uno junto a otro, a 52 semanas. Después compáralo con la
+    última gráfica del capítulo.
+
+3.  Un modelo dice "entre 0 y 1,000,000 de casos" todas las semanas. Nunca falla:
+    su cobertura al 95% sería del 100%. ¿Por qué el `WIS` **sí** lo castiga? ¿Cuál
+    de los tres componentes se le dispararía?
+
+### Encuentra el error
+
+```{r}
+#| eval: false
+#a) Queremos el ACF de los residuales del modelo lineal
+acf(modelo_lm)
+```
+
+```{r}
+#| eval: false
+#b) Queremos pronosticar 52 semanas con el ARIMA
+forecast(modelo_arima, h = 52)
+```
+
+```{r}
+#| eval: false
+#c) Queremos evaluar qué tan bueno fue el ajuste del ARIMA
+pron <- forecast(modelo_arima, xreg = fourier_fuera, h = 52)
+mean(abs(pron$mean - entrena$casos))
+```
+
+::: {.callout-note collapse="true"}
+### Respuestas
+
+a.  `acf` necesita un **vector de números**, no el objeto del modelo. Correcto:
+    `acf(residuals(modelo_lm))`.
+
+b.  El modelo se ajustó **con** variables externas (`xreg`, los términos de
+    Fourier), así que para pronosticar hay que darle los valores futuros de esas
+    variables. Correcto: `forecast(modelo_arima, xreg = fourier_fuera)`. Nota que
+    entonces ya no hace falta la `h`: el horizonte lo define cuántos renglones
+    tenga el `xreg`.
+
+c.  Dos errores. Uno técnico: compara el pronóstico contra `entrena`, que son los
+    datos con los que se **construyó** el modelo, en vez de contra `prueba`. Y uno
+    conceptual: evaluar un pronóstico contra los datos de entrenamiento **no es
+    evaluarlo**. Correcto: `mean(abs(pron$mean - prueba$casos))`.
+:::
+
+### Con apoyo de una IA
+
+1.  Pídele a una IA que te explique qué es un `ARIMA(0,1,1)` "como si nunca
+    hubiera visto una serie de tiempo". Contrasta su explicación con las tres
+    piezas (AR, I, MA) de este capítulo. ¿Explicó bien qué significa el `1` de en
+    medio?
+
+2.  Pásale la tabla de descomposición del `WIS` y pregúntale cuál modelo es mejor
+    **y por qué**. Verifica si menciona la cobertura por su cuenta. Si no lo hace,
+    es una omisión importante: pregúntale luego por qué la cobertura importa.
+
+3.  Pídele que te proponga un cuarto modelo para esta serie. Antes de correr nada,
+    revisa si su propuesta **puede producir casos negativos** (como nos pasó con el
+    `ARIMA` en el [capítulo de regresiones](regresiones-1.qmd)). Ése es el paso 3
+    del flujo de trabajo y casi ninguna IA lo hace sola.
+
+### Para practicar
+
+4.  Ajusta el `ARIMA` con `K = 1` y con `K = 6` términos de Fourier en lugar de
+    `K = 3`. ¿Cambia el `WIS`? ¿Qué representa cada `K` en términos de la forma de
+    la curva estacional?
+
+5.  Agrega un cuarto modelo a la comparación: un `ARIMA` **sin** los términos de
+    Fourier (es decir, sin estacionalidad). Calcula su `WIS` y su cobertura. ¿Cuánto
+    aportaba la estacionalidad?
+
+6.  Cambia el horizonte de `H = 52` a `H = 4` semanas y vuelve a evaluar los tres
+    modelos. ¿Se mantiene el mismo orden? Piensa por qué la regresión lineal es
+    *menos* mala en horizontes cortos.
+
+## Sistema
+
+```{r}
+sessioninfo::session_info()
+```
