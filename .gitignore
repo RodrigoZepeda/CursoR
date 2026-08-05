@@ -41,3 +41,9 @@ catalogos*/
 *_files/
 
 /.quarto/
+
+# --- Trabajo local que NO forma parte del libro ---
+# (estaba sin versionar antes de la migración; se deja fuera a propósito)
+regresion-geometria/
+__pycache__/
+*.pyc
