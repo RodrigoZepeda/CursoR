@@ -15,6 +15,7 @@ library(tidyverse)
 library(srvyr)
 library(kableExtra)
 library(survey)
+library(broom)  #para tidy() sobre los modelos
 ```
 
 Para los ejercicios usaremos al Encuesta Nacional de Salud y Nutrición 2021 (ENSANUT 2021) disponible en la siguiente liga: <https://ensanut.insp.mx/encuestas/ensanutcontinua2021/descargas.php>
@@ -580,6 +581,620 @@ En este caso, por ejemplo, nuestro valor $p < \alpha$ nos indica que [hay una as
 4.  Determine si hay una asociación entre IMC y entidad mediante una prueba ji cuadrada $\chi^2$.
 
 5.  Averigüe como utilizar `svyglm` para generar una regresión de peso contra altura con las covariables de sexo y edad. Como recomendación cheque el siguiente curso: <https://tidy-survey-r.github.io/tidy-survey-short-course/>
+
+## Modelos de regresión con diseño de encuesta
+
+Hasta aquí hemos calculado promedios, totales y medianas. Ahora vamos a ajustar
+**modelos**, que es lo que contesta preguntas del tipo *"¿cuánto sube la presión
+por cada año de edad, si mantenemos el IMC constante?"*.
+
+::: callout-important
+## La regla de oro: `svyglm`, nunca `glm`
+
+Si usaras `glm` con estos datos estarías tratando a la ENSANUT como si fuera una
+muestra aleatoria simple. Los coeficientes te saldrían parecidos, pero **los
+errores estándar estarían mal** (casi siempre demasiado chicos), y con ellos los
+valores `p` y los intervalos de confianza.
+
+`svyglm` usa el mismo `formula = y ~ x` de siempre; lo único que cambia es que en
+vez de `data =` recibe `design =`. Todo lo que aprendiste en el
+[capítulo de regresiones](regresiones-1.qmd) sigue aplicando.
+:::
+
+### Preparar la base analítica
+
+Vamos a juntar el cuestionario de adultos con el de antropometría y a construir
+las variables que necesitamos. La parte más importante de este bloque **no es la
+regresión: es la limpieza**.
+
+```{r}
+#| message: false
+library(svydiags)     #diagnósticos de regresión que respetan el diseño
+library(WeightedROC)  #curva ROC con ponderadores
+
+base_modelos <- antropometria %>%
+  left_join(salud_adultos, by = c("FOLIO_INT", "upm", "est_sel")) %>%
+  rename(ponde_f = ponde_f.x) %>%
+  mutate(
+    #Presión arterial: 999 es código de NO RESPUESTA, no una presión de 999
+    across(c(an27_01s, an27_02s, an27_03s, an27_01d, an27_02d, an27_03d),
+           ~ if_else(.x >= 900, NA_real_, as.numeric(.x))),
+
+    #Peso y talla: 222.2 también es código de no respuesta
+    peso  = if_else(an01_1 > 200, NA_real_, as.numeric(an01_1)),
+    talla = if_else(an04_1 > 200 | an04_1 < 100, NA_real_, as.numeric(an04_1)),
+
+    imc = peso / (talla / 100)^2,
+
+    #Se descarta la 1a toma de presión y se promedian la 2a y la 3a,
+    #que es la práctica estándar: la primera suele salir alta por el nervio
+    sistolica  = rowMeans(cbind(an27_02s, an27_03s), na.rm = TRUE),
+    diastolica = rowMeans(cbind(an27_02d, an27_03d), na.rm = TRUE),
+
+    #Conteo: ¿en cuántas de las 3 tomas salió la presión elevada?
+    tomas_altas = (an27_01s >= 140 | an27_01d >= 90) +
+                  (an27_02s >= 140 | an27_02d >= 90) +
+                  (an27_03s >= 140 | an27_03d >= 90),
+
+    diabetes = if_else(a0301 == 1, 1, 0),
+    sexo_f   = factor(if_else(sexo == 1, "Hombre", "Mujer")),
+    edad     = as.numeric(edad)
+  ) %>%
+  filter(edad >= 20, !is.na(ponde_f))
+```
+
+::: callout-warning
+## Los códigos de no respuesta arruinan silenciosamente tu modelo
+
+En la ENSANUT el `999` de presión arterial y el `222.2` de peso y talla **no son
+mediciones**: son la forma de decir "no se pudo medir". Si no los quitas, `R` los
+va a tratar como números reales y vas a estimar la presión de gente con `999`
+mmHg y el IMC de personas de `2.22` metros.
+
+Nadie te avisa. El modelo corre, da coeficientes, y están mal. Siempre grafica o
+saca el rango (`range`) de tus variables antes de modelar: un máximo sospechosamente
+redondo o repetido es la señal.
+:::
+
+Armamos el diseño como siempre:
+
+```{r}
+options(survey.lonely.psu = "adjust")
+
+diseno_modelos <- base_modelos %>%
+  as_survey_design(id = FOLIO_INT, strata = est_sel,
+                   psu = upm, weights = ponde_f, nest = TRUE)
+```
+
+### Regresión lineal: presión sistólica
+
+La pregunta: **¿cómo cambia la presión sistólica con la edad y el IMC?**
+
+```{r}
+modelo_lineal <- svyglm(sistolica ~ edad + imc + sexo_f,
+                        design = diseno_modelos)
+
+tidy(modelo_lineal, conf.int = TRUE)
+```
+
+::: callout-tip
+## Cómo se leen estos coeficientes
+
+-   **`edad`**: por cada año más, la presión sistólica sube en promedio
+    `r round(coef(modelo_lineal)["edad"], 2)` mmHg, manteniendo IMC y sexo
+    constantes. Sobre 40 años de diferencia, eso son unos
+    `r round(coef(modelo_lineal)["edad"] * 40)` mmHg: muchísimo.
+-   **`imc`**: por cada unidad de IMC, la presión sube
+    `r round(coef(modelo_lineal)["imc"], 2)` mmHg.
+-   **`sexo_fMujer`**: las mujeres tienen en promedio
+    `r abs(round(coef(modelo_lineal)["sexo_fMujer"], 1))` mmHg **menos** que los
+    hombres de la misma edad e IMC.
+
+Nota que `Hombre` no aparece: es la **categoría de referencia** (`R` toma la
+primera en orden alfabético). Todos los demás coeficientes se leen *contra* ella.
+:::
+
+#### Visualizar el modelo
+
+Un modelo con tres variables no se ve en una sola gráfica de puntos. Lo que se
+hace es **predecir** para valores que a uno le interesen y graficar eso:
+
+```{r}
+#| fig-cap: "Presión sistólica predicha por el modelo, con su intervalo de confianza al 95%."
+#Una malla de valores: edades de 20 a 90, con IMC fijo en tres niveles
+malla <- expand_grid(
+  edad   = seq(20, 90, by = 1),
+  imc    = c(22, 27, 32),           #normal, sobrepeso, obesidad
+  sexo_f = factor(c("Hombre", "Mujer"))
+)
+
+pred <- predict(modelo_lineal, newdata = malla, se.fit = TRUE)
+
+malla <- malla %>%
+  mutate(
+    ajuste = as.numeric(pred),
+    ee     = sqrt(attr(pred, "var")),
+    bajo   = ajuste - 1.96 * ee,
+    alto   = ajuste + 1.96 * ee,
+    imc_et = factor(imc, levels = c(22, 27, 32),
+                    labels = c("IMC 22 (normal)", "IMC 27 (sobrepeso)",
+                               "IMC 32 (obesidad)"))
+  )
+
+ggplot(malla, aes(x = edad, y = ajuste, color = imc_et, fill = imc_et)) +
+  geom_ribbon(aes(ymin = bajo, ymax = alto), alpha = 0.2, color = NA) +
+  geom_line(linewidth = 1) +
+  geom_hline(yintercept = 140, linetype = "dashed", color = "gray40") +
+  annotate("text", x = 26, y = 143, label = "Umbral de hipertensión",
+           color = "gray40", size = 3) +
+  facet_wrap(~sexo_f) +
+  labs(x = "Edad (años)", y = "Presión sistólica predicha (mmHg)",
+       color = "", fill = "",
+       title = "Presión sistólica según edad, IMC y sexo",
+       caption = "ENSANUT 2021. Estimación con diseño de encuesta.") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+::: callout-note
+Esta gráfica es mucho más informativa que la tabla de coeficientes, y es la que
+va en un informe. Se ve de inmediato que la edad pesa más que el IMC (las líneas
+suben mucho más de lo que se separan entre sí) y que los hombres arrancan más
+alto.
+:::
+
+### Regresión de Poisson: un conteo
+
+La regresión de Poisson se usa cuando el desenlace es un **conteo**: número de
+casos, de visitas, de eventos. Aquí usaremos cuántas de las tres tomas de presión
+salieron elevadas (`tomas_altas`, que va de 0 a 3).
+
+```{r}
+modelo_poisson <- svyglm(tomas_altas ~ edad + imc + sexo_f,
+                         design = diseno_modelos,
+                         family = quasipoisson())
+
+tidy(modelo_poisson, conf.int = TRUE)
+```
+
+En Poisson los coeficientes están en escala logarítmica, así que hay que
+exponenciarlos para interpretarlos. Al resultado se le llama **razón de tasas**
+(o *IRR*):
+
+```{r}
+exp(cbind(IRR = coef(modelo_poisson), confint(modelo_poisson))) %>%
+  round(3)
+```
+
+::: callout-tip
+## Cómo se lee una razón de tasas
+
+Un `IRR` de `r round(exp(coef(modelo_poisson)["edad"]), 3)` para la edad
+significa que por cada año más, el número esperado de tomas altas se multiplica
+por ese factor (o sea, sube alrededor de
+`r round((exp(coef(modelo_poisson)["edad"]) - 1) * 100, 1)`%).
+
+A diferencia de la regresión lineal, aquí el efecto es **multiplicativo**: no se
+suman casos, se multiplican.
+:::
+
+#### Verificar el supuesto de Poisson
+
+La distribución de Poisson supone algo muy fuerte: que **la varianza es igual a la
+media**. Casi nunca es cierto en datos reales, y hay que revisarlo.
+
+```{r}
+summary(modelo_poisson)$dispersion
+```
+
+::: callout-warning
+## Aquí hay sobredispersión
+
+El parámetro de dispersión salió alrededor de
+`r round(summary(modelo_poisson)$dispersion[1], 2)`, no de 1. Eso significa que
+los datos **varían casi el doble** de lo que la Poisson supone.
+
+Mira la distribución del conteo y vas a entender por qué:
+
+```{r}
+#| echo: false
+table(base_modelos$tomas_altas, useNA = "no")
+```
+
+No es una Poisson: es casi todo ceros con un montón de treses. La gente con
+presión alta la tiene alta en **las tres** tomas, no en una. Es un conteo
+"pegajoso".
+
+Por eso usamos `quasipoisson()` y no `poisson()`: la *quasi* estima ese parámetro
+de dispersión y **corrige los errores estándar**. Si hubiéramos usado
+`poisson()`, los intervalos habrían salido artificialmente angostos.
+
+> Regla práctica: en datos de salud pública, empieza siempre con `quasipoisson()`.
+> Si la dispersión sale cerca de 1, no perdiste nada.
+:::
+
+### Regresión logística: diabetes
+
+Cuando el desenlace es **sí/no** se usa la logística. Aquí: ¿tiene diagnóstico
+previo de diabetes?
+
+```{r}
+modelo_logistico <- svyglm(diabetes ~ edad + imc + sexo_f,
+                           design = diseno_modelos,
+                           family = quasibinomial())
+
+exp(cbind(OR = coef(modelo_logistico), confint(modelo_logistico))) %>%
+  round(3)
+```
+
+::: callout-tip
+Un `OR` (razón de momios) de `r round(exp(coef(modelo_logistico)["edad"]), 3)`
+para la edad significa que por cada año más, los momios de tener diabetes se
+multiplican por ese número. Como es mayor que 1, la edad aumenta el riesgo. Si el
+intervalo de confianza **no** incluye al 1, el efecto es distinguible de "nada".
+:::
+
+### El detalle que casi nadie enseña: `OR` no es lo mismo que riesgo
+
+Aquí viene algo que vale oro en salud pública. Podemos ajustar **el mismo modelo**
+con Poisson en lugar de logística. Cuando el desenlace es 0/1, eso estima la
+**razón de prevalencias** (`RP`) en vez de la razón de momios:
+
+```{r}
+modelo_rp <- svyglm(diabetes ~ edad + imc + sexo_f,
+                    design = diseno_modelos,
+                    family = quasipoisson())
+
+exp(cbind(RP = coef(modelo_rp), confint(modelo_rp))) %>%
+  round(3)
+```
+
+::: callout-important
+## Compara los dos resultados para `sexo`
+
+|                | Estimación |
+|:---------------|:-----------|
+| `OR` (logística) | `r round(exp(coef(modelo_logistico)["sexo_fMujer"]), 3)` |
+| `RP` (Poisson)   | `r round(exp(coef(modelo_rp)["sexo_fMujer"]), 3)` |
+
+El `OR` es **más grande** que la `RP`. No es un error: es una propiedad
+matemática. **El `OR` exagera el efecto cuando el desenlace es común**, y aquí la
+diabetes ronda el 13% de la población, que ya es bastante común.
+
+El problema es que casi todo el mundo lee un `OR` de
+`r round(exp(coef(modelo_logistico)["sexo_fMujer"]), 2)` como *"tienen
+`r round((exp(coef(modelo_logistico)["sexo_fMujer"]) - 1) * 100)`% más riesgo"*, y
+eso **es falso**. El número correcto para esa frase es la `RP`:
+`r round((exp(coef(modelo_rp)["sexo_fMujer"]) - 1) * 100)`%.
+
+> Regla: si el desenlace es raro (menos del 10%), `OR` y `RP` se parecen y da casi
+> igual. Si es común, **reporta razón de prevalencias**, que es la que la gente va
+> a interpretar bien de todos modos.
+
+A esto se le llama *regresión de Poisson modificada* y es de uso estándar en
+epidemiología. Con diseño de encuesta sale gratis, porque `svyglm` ya calcula los
+errores estándar de forma robusta.
+:::
+
+## Cómo verificar tu regresión (más allá de los residuales)
+
+En el [capítulo de regresiones](regresiones-1.qmd) revisamos el modelo con
+gráficas de residuales. Eso sigue sirviendo, pero tiene dos límites: es subjetivo
+("¿se ve con patrón o no?") y **las funciones normales de diagnóstico ignoran el
+diseño de muestreo**.
+
+Aquí van cinco herramientas que sí respetan el diseño.
+
+### 1. Comparar modelos con el `AIC`
+
+Igual que en regresión normal, pero `AIC` sobre un `svyglm` usa la versión
+corregida por diseño:
+
+```{r}
+modelo_solo_edad <- svyglm(sistolica ~ edad, design = diseno_modelos)
+
+rbind(
+  "Sólo edad"          = AIC(modelo_solo_edad),
+  "Edad + IMC + sexo"  = AIC(modelo_lineal)
+) %>% round(1)
+```
+
+Entre más chico, mejor. La columna `eff.p` es el **número efectivo de
+parámetros**: con diseño complejo no es simplemente cuántas variables metiste.
+
+### 2. Prueba de Wald para un término (`regTermTest`)
+
+¿La variable `imc` aporta algo, más allá de lo que ya explica la edad?
+
+```{r}
+regTermTest(modelo_lineal, ~imc)
+```
+
+::: callout-note
+`regTermTest` es especialmente útil para variables **categóricas con varios
+niveles**, donde no basta mirar el valor `p` de cada categoría por separado: te da
+una sola prueba para "¿esta variable, en conjunto, aporta?".
+:::
+
+### 3. Comparar modelos anidados con `anova`
+
+```{r}
+anova(modelo_solo_edad, modelo_lineal)
+```
+
+Ésta es la versión **Rao-Scott** de la prueba de razón de verosimilitudes, que es
+la que corresponde cuando hay diseño de encuesta. La versión normal de `anova`
+daría un resultado equivocado.
+
+### 4. Multicolinealidad con diseño: `svyvif`
+
+El `VIF` que vimos en el capítulo de regresiones no toma en cuenta el diseño. El
+paquete `svydiags` tiene la versión que sí:
+
+```{r}
+X_modelo <- model.matrix(modelo_lineal)[, -1, drop = FALSE]
+filas_usadas <- as.integer(rownames(modelo_lineal$model))
+pesos <- weights(diseno_modelos, "sampling")[filas_usadas]
+
+vif_diseno <- svyvif(mobj = modelo_lineal, X = X_modelo, w = pesos)
+
+#La función devuelve muchas cosas; nos quedamos con el VIF de diseño
+setNames(round(unlist(vif_diseno$`Intercept adjusted`$svy.vif.m), 3),
+         colnames(X_modelo))
+```
+
+Con valores tan cerca de 1 no hay problema de colinealidad: edad, IMC y sexo
+aportan información distinta.
+
+### 5. Observaciones influyentes: distancia de Cook con diseño
+
+```{r}
+cook <- svyCooksD(modelo_lineal)
+
+c(observaciones = length(cook),
+  maximo        = round(max(cook, na.rm = TRUE), 3),
+  por_encima_del_umbral = sum(cook > 4 / length(cook), na.rm = TRUE))
+```
+
+::: callout-warning
+Que haya observaciones influyentes **no significa que haya que borrarlas**. En una
+encuesta nacional, una persona con IMC de 60 es una persona real que representa a
+mucha gente. Lo que hay que hacer es:
+
+1.  Revisar que **no sea un error de captura** (¿un peso de 222 kg? ¿una talla de
+    50 cm en un adulto?).
+2.  Si el dato es válido, correr el modelo con y sin ella y **reportar si cambian
+    las conclusiones**.
+
+Borrar datos porque estorban al modelo es de las peores prácticas que existen.
+:::
+
+### 6. Para la logística: la curva ROC ponderada
+
+En un modelo logístico lo que importa no son los residuales sino **qué tan bien
+separa** a quienes tienen el desenlace de quienes no. Eso se mide con el área bajo
+la curva ROC (`AUC`), y hay que calcularla **con los ponderadores**:
+
+```{r}
+#| fig-cap: "Curva ROC ponderada del modelo logístico de diabetes."
+prob   <- as.numeric(predict(modelo_logistico, type = "response"))
+obs    <- as.numeric(modelo_logistico$y)
+filas  <- as.integer(rownames(modelo_logistico$model))
+w_roc  <- weights(diseno_modelos, "sampling")[filas]
+
+roc <- WeightedROC(prob, obs, weight = w_roc)
+auc <- WeightedAUC(roc)
+
+ggplot(roc, aes(x = FPR, y = TPR)) +
+  geom_line(color = "#003f5c", linewidth = 1) +
+  geom_abline(linetype = "dashed", color = "gray50") +
+  annotate("text", x = 0.6, y = 0.2,
+           label = paste0("AUC = ", round(auc, 3)), size = 5) +
+  labs(x = "1 - Especificidad", y = "Sensibilidad",
+       title = "¿Qué tan bien distingue el modelo quién tiene diabetes?") +
+  theme_bw()
+```
+
+::: callout-tip
+## Cómo se lee el `AUC`
+
+Es la probabilidad de que, tomando al azar una persona con diabetes y una sin
+ella, el modelo le dé mayor probabilidad a la que sí la tiene.
+
+| `AUC`      | Interpretación                     |
+|:-----------|:-----------------------------------|
+| 0.5        | El modelo no sirve (es una moneda) |
+| 0.7 – 0.8  | Aceptable                          |
+| 0.8 – 0.9  | Bueno                              |
+| \> 0.9     | Excelente (o hiciste trampa)       |
+
+El nuestro da `r round(auc, 3)`, que está bien para un modelo con sólo tres
+variables. La línea punteada es el modelo que adivina al azar: entre más lejos
+esté tu curva de esa línea, mejor.
+:::
+
+## Bootstrap: cuando no existe la función `survey` que necesitas
+
+`srvyr` tiene `survey_mean`, `survey_total`, `survey_median` y `survey_quantile`.
+¿Pero qué haces cuando necesitas un indicador que **no tiene función**?
+
+La respuesta es el **bootstrap con réplicas**. La idea es sencilla:
+
+1.  `R` genera muchos juegos de ponderadores alternativos (las *réplicas*), cada
+    uno simulando "qué tal si la muestra hubiera salido un poco distinta".
+2.  Tú calculas tu indicador **una vez con cada juego de ponderadores**, con un
+    `for`.
+3.  La **desviación estándar** de todos esos valores es tu error estándar, y los
+    percentiles 2.5 y 97.5 son tu intervalo de confianza.
+
+Lo bonito es que funciona para **cualquier** indicador, por raro que sea.
+
+### Crear las réplicas
+
+```{r}
+#| cache: true
+set.seed(2026)
+
+base_imc <- base_modelos %>% filter(!is.na(imc))
+
+diseno_imc <- base_imc %>%
+  as_survey_design(id = FOLIO_INT, strata = est_sel,
+                   psu = upm, weights = ponde_f, nest = TRUE)
+
+#type = "subbootstrap" es el bootstrap reescalado de Rao-Wu, apropiado
+#para muestreo sin reemplazo dentro de estratos
+diseno_boot <- as.svrepdesign(diseno_imc, type = "subbootstrap",
+                              replicates = 200)
+
+#Matriz de ponderadores: una columna por réplica
+W <- weights(diseno_boot, "analysis")
+dim(W)
+```
+
+Cada columna de `W` son los ponderadores de una muestra bootstrap distinta.
+
+### Definir los indicadores a mano
+
+Necesitamos versiones **ponderadas** de lo que queremos calcular:
+
+```{r}
+#Mediana ponderada: el valor donde el peso acumulado llega al 50%
+mediana_ponderada <- function(x, w) {
+  orden <- order(x)
+  x <- x[orden]; w <- w[orden]
+  x[which(cumsum(w) / sum(w) >= 0.5)[1]]
+}
+
+#Coeficiente de Gini: qué tan desigual está repartida una variable.
+#NO existe survey_gini(), por eso lo hacemos a mano.
+gini_ponderado <- function(x, w) {
+  orden <- order(x)
+  x <- x[orden]; w <- w[orden]
+  p  <- cumsum(w) / sum(w)
+  cw <- cumsum(w * x) / sum(w * x)
+  sum(cw[-1] * p[-length(p)]) - sum(cw[-length(cw)] * p[-1])
+}
+```
+
+### El `for` sobre las réplicas
+
+```{r}
+#| cache: true
+n_rep <- ncol(W)
+
+medianas <- numeric(n_rep)
+ginis    <- numeric(n_rep)
+
+for (i in 1:n_rep) {
+  medianas[i] <- mediana_ponderada(base_imc$imc, W[, i])
+  ginis[i]    <- gini_ponderado(base_imc$imc, W[, i])
+}
+```
+
+Y ya con eso tenemos todo:
+
+```{r}
+w_original <- weights(diseno_boot, "sampling")
+
+resultados_boot <- tibble(
+  Indicador  = c("Mediana de IMC", "Gini del IMC"),
+  Estimacion = c(mediana_ponderada(base_imc$imc, w_original),
+                 gini_ponderado(base_imc$imc, w_original)),
+  EE         = c(sd(medianas), sd(ginis)),
+  IC_bajo    = c(quantile(medianas, 0.025), quantile(ginis, 0.025)),
+  IC_alto    = c(quantile(medianas, 0.975), quantile(ginis, 0.975))
+)
+
+resultados_boot
+```
+
+### ¿Cómo sabemos que esto está bien hecho?
+
+Ésta es la parte importante y la que casi siempre se salta. **Antes** de confiar
+en el bootstrap para el Gini —que no tiene función directa— hay que comprobarlo
+en algo que **sí** tiene función directa. Por eso incluimos la mediana:
+
+```{r}
+diseno_imc %>%
+  summarise(mediana = survey_median(imc, na.rm = TRUE, vartype = "se"))
+```
+
+::: callout-important
+## La comprobación
+
+Compara los dos resultados de la mediana: la estimación puntual y el error
+estándar del bootstrap salen prácticamente **idénticos** a los que da
+`survey_median` por su cuenta.
+
+Eso es lo que nos autoriza a creerle al Gini. No lo verificamos porque el número
+se vea razonable, sino porque **el método reprodujo un resultado que ya
+conocíamos**.
+
+> Es la misma lógica del paso 6 del [flujo de trabajo](modelos.qmd): antes de usar
+> un procedimiento para lo que no sabes, comprueba que recupera lo que sí sabes.
+:::
+
+::: callout-tip
+## Otros indicadores que puedes calcular igual
+
+El mismo `for` sirve, cambiando nada más la función, para: la **diferencia de
+medianas** entre dos grupos, la razón **P90/P10**, el **índice de concentración**,
+la **asimetría**, o cualquier indicador que se te ocurra. Ninguno tiene función
+directa en `srvyr` y todos se resuelven con estas quince líneas.
+
+Nota sobre el número de réplicas: 200 alcanza para el error estándar, pero si vas
+a reportar **intervalos de confianza** en una publicación, sube a 500 o 1,000. Lo
+único que cuesta es tiempo de cómputo.
+:::
+
+## Ejercicios de modelos y bootstrap
+
+### Modelos
+
+1.  Ajusta la regresión lineal de presión **diastólica** (`diastolica`) contra
+    edad, IMC y sexo. ¿El efecto de la edad es igual de fuerte que en la
+    sistólica? Grafica las predicciones como lo hicimos arriba.
+
+2.  Al modelo logístico de diabetes agrégale la entidad (`desc_ent`) como
+    variable. Usa `regTermTest` para decidir si aporta **en conjunto**, en lugar
+    de mirar los 31 valores `p` por separado.
+
+3.  Ajusta el modelo lineal de presión sistólica **sin** el diseño de encuesta
+    (con `glm` y `data = base_modelos`) y compara los errores estándar contra los
+    de `svyglm`. ¿Cuáles son más chicos? ¿Qué implicaría eso para tus valores `p`?
+
+4.  Calcula el `AUC` del modelo logístico **quitando** el IMC. ¿Cuánto se pierde?
+    ¿Vale la pena la variable?
+
+### A mano
+
+5.  Con los coeficientes del modelo lineal, calcula **con calculadora** la presión
+    sistólica predicha para una mujer de 55 años con IMC de 30. Después
+    compruébalo con `predict`.
+
+6.  Si el `OR` de una exposición es 2.0 y el desenlace ocurre en el 40% de la
+    población, ¿la razón de prevalencias será mayor, menor o igual a 2.0? Explica
+    por qué sin hacer cuentas.
+
+### Bootstrap
+
+7.  Modifica el `for` para calcular la **diferencia entre la mediana de IMC de
+    mujeres y la de hombres**, con su intervalo de confianza. Pista: tu función
+    tiene que recibir también el vector de sexo.
+
+8.  Repite el bootstrap del Gini con `replicates = 50` y con `replicates = 1000`.
+    ¿Cuánto cambia la estimación puntual? ¿Y el intervalo? ¿Qué te dice eso sobre
+    cuántas réplicas necesitas?
+
+### Con apoyo de una IA
+
+9.  Pídele a una IA que te explique la diferencia entre `OR` y `RP`. Verifica si
+    menciona que depende de qué tan común sea el desenlace. Si no lo menciona, es
+    una omisión grave: pregúntale directamente por ese punto.
+
+10. Pásale el código del `for` del bootstrap y pídele que lo reescriba sin ciclo
+    (vectorizado con `apply`). Comprueba que **da exactamente el mismo resultado**
+    antes de quedarte con su versión.
 
 ## Sistema
 
