@@ -22,7 +22,7 @@ Si aún no cuentas con una instalación de `R` y `RStudio` ve a la [sección de 
 `R` sirve como calculadora para las operaciones usuales. En él puedes hacer sumas,
 
 ```{r}
-#Esto es una suma en R
+# Esto es una suma en R
 12 + 31
 ```
 
@@ -35,34 +35,34 @@ Si aún no cuentas con una instalación de `R` y `RStudio` ve a la [sección de 
 #| message: false
 #| out-width: "150px"
 #| fig-cap:  "Ada Lovelace (1815-1852), la primera en diseñar un algoritmo computacional ¡y sin tener computadoras!"
-knitr::include_graphics('images/ada_lovelace.jpg')
+knitr::include_graphics("images/ada_lovelace.jpg")
 ```
 
 restas,
 
 ```{r}
-#Esto es una resta en R
+# Esto es una resta en R
 3 - 4
 ```
 
 multiplicaciones,
 
 ```{r}
-#Esto es una multiplicación en R
-7*8
+# Esto es una multiplicación en R
+7 * 8
 ```
 
 divisiones,
 
 ```{r}
-#Esto es una división en R
-4/2
+# Esto es una división en R
+4 / 2
 ```
 
 sacar logaritmos naturales $\ln$,
 
 ```{r}
-#Para sacar logaritmo usas el comando log
+# Para sacar logaritmo usas el comando log
 log(100)
 ```
 
@@ -71,35 +71,35 @@ o bien logaritmos en cualquier base,[^1]
 [^1]: Recuerda que un logaritmo base $a$ te dice a qué potencia $b$ tuve que elevar $a$ para llegar a $b$. Por ejemplo $\log_{10}(100) = 2$ te dice que para llegar al $100$ tuviste que hacer $10^2$.
 
 ```{r}
-#Puedes especificar la base del logaritmo con base 
+# Puedes especificar la base del logaritmo con base
 log(100, base = 10)
 ```
 
 también puedes elevar a una potencia (por ejemplo hacer $6^3$),
 
 ```{r}
-#Así se calculan potencias
+# Así se calculan potencias
 6^3
 ```
 
 calcular la exponencial $e$,
 
 ```{r}
-#Para exponenciales puedes usar exp
+# Para exponenciales puedes usar exp
 exp(1)
 ```
 
 o bien exponenciar cualquier variable $e^{-3}$,
 
 ```{r}
-#O bien exponenciales específicas, e^-3
+# O bien exponenciales específicas, e^-3
 exp(-3)
 ```
 
 también puedes usar el número $\pi$.
 
 ```{r}
-#Cálculo de pi
+# Cálculo de pi
 pi
 ```
 
@@ -127,20 +127,20 @@ Determina, sin evaluar, los resultados de los siguientes segmentos de código:
 
 ```{r}
 #| eval: false
-#Primer ejercicio 
+# Primer ejercicio
 (9 - 3)^2 * (2 - 1) - 6
 ```
 
 ```{r}
 #| eval: false
-#Segundo ejercicio 
+# Segundo ejercicio
 6 * 2 / (7 - 3) * 5
 ```
 
 ```{r}
 #| eval: false
-#Tercer ejercicio 
-2 * 3 ^ 2 * 2 / (5 - 4) * 1 / 10 
+# Tercer ejercicio
+2 * 3^2 * 2 / (5 - 4) * 1 / 10
 ```
 
 Evalúa para comprobar tus respuestas.
@@ -187,8 +187,8 @@ $$
 
 ```{r}
 #| echo: false
-eer <- 234/(234+39)
-cer <- 981/(981 + 1040)
+eer <- 234 / (234 + 39)
+cer <- 981 / (981 + 1040)
 cli::cli_alert_info("NNT = {round(1/abs(eer - cer), 2)}")
 ```
 
@@ -279,7 +279,7 @@ log 100
 
 ```{r}
 #| eval: false
-#d) Queremos el logaritmo base 10 de 1000
+# d) Queremos el logaritmo base 10 de 1000
 Log(1000, base = 10)
 ```
 
@@ -291,7 +291,7 @@ Log(1000, base = 10)
 
 ```{r}
 #| eval: false
-#f) Queremos elevar e a la potencia 2
+# f) Queremos elevar e a la potencia 2
 exp[2]
 ```
 
@@ -346,10 +346,10 @@ Todas las cifras de este ejercicio son **hipotéticas**, inventadas para practic
 
 ```{r}
 #| echo: false
-tasa  <- 1284 / 3540000 * 100000
-prev  <- 219 / 1730 * 100
+tasa <- 1284 / 3540000 * 100000
+prev <- 219 / 1730 * 100
 letal <- 17 / 1284 * 100
-or    <- (182 * 296) / (104 * 118)
+or <- (182 * 296) / (104 * 118)
 dosis <- 15 * 68 / 3
 cli::cli_alert_info("1. Tasa de incidencia = {round(tasa, 1)} por 100,000 habitantes")
 cli::cli_alert_info("2. Prevalencia = {round(prev, 1)}%")
@@ -357,7 +357,7 @@ cli::cli_alert_info("3. Letalidad = {round(letal, 2)}%")
 cli::cli_alert_info("4. OR = {round(or, 2)}")
 cli::cli_alert_info("5. Dosis por toma = {round(dosis, 1)} mg")
 
-#Limpiamos para no ensuciar el listado del ambiente que se muestra más adelante
+# Limpiamos para no ensuciar el listado del ambiente que se muestra más adelante
 rm(tasa, prev, letal, or, dosis)
 ```
 
@@ -389,7 +389,7 @@ No pegues en una IA datos personales identificables (nombres, CURP, expedientes,
 `R` es un programa orientado a objetos; esto quiere decir que `R` almacena la información en un conjunto de variables que pueden tener diferentes `clases` y opera con ellos según su clase. Por ejemplo, un conjunto de caracteres, entre comillas, es un `Character` (`R` lo piensa como texto)
 
 ```{r}
-#Un conjunto de caracteres es un char
+# Un conjunto de caracteres es un char
 "Hola"
 ```
 
@@ -398,8 +398,8 @@ Un número (por ejemplo `2` tiene clase `numeric`)[^2]. Hay que tener mucho cuid
 [^2]: Puede ser `float`, `int`, `double` pero no nos preocuparemos por eso.
 
 ```{r}
-#Código que sí funciona porque ambos son números
-2 + 4 
+# Código que sí funciona porque ambos son números
+2 + 4
 ```
 
 ```{r}
@@ -411,12 +411,12 @@ Un número (por ejemplo `2` tiene clase `numeric`)[^2]. Hay que tener mucho cuid
 #| message: false
 #| out-width: "150px"
 #| fig-cap:  "El algoritmo diseñado por Ada Lovelace."
-knitr::include_graphics('images/algorithm_lovelace.jpg')
+knitr::include_graphics("images/algorithm_lovelace.jpg")
 ```
 
 ```{r}
-#Código que no funciona porque uno es caracter
-2 + "4" 
+# Código que no funciona porque uno es caracter
+2 + "4"
 ```
 
 Si lo piensas, este último error ¡tiene todo el sentido! no puedes sumar un número a un texto. ¿O qué significaría `'Felices' * 4` ?
@@ -424,7 +424,7 @@ Si lo piensas, este último error ¡tiene todo el sentido! no puedes sumar un n�
 La magia de `R` comienza con que puedes almacenar valores en variables. Por ejemplo, podemos asignar un valor a una variable:
 
 ```{r}
-#Asignamos x = 10
+# Asignamos x = 10
 x <- 10
 ```
 
@@ -438,24 +438,24 @@ y = 6
 Nota que, cuando realizamos operaciones, la asignación es la última que se realiza:
 
 ```{r}
-#Aquí z = 106
+# Aquí z = 106
 z <- y + x^2
 ```
 
 Los valores que fueron asignados en las variables, `R` los recuerda y es posible calcular con ellos:
 
 ```{r}
-#Podemos realizar una suma
+# Podemos realizar una suma
 x + y
 
-#O bien podemos realizar una multiplicación
-3*y - x
+# O bien podemos realizar una multiplicación
+3 * y - x
 ```
 
 Podemos preguntarnos por el valor de las variables numéricas mediante los operadores `==` (sí, son dos iguales), `!=` (que es un $\neq$) `>`, `>=`, `<=` y `<`:
 
 ```{r}
-#Podemos preguntarnos si x vale 4
+# Podemos preguntarnos si x vale 4
 x == 4
 ```
 
@@ -472,35 +472,35 @@ x
 Podemos preguntarnos por diferencia:
 
 ```{r}
-x != 4 
+x != 4
 ```
 
 Así como por mayores, menores incluyendo posibles igualdades (*i.e.* los casos $\geq$ y $\leq$)
 
 ```{r}
-#Nos preguntamos si x > y
+# Nos preguntamos si x > y
 x > y
 
-#Nos preguntamos si x >= 10
+# Nos preguntamos si x >= 10
 x >= 10
 
-#Nos preguntamos si y < 6
+# Nos preguntamos si y < 6
 y < 6
 
-#O bien si y <= 6
+# O bien si y <= 6
 y <= 6
 ```
 
 En todos los casos los resultados han sido `TRUE` ó `FALSE`. La clase de variables que toma valores `TRUE` ó `FALSE` se conoce como booleana. Hay que tener mucho cuidado con ellas porque, puedes acabar con resultados muy extraños:
 
 ```{r}
-#MALAS PRÁCTICAS, NO HAGAS ESTO
-#Cuando lo usas como número TRUE vale 1
+# MALAS PRÁCTICAS, NO HAGAS ESTO
+# Cuando lo usas como número TRUE vale 1
 100 + TRUE
 
-#MALAS PRÁCTICAS, NO HAGAS ESTO
-#Cuando lo usas como número FALSE vale 0
-6*FALSE
+# MALAS PRÁCTICAS, NO HAGAS ESTO
+# Cuando lo usas como número FALSE vale 0
+6 * FALSE
 ```
 
 ::: callout-warning
@@ -510,10 +510,10 @@ En todos los casos los resultados han sido `TRUE` ó `FALSE`. La clase de variab
 Finalmente, nota que es posible reescribir una variable y cambiar su valor:
 
 ```{r}
-#Aquí x vale 10, como antes
+# Aquí x vale 10, como antes
 x
 
-#Aquí cambianos el valor de x y valdrá 0.5
+# Aquí cambianos el valor de x y valdrá 0.5
 x <- 0.5
 x
 ```
@@ -525,21 +525,21 @@ Determina el valor que imprime `R` en cada caso, sin que corras los siguientes p
 #### Ejercicios `R BÁSICO`
 
 ```{r, eval = FALSE}
-#Primer ejercicio
+# Primer ejercicio
 x <- 100
 y <- 3
 x > y
 ```
 
 ```{r, eval = FALSE}
-#Segundo ejercicio
+# Segundo ejercicio
 z <- (4 - 2)^3
 z <- z + z + z
 z
 ```
 
 ```{r, eval = FALSE}
-#Tercer ejercicio
+# Tercer ejercicio
 x <- 3
 y <- 2
 z <- x * y
@@ -549,20 +549,20 @@ z
 ```
 
 ```{r, eval = FALSE}
-#Cuarto ejercicio
+# Cuarto ejercicio
 variable1 <- 1000
 variable2 <- 100
-variable3 <- variable1/variable2 <= 10
+variable3 <- variable1 / variable2 <= 10
 variable3
 ```
 
 ```{r, eval = FALSE}
-#Quinto ejercicio
+# Quinto ejercicio
 "2" - 2
 ```
 
 ```{r, eval = FALSE}
-#Sexto ejercicio
+# Sexto ejercicio
 (0.1 + 0.1 + 0.1) == 0.3
 ```
 
@@ -571,7 +571,7 @@ variable3
 Determina, sin correr el programa, qué regresa la consola en este caso
 
 ```{r, eval = FALSE}
-x <- 2 
+x <- 2
 x <- 5 + x -> y -> x
 x <- x^2
 x
@@ -579,7 +579,7 @@ x
 
 ```{r, eval = FALSE}
 x <- TRUE
-if (x > FALSE){
+if (x > FALSE) {
   x <- x^(FALSE)^(TRUE)
 } else {
   x <- x^(FALSE)^(TRUE)
@@ -599,11 +599,11 @@ La computadora ejecuta tu programa **de arriba hacia abajo, un renglón a la vez
 
 ```{r}
 #| eval: false
-peso   <- 70      #renglón 1
-altura <- 1.75    #renglón 2
-imc    <- peso / altura^2   #renglón 3
-peso   <- 80      #renglón 4
-imc               #renglón 5
+peso <- 70 # renglón 1
+altura <- 1.75 # renglón 2
+imc <- peso / altura^2 # renglón 3
+peso <- 80 # renglón 4
+imc # renglón 5
 ```
 
 | Después del renglón | `peso` | `altura` | `imc` |
@@ -619,11 +619,11 @@ Ahora haz lo mismo con este otro, que es el mismo error pero disfrazado:
 
 ```{r}
 #| eval: false
-casos_2025    <- 400
-casos_2026    <- 500
-incremento    <- casos_2026 - casos_2025
-casos_2026    <- 600
-porcentaje    <- incremento / casos_2025 * 100
+casos_2025 <- 400
+casos_2026 <- 500
+incremento <- casos_2026 - casos_2025
+casos_2026 <- 600
+porcentaje <- incremento / casos_2025 * 100
 porcentaje
 ```
 
@@ -785,16 +785,16 @@ peso <- 70 kg
 
 ```{r}
 #| eval: false
-#d) Queremos asignarle a altura el valor 1.70
-altura < - 1.70
+# d) Queremos asignarle a altura el valor 1.70
+altura < -1.70
 ```
 
 ```{r}
 #| eval: false
-#e) Queremos calcular el índice de masa corporal
-peso   <- 70
+# e) Queremos calcular el índice de masa corporal
+peso <- 70
 altura <- 1.70
-IMC    <- peso / Altura^2
+IMC <- peso / Altura^2
 ```
 
 ```{r}
@@ -830,10 +830,10 @@ f.  Un solo `=` **asigna** (le cambia el valor a `edad` y lo deja en 18); para *
 Si hiciste el penúltimo ejercicio (el cual, obviamente hiciste y comprobaste con la consola) podrás haber notado una trampa. Analicemos qué ocurre; quizá hicimos mal la suma
 
 ```{r}
-#Veamos si este lado está mal
+# Veamos si este lado está mal
 (0.1 + 0.1 + 0.1)
 
-#O si éste es el que tiene la trampa
+# O si éste es el que tiene la trampa
 0.3
 ```
 
@@ -848,13 +848,13 @@ Aparentemente no hay nada malo ¿qué rayos le pasa a `R`? La respuesta está [e
 #| message: false
 #| out-width: "150px"
 #| fig-cap:  "Réplica de la Z3, la primer computadora con punto flotante (1941)."
-knitr::include_graphics('images/Z3_Deutsches_Museum.jpeg')
+knitr::include_graphics("images/Z3_Deutsches_Museum.jpeg")
 ```
 
 ```{r}
-#Veamos qué pasa con la suma
-options(digits = 22) #Cambiamos dígitos
-(0.1 + 0.1 + 0.1)    #Sumamos
+# Veamos qué pasa con la suma
+options(digits = 22) # Cambiamos dígitos
+(0.1 + 0.1 + 0.1) # Sumamos
 ```
 
 ::: callout-warning
@@ -864,16 +864,16 @@ El comando `options(digits = 22)` especifica que `R` debe imprimir en la consola
 ¡[Ahí está el detalle](https://www.youtube.com/watch?v=1jaCpeXg-gg)! `R` no sabe sumar. En general, ningún programa de computadora sabe hacerlo. Veamos otros ejemplos:
 
 ```{r}
-4.1 - 0.1 #Debería dar 4
-3/10      #Debería ser 0.3
-log(10^(12345), base = 10) #Debería dar 12345
+4.1 - 0.1 # Debería dar 4
+3 / 10 # Debería ser 0.3
+log(10^(12345), base = 10) # Debería dar 12345
 ```
 
 El problema está en cómo las computadoras representan los números. Ellas escriben los números en binario. Por ejemplo, 230 lo representan como `r DescTools::DecToBin(230)` mientras que el 7 es: `r DescTools::DecToBin(7)`. El problema de las computadoras radica en que éstas tienen una memoria finita por lo que números muy grandes como: $124765731467098372654176$ la computadora hace lo mejor por representarlos eligiendo el más cercano:
 
 ```{r}
-#Nota la diferencia entre lo que le decimos a R
-#y lo que resulta
+# Nota la diferencia entre lo que le decimos a R
+# y lo que resulta
 x <- 124765731467098372654176
 x
 ```
@@ -885,7 +885,7 @@ Un error de punto flotante en la vida real ocasionó en los años noventa, [la e
 No olvides cambiar la cantidad de dígitos que deseas que imprima `R` en su consola de vuelta:
 
 ```{r}
-options(digits = 7) #Cambiamos dígitos
+options(digits = 7) # Cambiamos dígitos
 ```
 
 El mismo problema ocurre con números decimales cuya representación binaria es periódica; por ejemplo el $\frac{1}{10}$ en binario se representa como $0.0001100110011\overline{0011}\dots$. Como es el cuento de nunca acabar con dicho número, `R` lo trunca y almacena sólo los primeros dígitos de ahí que, cada vez que escribes `0.1`, `R` en realidad almacene el <code>`r sprintf(0.1, fmt = '%#.22f')`</code> que es *casi lo mismo* pero no es estrictamente igual. Hay que tener mucho cuidado con esta inexactitud de las computadoras (inexactitud estudiada por la rama de [Análisis Numérico](https://www.springer.com/gp/book/9781461484523)) pues puede generar varios resultados imprevistos.
@@ -903,7 +903,7 @@ Para verificar que algo es más o menos $0.3$ suele usarse el valor absoluto[^3]
 [^3]: En `R` el comando `abs` toma el valor absoluto.
 
 ```{r}
-abs( (0.1 + 0.1 + 0.1) - 0.3 ) < 1.e-6
+abs((0.1 + 0.1 + 0.1) - 0.3) < 1.e-6
 ```
 
 donde `1.e-6` es notación corta para `r sprintf("%f", 1.e-6)` (también escrito como $1\times 10^{-6}$). La pregunta que nos estamos haciendo es que si el error entre sumar $0.1+0.1+0.1$ y $0.3$ es muy pequeño $< 0.000001$: 
@@ -943,12 +943,12 @@ En general es buena práctica en `R` establecer, hasta arriba del `Script`, el c
 Probemos guardar unas variables en un archivo dentro de nuestro directorio. Para ello utilizaremos el comando `save`.
 
 ```{r}
-#Crear las variables
+# Crear las variables
 x <- 200
 y <- 100
 
-#Los archivos de variables de R son rda
-save(x,y, file = "MisVariables.rda")
+# Los archivos de variables de R son rda
+save(x, y, file = "MisVariables.rda")
 ```
 
 Si vas a tu directorio, notarás que el archivo `MisVariables.rda` acaba de ser creado. De esta forma `R` puede almacenar objetos creados en `R` que sólo `R` puede leer (más adelante veremos cómo exportar bases de datos y gráficas). Observa que en tu ambiente (si estás en `RStudio` puedes verlas en el panel 3) deben aparecer las variables que hemos usado hasta ahora:
@@ -956,32 +956,32 @@ Si vas a tu directorio, notarás que el archivo `MisVariables.rda` acaba de ser 
 ```{r}
 #| echo: false
 rm(cer, eer, r)
-names(.GlobalEnv)[-which(names(.GlobalEnv) %in% c(".Random.seed", "escritorio","subDir","subcarpeta", "filedir",".main"))]
+names(.GlobalEnv)[-which(names(.GlobalEnv) %in% c(".Random.seed", "escritorio", "subDir", "subcarpeta", "filedir", ".main"))]
 ```
 
 Podemos probar sumar nuestras variables y todo funciona súper:
 
 ```{r}
-x + y #Funciona magnífico
+x + y # Funciona magnífico
 ```
 
 Limpiemos el ambiente. El comando equivalente al `clear all` en `R` es un poco más complicado de memorizar:
 
 ```{r}
 #| eval: false
-#EL clear all de R
+# EL clear all de R
 rm(list = ls())
 ```
 
 ```{r}
 #| echo: false
-rm(x,y)
+rm(x, y)
 ```
 
 Ahora, si vuelves a ver el ambiente, éste estará vacío: ¡hemos limpiado el historial! Nota que si intentamos operar con las variables, `R` ya no las recuerda:
 
 ```{r}
-x + y #Error
+x + y # Error
 ```
 
 ::: callout-warning
@@ -991,32 +991,33 @@ Así como hay que lavarse las manos antes de comer, es buen hábito limpiar toda
 Podemos leer la base de datos usando `load`:
 
 ```{r}
-#Leemos las variables
+# Leemos las variables
 load("MisVariables.rda")
 
-#Una vez leídas podemos empezar a jugar con ellas
-x + y #Ya funciona
+# Una vez leídas podemos empezar a jugar con ellas
+x + y # Ya funciona
 ```
 
 Por último, es necesario resaltar la importancia del directorio. Para ello crea una nueva carpeta en tu escritorio de nombre `"Mi_curso_de_R"`. Mueve el archivo `"MisVariables.rda"` dentro de la carpeta. Borra todo e intenta leer de nuevo el archivo:
 
 ```{r}
 #| include: false
-#Escondemos el archivo en una carpeta temporal para que el load de abajo
-#falle igual que le va a fallar a quien siga las instrucciones del texto.
-#Usamos tempdir() en lugar de una variable porque el rm(list = ls()) del
-#siguiente bloque borraría la variable.
+# Escondemos el archivo en una carpeta temporal para que el load de abajo
+# falle igual que le va a fallar a quien siga las instrucciones del texto.
+# Usamos tempdir() en lugar de una variable porque el rm(list = ls()) del
+# siguiente bloque borraría la variable.
 file.copy("MisVariables.rda", file.path(tempdir(), "MisVariables.rda"),
-          overwrite = TRUE)
+  overwrite = TRUE
+)
 file.remove("MisVariables.rda")
 ```
 
 ```{r}
 #| eval: true
-#Borramos todo
+# Borramos todo
 rm(list = ls())
 
-#Intentamos leer el archivo de nuevo
+# Intentamos leer el archivo de nuevo
 load("MisVariables.rda")
 ```
 
@@ -1033,14 +1034,15 @@ setwd("C:\Users\Rodrigo\Desktop\Mi_curso_de_R") #Rodrigo = Mi usuario
 
 ```{r}
 #| include: false
-#Regresamos el archivo a su lugar para que el load de abajo sí funcione
+# Regresamos el archivo a su lugar para que el load de abajo sí funcione
 file.copy(file.path(tempdir(), "MisVariables.rda"), "MisVariables.rda",
-          overwrite = TRUE)
+  overwrite = TRUE
+)
 file.remove(file.path(tempdir(), "MisVariables.rda"))
 ```
 
 ```{r}
-#Aquí sí se puede leer
+# Aquí sí se puede leer
 load("MisVariables.rda")
 ```
 
@@ -1083,7 +1085,7 @@ beep(3)
 
 ```{r}
 library(beepr)
-beep(3) #Esto produce un sonido
+beep(3) # Esto produce un sonido
 ```
 
 El comando `library` le dice a `R` ¡hey, voy a usar unas funciones que creó alguien más y que están dentro del paquete `beepr`! De esta manera, al correr `beep(3)`, `R` ya sabe dónde hallar la función y por eso no arroja error.
@@ -1096,20 +1098,19 @@ El comando `library` le dice a `R` ¡hey, voy a usar unas funciones que creó al
 2.  Con `ggplot2` haz lo necesario para que el siguiente bloque de código te arroje una gráfica:
 
 ```{r}
-#Aquí tienes que hacer algo
+# Aquí tienes que hacer algo
 #
 # RELLENA AQUÍ
 #
 
-#Esto genera un histograma
+# Esto genera un histograma
 set.seed(1364752)
 mis.datos <- data.frame(x = rnorm(1000))
 
-#Las siguientes funciones viven en el paquete ggplot2
-ggplot(mis.datos, aes(x = x)) +  
+# Las siguientes funciones viven en el paquete ggplot2
+ggplot(mis.datos, aes(x = x)) +
   geom_histogram(bins = 50, fill = "deepskyblue3") +
   ggtitle("Histograma generado por el código")
-
 ```
 
 3.  ¿Qué es un paquete para `R`?
@@ -1122,7 +1123,8 @@ ggplot(mis.datos, aes(x = x)) +
 
 ```{r}
 library(emoGG)
-ggplot(mtcars, aes(wt, mpg)) + geom_emoji(emoji="1f697")
+ggplot(mtcars, aes(wt, mpg)) +
+  geom_emoji(emoji = "1f697")
 ```
 
 ## Comentarios adicionales sobre el formato
@@ -1216,7 +1218,7 @@ print(peso/altura^2) #índice masa corporal
 #| message: false
 #| out-width: "150px"
 #| fig-cap:  "Trad: Un periodista se acerca a un programador a preguntarle ¿qué hace que un código sea malo? -Sin comentarios."
-knitr::include_graphics('images/tweet1.jpg')
+knitr::include_graphics("images/tweet1.jpg")
 ```
 
 7.  Siempre pon las llamadas a los paquetes y el directorio al inicio de tu archivo para que otro usuario sepa qué necesita.
@@ -1225,23 +1227,23 @@ Código limpio y legible:
 
 ```{r}
 #| eval: false
-#Asumiendo aquí inicia el archivo:
+# Asumiendo aquí inicia el archivo:
 setwd("Mi directorio")
 
-#Llamamos la librería
+# Llamamos la librería
 library(beepr)
 library(tidyverse)
 
-#Analizamos una base de datos de R
-data(iris) #Base de datos de flores
+# Analizamos una base de datos de R
+data(iris) # Base de datos de flores
 
-#Agrupamos la base por especie
+# Agrupamos la base por especie
 iris.agrupada <- group_by(iris, Species)
 
-#Obtenemos la media por longitud de sépalo
-iris.media    <- summarise(iris.agrupada, SL.mean = mean(Sepal.Length))
+# Obtenemos la media por longitud de sépalo
+iris.media <- summarise(iris.agrupada, SL.mean = mean(Sepal.Length))
 
-#Avisa que ya terminó
+# Avisa que ya terminó
 beep(5)
 ```
 
@@ -1256,7 +1258,7 @@ es siempre preferible a código escrito *con prisas* :
 #| message: false
 #| out-width: "150px"
 #| fig-cap:  "Yo, leyendo mi código no comentado y con mala edición 6 meses después de haberlo hecho."
-knitr::include_graphics('images/Grandma-Finds-The-Internet.jpg')
+knitr::include_graphics("images/Grandma-Finds-The-Internet.jpg")
 ```
 
 ```{r}
@@ -1290,28 +1292,28 @@ enfermedad == POLIO
 
 ```{r}
 #| eval: false
-#Genera una variable viento y la guarda en un archivo rda. Córreme completo
+# Genera una variable viento y la guarda en un archivo rda. Córreme completo
 set.seed(2734)
-directorio <- tempdir() 
-viento     <- rexp(1)
+directorio <- tempdir()
+viento <- rexp(1)
 save(viento, file = file.path(directorio, "MIVIENTO.rda"))
 rm(viento)
-message(paste("Guardé MIVIENTO.rda en el directorio;",directorio))
-#Ahora usa setwd para ir al directorio y leer "MIVIENTO.rda"
+message(paste("Guardé MIVIENTO.rda en el directorio;", directorio))
+# Ahora usa setwd para ir al directorio y leer "MIVIENTO.rda"
 ```
 
 4.  El siguiente código se encarga de [clasificar los resultados de un test de `A1C`](https://www.cdc.gov/diabetes/managing/managing-blood-sugar/a1c.html) (porcentaje) de una persona en tres: `diabetes` (si `AIC` es mayor o igual a 6.5%), `prediabetes` (5.7 a 6.4%) y `normal` (menor a 5.7%). Sin embargo el código tiene varios errores y sin importar la persona a todos les dice que tienen diabetes. Corrige el código para que funcione
 
 ```{r}
 #| eval: false
-#Aquí cambia el usuario cambia el nivel de AIC según el resultado de cada persona:
-nivel_AIC <- 5.4 
+# Aquí cambia el usuario cambia el nivel de AIC según el resultado de cada persona:
+nivel_AIC <- 5.4
 
-#Hacemos la clasificación:
-clasif    <- "diabetes"
-if (nivel_AIC > 6.5){
+# Hacemos la clasificación:
+clasif <- "diabetes"
+if (nivel_AIC > 6.5) {
   clasif <- "diabetes"
-} else if (nivel_AIC < 6.5 & nivel_AIC > 5.7){
+} else if (nivel_AIC < 6.5 & nivel_AIC > 5.7) {
   clasif1 <- "prediabetes"
 } else {
   clasif2 <- "normal"
@@ -1324,8 +1326,8 @@ message(paste0("Sus niveles corresponden a ", clasif))
 
 ```{r}
 #| eval: false
-x <- 
-+  "Ho
+x <-
+  +"Ho
 +  la"
 ```
 
@@ -1382,9 +1384,9 @@ Los cuatro errores son de cuatro tipos distintos: uno es de **nombre de variable
 
 ```{r}
 #| eval: false
-casos       <- 100
+casos <- 100
 defunciones <- 4
-letalidad   <- defunciones / casos * 100
+letalidad <- defunciones / casos * 100
 defunciones <- 8
 letalidad
 ```

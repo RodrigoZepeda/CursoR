@@ -26,12 +26,8 @@ book:
   repo-branch: master
   repo-actions: [source, issue]
   search:
-    location: sidebar
-    type: textbox
-  sidebar:
-    style: docked
-    collapse-level: 1
-    border: true
+    location: navbar
+    type: overlay
   page-navigation: true
   back-to-top-navigation: true
   chapters:
@@ -55,6 +51,8 @@ book:
     - estadistica-descriptiva.qmd
     - analisis-encuestas.qmd
     - modelos.qmd
+    - file: regresion-geometria.qmd
+      text: "La forma de una regresión"
     - regresiones-1.qmd
     - regresiones-2.qmd
     - file: series-de-tiempo-dengue.qmd
@@ -84,5 +82,10 @@ format:
     fig-align: center
     reference-location: margin
     citation-location: margin
+    grid:
+      sidebar-width: 0px
+      body-width: 900px
+      margin-width: 260px
+      gutter-width: 1.5rem
     # self-contained se omite a propósito: en un libro los recursos se
     # comparten entre capítulos y embeberlos multiplicaría el peso del sitio.

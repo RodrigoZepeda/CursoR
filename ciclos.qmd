@@ -27,8 +27,8 @@ $$
 Por ejemplo una función que imprima los cuadrados de los primeros 10 números:
 
 ```{r}
-for (i in 1:10){
-print(i^2)
+for (i in 1:10) {
+  print(i^2)
 }
 ```
 
@@ -43,15 +43,15 @@ Por ejemplo, mientras nuestro número $i$ sea $\leq 5$ le sumamos $1$.
 Por ejemplo, mientras nuestro número $i$ sea $\leq 5$ le sumamos $1$. 
 
 ```{r, echo=TRUE, eval= FALSE}
-i=1
-while (i<=5){
-print(i)
-i=i+1
+i <- 1
+while (i <= 5) {
+  print(i)
+  i <- i + 1
 }
 ```
 
 ##IMPORTANTE
-Es muy importante que pusiéramos $i = i + 1$ ya que esto obliga a que cada vez que da una vuelta la computadora sume el valor de $i$. Sin ésta instrucción la $i$ valdría siempre 1 y jamás saldríamos del loop (jamás llegaría a valer 5). Si alguna vez quedas atrapado en un loop puedes usar el botón de STOP que tiene R junto a la consola o la tecla escape del teclado. 
+Es muy importante que pusiéramos `i <- i + 1` ya que esto obliga a que cada vez que da una vuelta la computadora sume el valor de $i$. Sin ésta instrucción la $i$ valdría siempre 1 y jamás saldríamos del loop (jamás llegaría a valer 5). Si alguna vez quedas atrapado en un loop puedes usar el botón de STOP que tiene R junto a la consola o la tecla escape del teclado. 
 
 ##If-else (condicionales)
 En el manual podemos encontrar la [sección de condicionales](http://cran.r-project.org/doc/manuals/R-lang.html#if). Los condicionales evalúan el camino que debe de seguir el código según una condición. Los condicionales tienen la siguiente estructura:
@@ -67,14 +67,14 @@ $$
 Asignemos, primero, el valor de 2 a $i$:
 
 ```{r, echo=TRUE, eval= FALSE}
-i = 2
+i <- 2
 ```
 
 Luego pongamos el condicional
 
 ```{r, echo= TRUE, eval= FALSE}
-if (i == 5){   # Nota el doble signo de igual '=='. 
-  i=i^2        # Si sólo pones uno, R hace que i=5.
+if (i == 5) { # Nota el doble signo de igual '=='.
+  i <- i^2 # Si sólo pones uno, R hace que i=5.
 }
 ```
 
@@ -88,9 +88,9 @@ print(i)
 Hagamos ahora $i = 5$ y veamos qué pasa cuando atraviesa el condicional: 
 
 ```{r, echo=TRUE, eval= TRUE}
-i = 5
-if (i == 5){   
-  i=i^2      
+i <- 5
+if (i == 5) {
+  i <- i^2
 }
 print(i)
 ```
@@ -98,11 +98,11 @@ print(i)
 Hagamos ahora un condicional más complicado: pongamos que si $i = 5$ entonces haga $i^2$ pero si $i \neq 5$ entonces al valor de $i$ le sume $1$: 
 
 ```{r, echo= TRUE, eval= TRUE}
-i=1
-if (i == 5){
-  i=i^2
+i <- 1
+if (i == 5) {
+  i <- i^2
 } else {
-  i=i+1
+  i <- i + 1
 }
 print(i)
 ```
@@ -118,10 +118,10 @@ Por ejemplo, supongamos queremos usar dos condiciones dentro del `if`. ¡Es muy 
 Ejemplo:
 
 ```{r, echo= TRUE, eval= TRUE}
-i=1
-j=7
-if( (i == 1) & (i < j) ) {
-  i=i+j  
+i <- 1
+j <- 7
+if ((i == 1) & (i < j)) {
+  i <- i + j
 }
 print(i)
 ```
@@ -130,20 +130,20 @@ print(i)
 Por otro lado si ahora hacemos $i > j$:
 
 ```{r, echo= TRUE, eval= TRUE}
-i=11
-j=7
-if( (i == 1) & (i < j) ) {
-  i=i+j  
+i <- 11
+j <- 7
+if ((i == 1) & (i < j)) {
+  i <- i + j
 }
 print(i)
 ```
 
 Y si hacemos que $i = 1$ pero $i > j$:
 ```{r, echo= TRUE, eval= TRUE}
-i=1
-j=0
-if( (i == 1) & (i < j) ) {
-  i=i+j  
+i <- 1
+j <- 0
+if ((i == 1) & (i < j)) {
+  i <- i + j
 }
 print(i)
 ```
@@ -158,22 +158,21 @@ El `or` se usa en el caso de que querramos que se cumpla al menos una de dos con
 Cuando $i = 1$ con $i > j$:
 
 ```{r, echo= TRUE, eval= TRUE}
-i=1
-j = 1/2
-if( (i == 1) | (i < j) ) {
-i=i+j
+i <- 1
+j <- 1 / 2
+if ((i == 1) | (i < j)) {
+  i <- i + j
 }
 print(i)
-
 ```
 
 Cuando $i \neq 1$ pero $ i < j $:  
 
 ```{r}
-i=21
-j = 22
-if( (i == 1) | (i < j) ) {
-i=i+j
+i <- 21
+j <- 22
+if ((i == 1) | (i < j)) {
+  i <- i + j
 }
 print(i)
 ```
@@ -182,10 +181,10 @@ print(i)
 O bien cuando $i \neq 1$ e $i > j$
 
 ```{r}
-i=121
-j = 22
-if( (i == 1) | (i < j) ) {
-i=i+j
+i <- 121
+j <- 22
+if ((i == 1) | (i < j)) {
+  i <- i + j
 }
 print(i)
 ```
@@ -208,18 +207,20 @@ $$
 Crea los comandos necesarios para calcular la media y desviacion estandar del siguiente vector:
 
 ```{r}
-numeros <- c(7.65688984, 0.45416281, -0.53197482, -11.68901517, 
-             -0.22092715, -6.65860576, -0.96411401, -0.04875882, 
-             -0.88076032, -9.47716275, 12.48699956, 58.37690942, 
-             0.75332369, -0.07644519, -0.47168251, 0.04574367, 
-             0.21158367, 6.57919350, 1.61654489, -144.28602691)
+numeros <- c(
+  7.65688984, 0.45416281, -0.53197482, -11.68901517,
+  -0.22092715, -6.65860576, -0.96411401, -0.04875882,
+  -0.88076032, -9.47716275, 12.48699956, 58.37690942,
+  0.75332369, -0.07644519, -0.47168251, 0.04574367,
+  0.21158367, 6.57919350, 1.61654489, -144.28602691
+)
 ```
 
 
 Tus resultados deberían ser:
 ```{r, echo= FALSE}
-print(paste0("Media: ",mean(numeros)))
-print(paste0("Desviación: ",sd(numeros)))
+print(paste0("Media: ", mean(numeros)))
+print(paste0("Desviación: ", sd(numeros)))
 ```
 
 
@@ -250,30 +251,18 @@ Sin correr el siguiente pedazo de código en R, estima cuánto valdrá $k$ al fi
 
 ```{r, eval= FALSE}
 k <- 3
-for (i in 1:6){
-  
-  if (i > k || k == 3){
-    
+for (i in 1:6) {
+  if (i > k || k == 3) {
     k <- k^2
-    
   } else if (i == 3 & k == 7) {
-    
     k <- k - 2
-    
   } else if (k > i & i < 5) {
-    
-    k <- k*i/2
-    
+    k <- k * i / 2
   } else if (k > i & i >= 5) {
-    
     k <- k + 1
-    
   } else {
-    
-    k <- k/2
-    
+    k <- k / 2
   }
-  
 }
 ```
 
@@ -282,10 +271,12 @@ for (i in 1:6){
 Un grupo de investigadores tienen tres vectores de datos sobre individuos: `sexo`, `edad`  y exposición (horas) a humo de tabaco `expo`.
 
 ```{r}
-sexo <- c("Hombre","Mujer","Mujer","Mujer","Hombre",
-          "Mujer","Hombre","Hombre")
+sexo <- c(
+  "Hombre", "Mujer", "Mujer", "Mujer", "Hombre",
+  "Mujer", "Hombre", "Hombre"
+)
 edad <- c(28, 12, 77, 32, 46, 53, 17, 20, 88)
-expo  <- c(1, 0, 1.5, 2.2, 2, 5, 1.01, 3.2)
+expo <- c(1, 0, 1.5, 2.2, 2, 5, 1.01, 3.2)
 ```
 
 
@@ -338,44 +329,30 @@ while (persona < n){
 Para que cheques que funcione, te dejo la respuesta. El riesgo es:
 
 ```{r, echo= FALSE, eval= TRUE}
-#Hay n personas: para cada una hay que calcular su riesgo relativo
-n       <- length(sexo)
-riesgo  <- c()
+# Hay n personas: para cada una hay que calcular su riesgo relativo
+n <- length(sexo)
+riesgo <- c()
 persona <- 1
 
-while (persona < n){
-  
-  #Checar la edad de la persona
-  if (edad[persona] < 45){
-    
-    #Checar el sexo
-    if (sexo[persona] == "Hombre"){
-      
-      riesgo[persona] <- expo[persona]*1.025
-      
+while (persona < n) {
+  # Checar la edad de la persona
+  if (edad[persona] < 45) {
+    # Checar el sexo
+    if (sexo[persona] == "Hombre") {
+      riesgo[persona] <- expo[persona] * 1.025
     } else {
-      
-      riesgo[persona] <- expo[persona]*1.032
-      
+      riesgo[persona] <- expo[persona] * 1.032
     }
-    
   } else {
-    
-    #Checar el sexo
-    if (sexo[persona] == "Hombre"){
-      
-      riesgo[persona] <- expo[persona]*1.052
-      
+    # Checar el sexo
+    if (sexo[persona] == "Hombre") {
+      riesgo[persona] <- expo[persona] * 1.052
     } else {
-      
-      riesgo[persona] <- expo[persona]*1.066
-      
+      riesgo[persona] <- expo[persona] * 1.066
     }
-    
   }
-  
+
   persona <- persona + 1
-  
 }
 
 print(riesgo)
@@ -427,22 +404,16 @@ Este ejemplo calcula una función recursivamente. ¿Puedes explicar qué estamos
 
 ```{r}
 ejemplo <- c()
-a       <- 2.701
-for (i in 1:100){
-  
-  if (i == 1){
-    
+a <- 2.701
+for (i in 1:100) {
+  if (i == 1) {
     ejemplo[i] <- 10
-    
   } else {
-    
-    ejemplo[i] <- ejemplo[i-1] + 
-                  a*ejemplo[i-1]*(1-ejemplo[i-1]/100)
-    
+    ejemplo[i] <- ejemplo[i - 1] +
+      a * ejemplo[i - 1] * (1 - ejemplo[i - 1] / 100)
   }
-  
 }
- 
+
 print(ejemplo[100])
 ```
 
@@ -451,24 +422,17 @@ El ejemplo anterior resulta en un maravilloso resultado de ejemplo[100]. Redonde
 
 ```{r}
 ejemplo2 <- c()
-a       <- 2.70
-for (i in 1:100){
-  
-  if (i == 1){
-    
+a <- 2.70
+for (i in 1:100) {
+  if (i == 1) {
     ejemplo2[i] <- 10
-    
   } else {
-    
-    ejemplo2[i] <- ejemplo2[i-1] + 
-                   a*ejemplo2[i-1]*(1-ejemplo2[i-1]/100)
-    
+    ejemplo2[i] <- ejemplo2[i - 1] +
+      a * ejemplo2[i - 1] * (1 - ejemplo2[i - 1] / 100)
   }
-  
 }
- 
+
 print(ejemplo2[100])
-  
 ```
 
 ¡Resulta que con cambiar un decimal, el resultado cambió hasta ejemplo2[100]!
@@ -478,12 +442,10 @@ La gráfica siguiente muestra como varían los valores coincidiendo al inicio y 
 library(ggplot2)
 
 ejedato <- as.data.frame(cbind(x = 1:100, y1 = ejemplo, y2 = ejemplo2))
-ggplot(ejedato, aes(x = x)) + 
-  geom_path(aes(y = y1), col = "purple") + 
+ggplot(ejedato, aes(x = x)) +
+  geom_path(aes(y = y1), col = "purple") +
   geom_path(aes(y = y2), col = "firebrick") +
   theme_classic()
-
-
 ```
 
 ##Números pseudoaleatorios
@@ -495,9 +457,9 @@ Como no es muy bueno que tengamos por ahí material radiactivo, los matemáticos
 Considera los siguientes dos fragmentos de código. Analiza los resultados. ¿Cuál de ellos es un mejor generador pseudoaleatorio y por qué?
 
 ```{r}
-a         <- 2
+a <- 2
 aleatorio <- c()
-for( i in 1:100){
+for (i in 1:100) {
   aleatorio[i] <- a + i
 }
 ```
@@ -510,20 +472,14 @@ print(head(aleatorio))
 
 ```{r}
 aleatorio2 <- c()
-for (i in 1:100){
-  
-  if (i == 1){
-    
+for (i in 1:100) {
+  if (i == 1) {
     aleatorio2[i] <- 0.9
-    
   } else {
-    
-    aleatorio2[i] <- aleatorio2[i-1] + 
-                   2.81*aleatorio2[i-1]*(1-aleatorio2[i-1]/17)
+    aleatorio2[i] <- aleatorio2[i - 1] +
+      2.81 * aleatorio2[i - 1] * (1 - aleatorio2[i - 1] / 17)
   }
-  
 }
-
 ```
 
 
@@ -545,7 +501,7 @@ runif(10)
 ```
 
 ```{r, echo=FALSE}
-round(runif(10),2)
+round(runif(10), 2)
 ```
 
 
@@ -556,23 +512,23 @@ rnorm(7)
 ```
 
 ```{r, echo= FALSE}
-round(rnorm(7),2)
+round(rnorm(7), 2)
 ```
 
 O bien 8 valores de una exponencial con parámetro 5:
 ```{r, eval= FALSE}
-rexp(8,rate=5)
+rexp(8, rate = 5)
 ```
 
 
 ```{r, echo= FALSE}
-round(rexp(8,rate=5),2)
+round(rexp(8, rate = 5), 2)
 ```
 
 
 Vamos entonces a simular 1,000 números alearorios de una normal estándar:
 ```{r}
-y=rnorm(1000)
+y <- rnorm(1000)
 ```
 
 
@@ -601,13 +557,13 @@ pnorm(-10:10)
 
 Igualmente podemos graficar cómo se ven:
 ```{r}
-plot(-10:10,pnorm(-10:10))
+plot(-10:10, pnorm(-10:10))
 ```
 
 
 O bien graficar la función de distribución de una normal entre -10 y 10:
 ```{r}
-plot(-10:10,dnorm(-10:10))
+plot(-10:10, dnorm(-10:10))
 ```
 
 
@@ -620,7 +576,7 @@ plot(-10:10,dnorm(-10:10))
 Para hacer más refinada la cantidad de puntos podemos hacer ahora una nueva secuencia pero yendo de 0.1 en 0.1:
 
 ```{r}
-x = seq(-10,10,0.1)
+x <- seq(-10, 10, 0.1)
 ```
 
 
@@ -632,14 +588,14 @@ x
 
 
 ```{r, echo= FALSE}
-head(x,9)
+head(x, 9)
 ```
 
 
 ¡La gráfica ahora se ve genial!
 
 ```{r}
-plot(x,dnorm(x))
+plot(x, dnorm(x))
 ```
 
 
@@ -682,10 +638,10 @@ Un grupo de investigadores ha decidido que el índice de masa corporal tiene una
 
 ```{r, eval= FALSE}
 set.seed(6207)
-#Simular IMC
-imc <- rcauchy(100,25,0.9)
+# Simular IMC
+imc <- rcauchy(100, 25, 0.9)
 
-#Calcular la media
+# Calcular la media
 mean(imc)
 ```
 

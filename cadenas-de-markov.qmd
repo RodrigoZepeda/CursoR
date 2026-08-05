@@ -26,7 +26,7 @@ Algunos ejemplos de cadenas de Markov son los siguientes modelos:
 El modelo SIS divide a la población en suceptibles e infectados. Para ello hay una probabilidad (diaria) de infección y una probabilidad (diaria) de mejorarse. Esquemáticamente, el modelo se ve así:
 
 ```{r,  cache=TRUE, echo = FALSE,  message=FALSE}
-knitr::include_graphics('images/SIS.png')
+knitr::include_graphics("images/SIS.png")
 ```
 
 
@@ -34,14 +34,14 @@ knitr::include_graphics('images/SIS.png')
 El modelo SIR es una mejora sobre el SIS. Aquí se permite que la gente se recupere y no le vuelva a dar la enfermedad.
 
 ```{r,  cache=TRUE, echo = FALSE,  message=FALSE}
-knitr::include_graphics('images/SIR.png')
+knitr::include_graphics("images/SIR.png")
 ```
 
 
 ##Modelo DISMOD
 DISMOD es un modelo para enfermedades crónicas. En él se asumen tres estados: sano, enfermo y muerto.
 ```{r,  cache=TRUE, echo = FALSE,  message=FALSE}
-knitr::include_graphics('images/DISMOD.png')
+knitr::include_graphics("images/DISMOD.png")
 ```
 
 
@@ -51,7 +51,7 @@ Todo el chiste de la cadena de Markov en R es obtener esas probabilidades, lo de
 Para esto utilizaremos el paquete `markovchain`
 
 ```{r, message= FALSE}
-#No olvides instalarlo primero
+# No olvides instalarlo primero
 library(markovchain)
 ```
 Supongamos que las probabilidades de pasar de un estado a otro en un modelo SIS son las siguientes:
@@ -78,29 +78,29 @@ $$
 Entonces para construír nuestra matríz de transición necesitamos el vector de probabilidades, 2 filas y 2 columnas
 
 ```{r}
-#Vector de probabilidades
+# Vector de probabilidades
 probs <- c(0.73, 0.27, 0.11, 0.89)
 
-#Matríz de 2x2
-matriz <- matrix(probs, nrow = 2, ncol= 2, byrow= TRUE) 
+# Matríz de 2x2
+matriz <- matrix(probs, nrow = 2, ncol = 2, byrow = TRUE)
 ```
 
 Para crear una cadena de Markov en R usando esas probabilidades hacemos:
 ```{r}
-cadena1 <- new("markovchain", 
-               states = c("Susceptible", "Infectado"),
-               transitionMatrix = matriz)
+cadena1 <- new("markovchain",
+  states = c("Susceptible", "Infectado"),
+  transitionMatrix = matriz
+)
 cadena1
 ```
 Ahora simulemos la cadena para alguien que empieza `Susceptible` durante 100 días:
 ```{r}
-#Nos devuelve el estado del individuo
+# Nos devuelve el estado del individuo
 sim1 <- rmarkovchain(100, cadena1, "Susceptible")
 sim1
 ```
 Y para alguien que empieza `Infectado` durante 73 días:
 ```{r}
-
 sim2 <- rmarkovchain(73, cadena1, "Infectado")
 sim2
 ```
@@ -127,14 +127,16 @@ Muertos  &  0.00  & 0.00     & 1.00
 $$
 La matríz en R es:
 ```{r}
- probs2 <- matrix(c(0.73, 0.26, 0.01, 0.00, 0.92, 0.08, 0.00, 0.00, 1.00),
-                          byrow = TRUE, nrow = 3)
+probs2 <- matrix(c(0.73, 0.26, 0.01, 0.00, 0.92, 0.08, 0.00, 0.00, 1.00),
+  byrow = TRUE, nrow = 3
+)
 ```
 Creamos la cadena:
 ```{r}
- cadena2 <- new("markovchain",
-               states = c("Sano", "Enfermo","Muerto"),
-               transitionMatrix = probs2)
+cadena2 <- new("markovchain",
+  states = c("Sano", "Enfermo", "Muerto"),
+  transitionMatrix = probs2
+)
 ```
 Simulamos la cadena para alguien que empieza `Sano` durante 100 días
 ```{r}
@@ -145,7 +147,6 @@ Para alguien que empieza `Enfermo` 121 días
 ```{r}
 sim2 <- rmarkovchain(121, cadena2, "Enfermo")
 sim2
-
 ```
 Y para alguien que empieza `Muerto` 100 días
 ```{r}
@@ -163,82 +164,75 @@ plot(cadena2)
 Ya sabemos hacer una cadena de Markov. Para simular varias necesitamos almacenar los resultados. Haremos un for y almacenaremos los datos en una matriz así:
 
 ```{r}
-nsim <- 100 #Número de simulaciones 
-dias <- 77 #Número de días simulados
+nsim <- 100 # Número de simulaciones
+dias <- 77 # Número de días simulados
 
-sim <- matrix(NA, nrow = dias, ncol = nsim) #Matríz vacía que vamos a rellenar
+sim <- matrix(NA, nrow = dias, ncol = nsim) # Matríz vacía que vamos a rellenar
 
-#Simulamos nsim individuos con la cadena1
-for (i in 1:nsim){
+# Simulamos nsim individuos con la cadena1
+for (i in 1:nsim) {
+  # Asumimos que inicialmente estamos en "Suceptible"
+  inicial <- "Suceptible"
 
-  #Asumimos que inicialmente estamos en "Suceptible"
-inicial <- "Suceptible"
-
-#Guardamos la simulación en una columna de la matriz
-sim[,i] <- rmarkovchain(dias, cadena1, inicial) }
+  # Guardamos la simulación en una columna de la matriz
+  sim[, i] <- rmarkovchain(dias, cadena1, inicial)
+}
 ```
 Una vez simulado, requerimos contar cuántas personas cayeron en qué lugar para obtener el promedio. Para ello usaremos un `for` dentro de un `for`
 
 ```{r}
-media_markov <- function(estados, markov_matriz){
-# media_markov
-#
-# Función que estima el número promedio de individuos que estuvieron
-# en cada estado para una cadena de Makov. La matríz markov_matriz contiene 
-# las simulaciones para cada individuo
-#
-# INPUT:
-# estados = Estados de la cadena de Markov
-# markov_matriz = Simulaciones de la cadena de Markov
-#
-# OUTPUT
-# suma = Matriz con la media por cada estado por día
-#Creamos una matriz donde guardamos la cantidad de estados 
-#en el modelo
+media_markov <- function(estados, markov_matriz) {
+  # media_markov
+  #
+  # Función que estima el número promedio de individuos que estuvieron
+  # en cada estado para una cadena de Makov. La matríz markov_matriz contiene
+  # las simulaciones para cada individuo
+  #
+  # INPUT:
+  # estados = Estados de la cadena de Markov
+  # markov_matriz = Simulaciones de la cadena de Markov
+  #
+  # OUTPUT
+  # suma = Matriz con la media por cada estado por día
+  # Creamos una matriz donde guardamos la cantidad de estados
+  # en el modelo
 
-suma           <- matrix(0, nrow = nrow(markov_matriz),
-                         ncol = length(estados))
+  suma <- matrix(0,
+    nrow = nrow(markov_matriz),
+    ncol = length(estados)
+  )
 
-colnames(suma) <- estados
-#Loop a través de todos los estados
-for (edo in estados){
-#Loop a través de los individuos
-  for( dia in 1:nrow(markov_matriz)){ 
-#Loop a través de cada simulación
-    for (scol in 1:ncol(markov_matriz)){
-    
-      if(markov_matriz[dia,scol] == edo){
-     
-        suma[dia,edo] <- suma[dia,edo] + 1
-      
-        } 
-      
+  colnames(suma) <- estados
+  # Loop a través de todos los estados
+  for (edo in estados) {
+    # Loop a través de los individuos
+    for (dia in 1:nrow(markov_matriz)) {
+      # Loop a través de cada simulación
+      for (scol in 1:ncol(markov_matriz)) {
+        if (markov_matriz[dia, scol] == edo) {
+          suma[dia, edo] <- suma[dia, edo] + 1
+        }
       }
-   
-    } 
-
+    }
   }
 
 
-#Dividimos entre el total de individuos para obtener %
-suma <- suma/ncol(markov_matriz)
+  # Dividimos entre el total de individuos para obtener %
+  suma <- suma / ncol(markov_matriz)
 
-#Retorna el promedio:
-return(suma)
+  # Retorna el promedio:
+  return(suma)
 }
-
-
 ```
 Calculamos
 ```{r}
-
-datos <- media_markov(c("Susceptible", "Infectado"),sim)
+datos <- media_markov(c("Susceptible", "Infectado"), sim)
 ```
 Graficamos
 ```{r}
-library(ggplot2) #Convertimos en data frame
-datos_1 <- as.data.frame(cbind(dia = 1:nrow(datos),datos))
-#Gráfica
+library(ggplot2) # Convertimos en data frame
+datos_1 <- as.data.frame(cbind(dia = 1:nrow(datos), datos))
+# Gráfica
 ggplot(datos_1) +
   geom_step(aes(x = dia, y = Susceptible), col = "firebrick") +
   theme_bw()

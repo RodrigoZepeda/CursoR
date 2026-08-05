@@ -81,7 +81,7 @@ como la [galería de `R`](https://r-graph-gallery.com/).
 #| message: false
 #| out-width: "150px"
 #| fig-cap:  "ggplot2 es el mejor paquete para graficar."
-knitr::include_graphics('images/ggplot2.jpg')
+knitr::include_graphics("images/ggplot2.jpg")
 ```
 
 
@@ -89,9 +89,9 @@ Aprovecharemos para instalar dos paquetes que se encargan de leer bases de datos
 
 ```{r}
 #| eval: false
-install.packages("readxl")    #Para leer archivos de excel
-install.packages("readr")     #Para leer archivos en csv 
-install.packages("ggformula") #Para suavizar datos en gráficas (splines)
+install.packages("readxl") # Para leer archivos de excel
+install.packages("readr") # Para leer archivos en csv
+install.packages("ggformula") # Para suavizar datos en gráficas (splines)
 ```
 
 (No olvides limpiar todo tu ambiente de `R` con `rm(list = ls())` antes de iniciar; tampoco olvides que estaremos trabajando un nuevo script con `Ctrl+Shift+N` si estás en `RStudio` o `File > New File > RScript`). 
@@ -99,10 +99,10 @@ install.packages("ggformula") #Para suavizar datos en gráficas (splines)
 Para ello, llama al paquete utilizando el comando `library`:
 
 ```{r}
-#Librería para graficar
+# Librería para graficar
 library(ggplot2)
 
-#Librería para leer los datos en csv
+# Librería para leer los datos en csv
 library(readr)
 ```
 
@@ -115,7 +115,7 @@ library(readr)
 #| message: false
 #| out-width: "150px"
 #| fig-cap:  "Hadley Wickham, el creador de ggplot2."
-knitr::include_graphics('images/hadleywickham.jpg')
+knitr::include_graphics("images/hadleywickham.jpg")
 ```
 
 `ggplot` trabaja con `tibbles`; los `tibbles` (pronunciados `tíblz`) son el formato preferido para tener tablas de datos. Probemos leer los datos de `diabetes` los cuales consisten en una muestra obtenida en Virginia EEUU en población afroamericana con el objetivo de determinar las prevalencias de obesidad, diabetes y otros factores de riesgo cardiovascular y proviene de la colección de bases de datos de [bioestadística de Vanderbilt](https://hbiostat.org/data/). 
@@ -143,7 +143,7 @@ datos_diabetes <- read_csv("datasets/diabetes.csv")
 #| echo: false
 #| message: false
 #| fig-cap:  "Para guardar un archivo de `Excel` en formato `csv` puedes utilizar ` F12` (`Shift+Command+S` en Mac) o bien, ir a `File > Save As...` y luego seleccionar `File Format`."
-knitr::include_graphics('images/CSV.png')
+knitr::include_graphics("images/CSV.png")
 ```
 
 
@@ -157,7 +157,9 @@ La base de datos se ve más o menos así:
 
 ```{r}
 #| echo: false
-datos_diabetes %>% head() %>% kable() %>%
+datos_diabetes %>%
+  head() %>%
+  kable() %>%
   kable_styling()
 ``` 
 
@@ -168,7 +170,7 @@ Por ahora nos enfocaremos en los niveles de colesterol `chol` y la edad `age` de
 Para graficar el comando `ggplot(tus_datos)` coloca la capa inicial el cual es un lienzo vacío:
 
 ```{r}
-#Creación de un lienzo de puntos
+# Creación de un lienzo de puntos
 ggplot(datos_diabetes)
 ```
 
@@ -176,8 +178,8 @@ Probemos agregar puntos con `geom_point` especificando mediante el comando `aes`
 
 ```{r}
 #| warning: true
-#Gráfica de puntos
-ggplot(datos_diabetes) + 
+# Gráfica de puntos
+ggplot(datos_diabetes) +
   geom_point(aes(x = age, y = chol))
 ```
 
@@ -188,24 +190,24 @@ Te darás cuenta que `R` arroja un `warning` indicando que quitó una fila por v
 ¡No olvides el `+`! Podemos agregar color a los `geom_point` con el comando `color`:
 
 ```{r}
-#Gráfica de la base de datos de diabetes
-ggplot(datos_diabetes) + 
+# Gráfica de la base de datos de diabetes
+ggplot(datos_diabetes) +
   geom_point(aes(x = age, y = chol), color = "tomato3")
 ```
 
 Una lista completa de los colores posibles [está aquí.](http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf). También puedes usar colores RGB o en formato HEX. Por ejemplo el [Manual de Identidad Gráfica del Gobierno de México](https://www.gob.mx/wikiguias/articulos/manual-de-identidad-grafica-2018-2024) establece que el tono de verde institucional es el `#235B4E` el cual se puede colocar tal cual. 
 
 ```{r}
-#Gráfica de la base de datos de diabetes
-ggplot(datos_diabetes) + 
+# Gráfica de la base de datos de diabetes
+ggplot(datos_diabetes) +
   geom_point(aes(x = age, y = chol), color = "#235B4E")
 ```
 
 Podemos cambiar los títulos (`title`) de los ejes, el subtítulo (`subtitle`) y el pie de figura (`caption`) mediante `labs`:
 
 ```{r}
-#Agregamos etiquetas
-ggplot(datos_diabetes) + 
+# Agregamos etiquetas
+ggplot(datos_diabetes) +
   geom_point(aes(x = age, y = chol), color = "#235B4E") +
   labs(
     x        = "Edad (años)",
@@ -219,7 +221,7 @@ ggplot(datos_diabetes) +
 Las gráficas cuentan con varios temas (`themes`) con diseños predefinidos para cambiar su imagen. Prueba los distintos: `theme_classic`, `theme_bw`, `theme_gray`, `theme_linedraw`, `theme_light`, `theme_minimal`, `theme_dark` y `theme_void`.^[Puedes tener aún más temas si descargas el paquete (`ggthemes`)[https://yutannihilation.github.io/allYourFigureAreBelongToUs/ggthemes/]. ]  
 
 ```{r}
-ggplot(datos_diabetes) + 
+ggplot(datos_diabetes) +
   geom_point(aes(x = age, y = chol), color = "#235B4E") +
   labs(
     x        = "Edad (años)",
@@ -227,14 +229,14 @@ ggplot(datos_diabetes) +
     title    = "Edad contra niveles de colesterol en la población afroamericana de Virginia",
     subtitle = "University of Virginia School of Medicine.",
     caption  = "Fuente: https://hbiostat.org/data/"
-  ) + 
-  theme_minimal() #Agrega un tema
+  ) +
+  theme_minimal() # Agrega un tema
 ```
 
 Para incrementar el tamaño de los puntos podemos usar el comando `size` dentro de `geom_point`:
 ```{r}
-#Agregamos etiquetas
-ggplot(datos_diabetes) + 
+# Agregamos etiquetas
+ggplot(datos_diabetes) +
   geom_point(aes(x = age, y = chol), color = "#235B4E", size = 2.5) +
   labs(
     x        = "Edad (años)",
@@ -242,24 +244,26 @@ ggplot(datos_diabetes) +
     title    = "Edad contra niveles de colesterol en la población afroamericana de Virginia",
     subtitle = "University of Virginia School of Medicine.",
     caption  = "Fuente: https://hbiostat.org/data/"
-  ) + 
-  theme_minimal() #Agrega un tema
+  ) +
+  theme_minimal() # Agrega un tema
 ```
 
 Y si se empalman podemos hacer unos más transparentes que otros usando `alpha`
 
 ```{r}
-#Agregamos etiquetas
-ggplot(datos_diabetes) + 
-  geom_point(aes(x = age, y = chol), color = "#235B4E", 
-             size = 2.5, alpha = 0.5) +
+# Agregamos etiquetas
+ggplot(datos_diabetes) +
+  geom_point(aes(x = age, y = chol),
+    color = "#235B4E",
+    size = 2.5, alpha = 0.5
+  ) +
   labs(
     x        = "Edad (años)",
     y        = "Niveles de colesterol (mg/dl)",
     title    = "Edad contra niveles de colesterol en la población afroamericana de Virginia",
     subtitle = "University of Virginia School of Medicine.",
     caption  = "Fuente: https://hbiostat.org/data/"
-  ) + 
+  ) +
   theme_minimal()
 ```
 
@@ -267,8 +271,8 @@ Finalmente, para guardar tu gráfica escribe `ggsave` con el nombre (sea en `pdf
 
 ```{r}
 #| eval: false
-#width: ancho
-#height: alto
+# width: ancho
+# height: alto
 ggsave("Edad_vs_colesterol.pdf", width = 8, height = 5)
 ```
 
@@ -277,27 +281,29 @@ El código completo para la gráfica es entonces:
 ```{r}
 #| eval: false
 
-#Librerías a usar
-library(readr)   #Leer archivos .csv
-library(ggplot2) #Graficar
+# Librerías a usar
+library(readr) # Leer archivos .csv
+library(ggplot2) # Graficar
 
-#Lectura de la base de datos de Virginia
+# Lectura de la base de datos de Virginia
 datos_diabetes <- read_csv("datasets/diabetes.csv")
 
-#Realización de la gráfica
-ggplot(datos_diabetes) + 
-  geom_point(aes(x = age, y = chol), color = "#235B4E", 
-             size = 2.5, alpha = 0.5) +
+# Realización de la gráfica
+ggplot(datos_diabetes) +
+  geom_point(aes(x = age, y = chol),
+    color = "#235B4E",
+    size = 2.5, alpha = 0.5
+  ) +
   labs(
     x        = "Edad (años)",
     y        = "Niveles de colesterol (mg/dl)",
     title    = "Edad contra niveles de colesterol en la población afroamericana de Virginia",
     subtitle = "University of Virginia School of Medicine.",
     caption  = "Fuente: https://hbiostat.org/data/"
-  ) + 
+  ) +
   theme_minimal()
 
-#La guardamos en formato de 8 x 5 pulgadas
+# La guardamos en formato de 8 x 5 pulgadas
 ggsave("Edad_vs_colesterol.pdf", width = 8, height = 5)
 ```
 
@@ -307,9 +313,9 @@ La librería `esquisse` provee una interfaz más amigable para generar las gráf
 
 ```{r}
 #| eval: false
-library("esquisse") #Llamamos a la librería
-set_i18n("es")      #Le decimos que opere en idioma español
-esquisser()         #Corremos el código!
+library("esquisse") # Llamamos a la librería
+set_i18n("es") # Le decimos que opere en idioma español
+esquisser() # Corremos el código!
 ```
 
 Una vez hayas empezado a correr el código obtendrás una pantalla como esta: 
@@ -318,7 +324,7 @@ Una vez hayas empezado a correr el código obtendrás una pantalla como esta:
 #| echo: false
 #| message: false
 #| fig-cap:  "Cuando comiensas a usar `esquisse` se abre una pantalla"
-knitr::include_graphics('images/esquisser1.png')
+knitr::include_graphics("images/esquisser1.png")
 ```
 
 En ella selecciona la base de datos que estamos usando (`datos_diabetes`) y selecciona `Importar Datos`
@@ -327,7 +333,7 @@ En ella selecciona la base de datos que estamos usando (`datos_diabetes`) y sele
 #| echo: false
 #| message: false
 #| fig-cap:  "Selecciona tu base de datos"
-knitr::include_graphics('images/esquisser2.png')
+knitr::include_graphics("images/esquisser2.png")
 ```
 
 Dentro de apariencia establece el color adecuado (`#235B4E`) y el tema `minimal`. 
@@ -336,7 +342,7 @@ Dentro de apariencia establece el color adecuado (`#235B4E`) y el tema `minimal`
 #| echo: false
 #| message: false
 #| fig-cap:  "Selecciona tu base de datos"
-knitr::include_graphics('images/esquisser3.png')
+knitr::include_graphics("images/esquisser3.png")
 ```
 
 En `Etiquetas & Título` elige los títulos adecuados
@@ -344,7 +350,7 @@ En `Etiquetas & Título` elige los títulos adecuados
 #| echo: false
 #| message: false
 #| fig-cap:  "Selecciona tu base de datos"
-knitr::include_graphics('images/esquisser4.png')
+knitr::include_graphics("images/esquisser4.png")
 ```
 
 En `Opciones de Gráfico` cambia el tamaño de los puntos a `2.5`
@@ -353,7 +359,7 @@ En `Opciones de Gráfico` cambia el tamaño de los puntos a `2.5`
 #| echo: false
 #| message: false
 #| fig-cap:  "Selecciona tu base de datos"
-knitr::include_graphics('images/esquisser5.png')
+knitr::include_graphics("images/esquisser5.png")
 ```
 
 Finalmente, ve a `código` y copia en tu `script` el código correspondiente
@@ -362,7 +368,7 @@ Finalmente, ve a `código` y copia en tu `script` el código correspondiente
 #| echo: false
 #| message: false
 #| fig-cap:  "Selecciona tu base de datos"
-knitr::include_graphics('images/esquisser6.png')
+knitr::include_graphics("images/esquisser6.png")
 ```
 
 Nota que no es exactamente igual al código de la sección anterior pero es una buena aproximación para tener una gráfica con la cual empezar. 
@@ -374,7 +380,12 @@ Nota que no es exactamente igual al código de la sección anterior pero es una 
 ```{r}
 #| echo: false
 #| warning: false
-ggplot(datos_diabetes) + geom_point(aes(x = weight, y = height), color = "orange", size = 0.5) + xlab("Peso (libras)") + ylab("Altura (pulgadas)") + ggtitle("Gráfica de peso contra altura") + theme_classic()
+ggplot(datos_diabetes) +
+  geom_point(aes(x = weight, y = height), color = "orange", size = 0.5) +
+  xlab("Peso (libras)") +
+  ylab("Altura (pulgadas)") +
+  ggtitle("Gráfica de peso contra altura") +
+  theme_classic()
 ```
 
 2. Dentro del `aes` puedes también aplicar funciones a las variables. Por ejemplo si queremos graficar índice de masa corporal ($\text{peso (kg)} / (\text{altura (m)}^2)$) podemos calcular el IMC en el mismo `aes` haciendo: `... aes(x = (weight * 0.453592) /(height * 0.0254)^2, ...) ...`. Donde el factor `0.453592` es para convertir de libras a kilos y `0.0254` de pulgadas a metros.  Grafica en el eje `x` el índice de masa corporal (IMC) y en `y` el radio de colesterol definido como el nivel de colesterol `chol` entre el colesterol de alta densidad `hdl`. Obtén una gráfica como esta de color púrpura (`purple`), tamaño `0.5` y tema `bw`:  
@@ -383,23 +394,29 @@ ggplot(datos_diabetes) + geom_point(aes(x = weight, y = height), color = "orange
 ```{r}
 #| echo: false
 #| warning: false
-ggplot(datos_diabetes) + 
-  geom_point(aes(x = (weight * 0.453592) /(height * 0.0254)^2, y = chol/hdl), color = "purple", size = 0.5) + xlab("IMC") + ylab("Radio de colesterol") + ggtitle("Relación entre IMC y colesterol") + theme_bw()
+ggplot(datos_diabetes) +
+  geom_point(aes(x = (weight * 0.453592) / (height * 0.0254)^2, y = chol / hdl), color = "purple", size = 0.5) +
+  xlab("IMC") +
+  ylab("Radio de colesterol") +
+  ggtitle("Relación entre IMC y colesterol") +
+  theme_bw()
 ```
 
 3. Descarga y lee las bases de [datasets/IMSS_BCG_2019.csv y datasets/IMSS_BCG_2020.csv](https://www.dropbox.com/sh/51x0s7w7s11que0/AABWlyxNkBOi5I9S3FHQW8Eya?dl=0) las cuales contiene información de las dosis aplicadas de **B.C.G** (Vacuna contra la tuberculosis) contra los casos de tuberculosis detectados en el IMSS por delegación en el mismo año (2019 y 2020 respectivamente). Replica las siguientes dos gráficas con color `deepskyblue3`, `size = 1.5`. Para ello requieres instalar la librería `ggrepel` y usar `geom_text_repel`. Tu código debe tener una estructura similar a esto:
 
 ```{r}
 #| eval: false
-#Lectura de datos
-#...
+# Lectura de datos
+# ...
 
-#Gráfica
-ggplot(...) + 
-  geom_point(...) + 
-  geom_text_repel(aes(x = `Dosis BCG`,                     #Así se ponen las
-                      y = `Casos detectados tuberculosis`, #etiquetas
-                      label = Del), size = 2) +            #de entidad
+# Gráfica
+ggplot(...) +
+  geom_point(...) +
+  geom_text_repel(aes(
+    x = `Dosis BCG`, # Así se ponen las
+    y = `Casos detectados tuberculosis`, # etiquetas
+    label = Del
+  ), size = 2) + # de entidad
   labs(...) +
   ...
 ```
@@ -411,16 +428,23 @@ ggplot(...) +
 library(cowplot)
 library(ggrepel)
 
-grafica <- function(data_name = "datasets/IMSS_BCG_2019.csv", year = 2019){
-  bcg <- read_csv(data_name, 
-                  locale = locale(encoding = "UTF-8"), show_col_types = F)
+grafica <- function(data_name = "datasets/IMSS_BCG_2019.csv", year = 2019) {
+  bcg <- read_csv(data_name,
+    locale = locale(encoding = "UTF-8"), show_col_types = F
+  )
   ggplot(bcg) +
-    geom_point(aes(x = `Dosis BCG`, 
-                   y = `Casos detectados tuberculosis`),
-               color = "deepskyblue3", size = 1.5) +
-    geom_text_repel(aes(x = `Dosis BCG`, 
-                   y = `Casos detectados tuberculosis`,
-                  label = Del), size = 2) +
+    geom_point(
+      aes(
+        x = `Dosis BCG`,
+        y = `Casos detectados tuberculosis`
+      ),
+      color = "deepskyblue3", size = 1.5
+    ) +
+    geom_text_repel(aes(
+      x = `Dosis BCG`,
+      y = `Casos detectados tuberculosis`,
+      label = Del
+    ), size = 2) +
     labs(
       x = "Dosis de B.C.G aplicadas",
       y = "Casos detectados de tuberculosis",
@@ -432,7 +456,8 @@ grafica <- function(data_name = "datasets/IMSS_BCG_2019.csv", year = 2019){
 }
 
 plot_grid(grafica(), grafica(data_name = "datasets/IMSS_BCG_2020.csv", year = 2020),
-          ncol = 1)
+  ncol = 1
+)
 ```
 
 ### Ejercicio a mano: dibuja la gráfica antes de correrla
@@ -447,7 +472,7 @@ Copia y corre **solamente** este bloque, que crea una base chiquita con datos hi
 jurisdicciones <- data.frame(
   jurisdiccion = c("A", "B", "C", "D", "E"),
   casos        = c(12, 30, 18, 45, 25),
-  poblacion    = c(20, 50, 30, 80, 40)   #en miles de habitantes
+  poblacion    = c(20, 50, 30, 80, 40) # en miles de habitantes
 )
 ```
 
@@ -455,35 +480,35 @@ Ahora, **sin correr nada más**, dibuja en tu hoja lo que va a producir cada uno
 
 ```{r}
 #| eval: false
-#a)
+# a)
 ggplot(jurisdicciones) +
   geom_point(aes(x = poblacion, y = casos))
 ```
 
 ```{r}
 #| eval: false
-#b) Cambiamos de lugar la x y la y
+# b) Cambiamos de lugar la x y la y
 ggplot(jurisdicciones) +
   geom_point(aes(x = casos, y = poblacion))
 ```
 
 ```{r}
 #| eval: false
-#c) ¿De qué color van a salir los puntos y qué aparece a la derecha?
+# c) ¿De qué color van a salir los puntos y qué aparece a la derecha?
 ggplot(jurisdicciones) +
   geom_point(aes(x = poblacion, y = casos, color = "red"))
 ```
 
 ```{r}
 #| eval: false
-#d) ¿Y ahora?
+# d) ¿Y ahora?
 ggplot(jurisdicciones) +
   geom_point(aes(x = poblacion, y = casos), color = "red")
 ```
 
 ```{r}
 #| eval: false
-#e) ¿Qué le pasa al eje y? ¿Se ven los 5 puntos?
+# e) ¿Qué le pasa al eje y? ¿Se ven los 5 puntos?
 ggplot(jurisdicciones) +
   geom_point(aes(x = poblacion, y = casos)) +
   ylim(0, 20)
@@ -499,11 +524,16 @@ Los incisos `a` y `b` son la misma nube de puntos, sólo que reflejada: los ejes
 ```{r}
 #| echo: false
 plot_grid(
-  ggplot(jurisdicciones) + geom_point(aes(x = poblacion, y = casos)) +
-    labs(title = "a)") + theme_bw(),
-  ggplot(jurisdicciones) + geom_point(aes(x = casos, y = poblacion)) +
-    labs(title = "b)") + theme_bw(),
-  ncol = 2)
+  ggplot(jurisdicciones) +
+    geom_point(aes(x = poblacion, y = casos)) +
+    labs(title = "a)") +
+    theme_bw(),
+  ggplot(jurisdicciones) +
+    geom_point(aes(x = casos, y = poblacion)) +
+    labs(title = "b)") +
+    theme_bw(),
+  ncol = 2
+)
 ```
 
 Los incisos `c` y `d` son **la trampa más importante de todo `ggplot2`**. En el `c` el `color` está **adentro** del `aes`, así que `ggplot2` entiende que le estás pidiendo colorear *según una variable*; como la "variable" que le diste es el texto `"red"` (igual para las cinco filas), te pinta todo de un solo color (que ni siquiera es rojo, es el primer color de su paleta) y te agrega una leyenda que dice `"red"`. En el `d`, el `color` está **afuera** del `aes` y ahí sí significa "píntame todo de rojo", sin leyenda.
@@ -511,11 +541,16 @@ Los incisos `c` y `d` son **la trampa más importante de todo `ggplot2`**. En el
 ```{r}
 #| echo: false
 plot_grid(
-  ggplot(jurisdicciones) + geom_point(aes(x = poblacion, y = casos, color = "red")) +
-    labs(title = "c) color DENTRO del aes") + theme_bw(),
-  ggplot(jurisdicciones) + geom_point(aes(x = poblacion, y = casos), color = "red") +
-    labs(title = "d) color FUERA del aes") + theme_bw(),
-  ncol = 2)
+  ggplot(jurisdicciones) +
+    geom_point(aes(x = poblacion, y = casos, color = "red")) +
+    labs(title = "c) color DENTRO del aes") +
+    theme_bw(),
+  ggplot(jurisdicciones) +
+    geom_point(aes(x = poblacion, y = casos), color = "red") +
+    labs(title = "d) color FUERA del aes") +
+    theme_bw(),
+  ncol = 2
+)
 ```
 
 > **La regla:** adentro del `aes` van las **columnas de tu base**; afuera del `aes` van los **valores fijos** (un color, un tamaño, una transparencia).
@@ -525,8 +560,11 @@ En el inciso `e` el `ylim(0, 20)` recorta el eje: los puntos con más de 20 caso
 ```{r}
 #| echo: false
 #| warning: false
-ggplot(jurisdicciones) + geom_point(aes(x = poblacion, y = casos)) +
-  ylim(0, 20) + labs(title = "e) ¡Se perdieron 3 puntos!") + theme_bw()
+ggplot(jurisdicciones) +
+  geom_point(aes(x = poblacion, y = casos)) +
+  ylim(0, 20) +
+  labs(title = "e) ¡Se perdieron 3 puntos!") +
+  theme_bw()
 ```
 :::
 
@@ -542,21 +580,21 @@ ggplot(jurisdicciones) geom_point(aes(x = poblacion, y = casos))
 
 ```{r}
 #| eval: false
-#b)
+# b)
 ggplot(jurisdicciones)
-  + geom_point(aes(x = poblacion, y = casos))
++geom_point(aes(x = poblacion, y = casos))
 ```
 
 ```{r}
 #| eval: false
-#c)
+# c)
 ggplot(jurisdicciones) +
   geom_point(x = poblacion, y = casos)
 ```
 
 ```{r}
 #| eval: false
-#d)
+# d)
 ggplot(jurisdicciones) +
   geom_point(aes(x = Poblacion, y = Casos))
 ```
@@ -570,7 +608,7 @@ ggplot(jurisdicciones) +
 
 ```{r}
 #| eval: false
-#f)
+# f)
 ggplot() +
   geom_point(jurisdicciones, aes(x = poblacion, y = casos))
 ```
@@ -612,14 +650,16 @@ Recuerda: **nunca** pegues en una IA datos identificables de personas ni bases c
 En la base de `diabetes`, utiliza `scale_y_continuous` en particular la opción de `sec.axis` para agregar un segundo eje `y` del lado derecho donde la altura esté en metros (no pulgadas). Repite el proceso con `scale_x_continuous` para agregar un eje `x` en la parte superior con el peso en kilogramos.
 
 ```{r, echo = FALSE}
-ggplot(datos_diabetes) + 
-  geom_point(aes(x = weight, y = height), color = "orange", size = 0.5) + 
-  ggtitle("Gráfica de peso contra altura") + 
+ggplot(datos_diabetes) +
+  geom_point(aes(x = weight, y = height), color = "orange", size = 0.5) +
+  ggtitle("Gráfica de peso contra altura") +
   theme_classic() +
-  scale_y_continuous("Altura (pulgadas)", 
-                     sec.axis = sec_axis(~ . * 0.0254, name = "Altura (metros)")) +
-  scale_x_continuous("Peso (libras)", 
-                     sec.axis = sec_axis(~ . * 0.453592, name = "Peso (kilogramos)"))
+  scale_y_continuous("Altura (pulgadas)",
+    sec.axis = sec_axis(~ . * 0.0254, name = "Altura (metros)")
+  ) +
+  scale_x_continuous("Peso (libras)",
+    sec.axis = sec_axis(~ . * 0.453592, name = "Peso (kilogramos)")
+  )
 ```
 
 ## Gráficas de columnas (barras)
@@ -637,7 +677,7 @@ bcg <- read_csv("datasets/IMSS_BCG_2020.csv")
 
 ```{r}
 #| echo: false
-head(bcg) %>% 
+head(bcg) %>%
   kable() %>%
   kableExtra::kable_styling()
 ```
@@ -667,16 +707,19 @@ mientras que `fill` cambia el contenido:
 
 ```{r}
 ggplot(bcg) +
-  geom_col(aes(x = Del, y = `Dosis BCG`), color = "red",
-           fill = "blue")
+  geom_col(aes(x = Del, y = `Dosis BCG`),
+    color = "red",
+    fill = "blue"
+  )
 ```
 
 Cambiaré los colores por unos más bellos, y agregaré título y etiquetas a los ejes. En este caso no deseo etiqueta en el eje `x` por lo cual lo dejaré como comillas vacías: `""`. 
 
 ```{r}
 ggplot(bcg) +
-  geom_col(aes(x = Del, y = `Dosis BCG`), 
-           color = "red", fill = "blue") +
+  geom_col(aes(x = Del, y = `Dosis BCG`),
+    color = "red", fill = "blue"
+  ) +
   labs(
     x        = "",
     y        = "Dosis BCG aplicadas",
@@ -689,8 +732,9 @@ Voy a agregar comas a los números del eje `y` con `scale_y_continuous`. El `sca
 
 ```{r}
 ggplot(bcg) +
-  geom_col(aes(x = Del, y = `Dosis BCG`), 
-           color = "red", fill = "blue") +
+  geom_col(aes(x = Del, y = `Dosis BCG`),
+    color = "red", fill = "blue"
+  ) +
   labs(
     x        = "",
     y        = "Dosis BCG aplicadas",
@@ -704,8 +748,9 @@ Finalmente usaremos `theme` para cambiar la orientación de las etiquetas del ej
 
 ```{r}
 ggplot(bcg) +
-  geom_col(aes(x = Del, y = `Dosis BCG`), 
-           color = "red", fill = "blue") +
+  geom_col(aes(x = Del, y = `Dosis BCG`),
+    color = "red", fill = "blue"
+  ) +
   labs(
     x        = "",
     y        = "Dosis BCG aplicadas",
@@ -713,8 +758,10 @@ ggplot(bcg) +
     subtitle = "Año 2020"
   ) +
   scale_y_continuous(labels = scales::comma) +
-  theme(axis.text.x = element_text(angle = 90, 
-                                   hjust = 1, vjust = 0.5))
+  theme(axis.text.x = element_text(
+    angle = 90,
+    hjust = 1, vjust = 0.5
+  ))
 ```
 
 Seguro en este punto te estarás preguntando ¿y cómo Rod sabe cuál es el código para cada opción? La respuesta es que pasé mucho tiempo (¡demasiado!) en Google encontrándola pero que una vez encontré el cómo rotar las etiquetas guardé el código en mi cuaderno y ahora cada que se ofrece ¡ya sé qué poner!
@@ -723,8 +770,9 @@ Finalmente agregaré colores más lindos y un `theme_linedraw`
 
 ```{r}
 ggplot(bcg) +
-  geom_col(aes(x = Del, y = `Dosis BCG`), 
-           color = "black", fill = "tomato3") +
+  geom_col(aes(x = Del, y = `Dosis BCG`),
+    color = "black", fill = "tomato3"
+  ) +
   labs(
     x        = "",
     y        = "Dosis BCG aplicadas",
@@ -732,10 +780,12 @@ ggplot(bcg) +
     subtitle = "Año 2020"
   ) +
   scale_y_continuous(labels = scales::comma) +
-  theme_linedraw() +  #Nota que se agrega antes porque
-                      #si se pone después desconfigura la rotada
-  theme(axis.text.x = element_text(angle = 90, 
-                                   hjust = 1, vjust = 0.5)) 
+  theme_linedraw() + # Nota que se agrega antes porque
+  # si se pone después desconfigura la rotada
+  theme(axis.text.x = element_text(
+    angle = 90,
+    hjust = 1, vjust = 0.5
+  ))
 ```
 
 ### Ejercicio
@@ -745,19 +795,20 @@ Utiliza la base de datos `IMSS_BCG_2019.csv` y genera la siguiente gráfica con 
 ```{r}
 #| echo: false
 read_csv("datasets/IMSS_BCG_2019.csv", show_col_types = F) %>%
-ggplot() +
-  geom_col(aes(x = Del, y = `Casos detectados tuberculosis`), 
-           color = "white", fill = "forestgreen") +
+  ggplot() +
+  geom_col(aes(x = Del, y = `Casos detectados tuberculosis`),
+    color = "white", fill = "forestgreen"
+  ) +
   labs(
     x        = "",
     y        = "Casos",
     title    = "Casos detectados de tuberculosis en el IMSS",
     subtitle = "Año 2019",
-    caption  = "Fuente: Datos Abiertos IMSS" 
+    caption  = "Fuente: Datos Abiertos IMSS"
   ) +
   scale_y_continuous(labels = scales::comma) +
-  theme_bw() + 
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 0.5)) 
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 0.5))
 ```
 
 ### Una más complicada (Seguro Popular)
@@ -767,13 +818,15 @@ El archivo `inegi_seguro_popular.csv` ([datos reales obtenidos de INEGI](https:/
 ```{r}
 #| echo: false
 seguro.pop <- read_csv("datasets/inegi_seguro_popular.csv",
-                       locale = locale(encoding = "WINDOWS-1252"))
+  locale = locale(encoding = "WINDOWS-1252")
+)
 ```
 
 ```{r}
 #| eval: false
 seguro.pop <- read_csv("inegi_seguro_popular.csv",
-                       locale = locale(encoding = "WINDOWS-1252"))
+  locale = locale(encoding = "WINDOWS-1252")
+)
 ```
 
 Notarás que esta vez tuvimos que establecer un _locale_ esto es porque la base tiene acentos y caracteres del español y cuando la base fue generada por una computadora `Windows` hay que especificar que viene de _Windows_ con el locale. 
@@ -785,10 +838,12 @@ El `locale` es un poco más complicado y refiere a cómo la computadora sabe qu�
 Podemos graficar los datos que aparecen en gráfica de barras mediante el comando `geom_col`:
 
 ```{r}
-#Gráfica encimada
-ggplot(seguro.pop) + 
-  geom_col(aes(x = `Entidad federativa`, 
-               y = `Porcentaje de la población afiliada al seguro popular`))
+# Gráfica encimada
+ggplot(seguro.pop) +
+  geom_col(aes(
+    x = `Entidad federativa`,
+    y = `Porcentaje de la población afiliada al seguro popular`
+  ))
 ```
 
 Esta vez como los nombres de las columnas contienen varias palabras hubo que colocarlas entre dos [acentos graves ó backticks:](https://en.wikipedia.org/wiki/Backtick) <code>`</code>
@@ -796,83 +851,102 @@ Esta vez como los nombres de las columnas contienen varias palabras hubo que col
 Nota que hay gráficas donde el porcentaje supera el 100% esto es porque `R`, de inicio, combina los años `2010` y `2015` sumando los valores. Podemos ver esto con el comando `fill` diciéndole a `R` que `Periodo` no lo lea como número sino como caracter `character` (de otra forma buscará colorearlo con el color `2010` y `2015` los cuales no se distinguen):
 
 ```{r}
-#Gráfica encimada con dos periodos
-ggplot(seguro.pop) + 
-  geom_col(aes(x    = `Entidad federativa`, 
-               y    = `Porcentaje de la población afiliada al seguro popular`,
-               fill = as.character(Periodo)))
+# Gráfica encimada con dos periodos
+ggplot(seguro.pop) +
+  geom_col(aes(
+    x = `Entidad federativa`,
+    y = `Porcentaje de la población afiliada al seguro popular`,
+    fill = as.character(Periodo)
+  ))
 ```
 
 Ojo como `periodo` es una sola palabra podemos ponerlo con o sin el acento grave <code>`</code>:
 
 ```{r}
-#Gráfica encimada con dos periodos (equivalente)
-ggplot(seguro.pop) + 
-  geom_col(aes(x    = `Entidad federativa`, 
-               y    = `Porcentaje de la población afiliada al seguro popular`,
-               fill = as.character(`Periodo`)))
+# Gráfica encimada con dos periodos (equivalente)
+ggplot(seguro.pop) +
+  geom_col(aes(
+    x = `Entidad federativa`,
+    y = `Porcentaje de la población afiliada al seguro popular`,
+    fill = as.character(`Periodo`)
+  ))
 ```
 
 Mediante `coord_flip()` podemos rotar las coordenadas: 
 
 ```{r}
-#Gráfica encimada
-ggplot(seguro.pop) + 
-  geom_col(aes(x = `Entidad federativa`, 
-               y = `Porcentaje de la población afiliada al seguro popular`,
-               fill = as.character(`Periodo`))) +
+# Gráfica encimada
+ggplot(seguro.pop) +
+  geom_col(aes(
+    x = `Entidad federativa`,
+    y = `Porcentaje de la población afiliada al seguro popular`,
+    fill = as.character(`Periodo`)
+  )) +
   coord_flip()
 ```
 
 Existen dos formas de separar los años: mediante `facet_wrap()` en dos gráficas distintas o mediante `position` dentro de la misma gráfica. Veamos sus diferencias: 
 
 ```{r}
-#Gráfica con position
-ggplot(seguro.pop) + 
-  geom_col(aes(x = `Entidad federativa`, 
-               y = `Porcentaje de la población afiliada al seguro popular`,
-               fill = as.character(`Periodo`)),
-           position = "dodge") +
-  coord_flip() 
+# Gráfica con position
+ggplot(seguro.pop) +
+  geom_col(
+    aes(
+      x = `Entidad federativa`,
+      y = `Porcentaje de la población afiliada al seguro popular`,
+      fill = as.character(`Periodo`)
+    ),
+    position = "dodge"
+  ) +
+  coord_flip()
 ```
 
 o bien: 
 
 ```{r}
-ggplot(seguro.pop) + 
-  geom_col(aes(x = `Entidad federativa`, 
-               y = `Porcentaje de la población afiliada al seguro popular`,
-               fill = as.character(`Periodo`))) + 
+ggplot(seguro.pop) +
+  geom_col(aes(
+    x = `Entidad federativa`,
+    y = `Porcentaje de la población afiliada al seguro popular`,
+    fill = as.character(`Periodo`)
+  )) +
   coord_flip() +
-  facet_wrap(~as.character(`Periodo`))
+  facet_wrap(~ as.character(`Periodo`))
 ```
 
 A mí me gusta más el de `facet_wrap()` así que continuaré trabajando con él. Podemos mejorar la leyenda mediante el `scale_fill_manual` (`scale_color_manual` respectivamente si nos interesa cambiar sólo el color de las barras)
 
 ```{r}
-#Gráfica colores mediante "scale_fill_manual"
-ggplot(seguro.pop) + 
-  geom_col(aes(x = `Entidad federativa`, 
-               y = `Porcentaje de la población afiliada al seguro popular`,
-               fill = as.character(`Periodo`))) + 
+# Gráfica colores mediante "scale_fill_manual"
+ggplot(seguro.pop) +
+  geom_col(aes(
+    x = `Entidad federativa`,
+    y = `Porcentaje de la población afiliada al seguro popular`,
+    fill = as.character(`Periodo`)
+  )) +
   coord_flip() +
   facet_wrap(~ as.character(`Periodo`)) +
-  scale_fill_manual("Año", 
-                    values = c("2010" = "#EB2188",  #colores del 2010
-                               "2015" = "#080A52")) #colores del 2015
+  scale_fill_manual("Año",
+    values = c(
+      "2010" = "#EB2188", # colores del 2010
+      "2015" = "#080A52"
+    )
+  ) # colores del 2015
 ```
 
 Podemos reordenar el eje para que `Aguascalientes` quede hasta arriba. Para eso especificamos el orden. Lo podemos hacer manualmente (pero qué flojera):
 
 ```{r}
-orden <- c('Estados Unidos Mexicanos', 'Aguascalientes', 'Baja California', 
-           'Baja California Sur', 'Campeche', 'Coahuila de Zaragoza', 
-           'Colima', 'Chiapas', 'Chihuahua', 'Ciudad de México', 'Durango', 
-           'Guanajuato', 'Guerrero', 'Hidalgo', 'Jalisco', 'México', 
-           'Michoacán de Ocampo', 'Morelos', 'Nayarit', 'Nuevo León', 
-           'Oaxaca', 'Puebla', 'Querétaro', 'Quintana Roo', 'San Luis Potosí', 
-           'Sinaloa', 'Sonora', 'Tabasco', 'Tamaulipas', 'Tlaxcala', 
-           'Veracruz de Ignacio de la Llave', 'Yucatán', 'Zacatecas') 
+orden <- c(
+  "Estados Unidos Mexicanos", "Aguascalientes", "Baja California",
+  "Baja California Sur", "Campeche", "Coahuila de Zaragoza",
+  "Colima", "Chiapas", "Chihuahua", "Ciudad de México", "Durango",
+  "Guanajuato", "Guerrero", "Hidalgo", "Jalisco", "México",
+  "Michoacán de Ocampo", "Morelos", "Nayarit", "Nuevo León",
+  "Oaxaca", "Puebla", "Querétaro", "Quintana Roo", "San Luis Potosí",
+  "Sinaloa", "Sonora", "Tabasco", "Tamaulipas", "Tlaxcala",
+  "Veracruz de Ignacio de la Llave", "Yucatán", "Zacatecas"
+)
 ```
 
 O bien pidiéndole a `R` una lista de los estados en la base:
@@ -883,38 +957,48 @@ orden <- unique(seguro.pop$`Entidad federativa`)
 en cualquiera de los casos esa lista la pondremos en reversa dentro de limits:
 
 ```{r}
-#Reordenamos el eje vertical
-ggplot(seguro.pop) + 
-  geom_col(aes(x = `Entidad federativa`, 
-               y = `Porcentaje de la población afiliada al seguro popular`,
-               fill = as.character(`Periodo`))) + 
+# Reordenamos el eje vertical
+ggplot(seguro.pop) +
+  geom_col(aes(
+    x = `Entidad federativa`,
+    y = `Porcentaje de la población afiliada al seguro popular`,
+    fill = as.character(`Periodo`)
+  )) +
   coord_flip() +
   facet_wrap(~ as.character(`Periodo`)) +
-  scale_fill_manual("Año", 
-                    values = c("2010" = "#EB2188", 
-                               "2015" = "#080A52")) +
+  scale_fill_manual("Año",
+    values = c(
+      "2010" = "#EB2188",
+      "2015" = "#080A52"
+    )
+  ) +
   scale_x_discrete(limits = rev(orden))
 ```
 
 Finalmente, podemos agregar los formatos de etiquetas usuales:
 
 ```{r}
-ggplot(seguro.pop) + 
-  geom_col(aes(x = `Entidad federativa`, 
-               y = `Porcentaje de la población afiliada al seguro popular`,
-               fill = as.character(`Periodo`))) + 
+ggplot(seguro.pop) +
+  geom_col(aes(
+    x = `Entidad federativa`,
+    y = `Porcentaje de la población afiliada al seguro popular`,
+    fill = as.character(`Periodo`)
+  )) +
   coord_flip() +
   facet_wrap(~ as.character(`Periodo`)) +
-  scale_fill_manual("Año", 
-                    values = c("2010" = "#EB2188", 
-                               "2015" = "#080A52")) +
+  scale_fill_manual("Año",
+    values = c(
+      "2010" = "#EB2188",
+      "2015" = "#080A52"
+    )
+  ) +
   scale_x_discrete(limits = rev(orden)) +
   labs(
     title   = "Población afiliada al Seguro Popular\npor entidad federativa",
     y       = "Proporción de la población",
     x       = "Entidad federativa",
     caption = "Fuente: INEGI"
-  ) + 
+  ) +
   theme_bw()
 ```
 
@@ -923,11 +1007,11 @@ ggplot(seguro.pop) +
 1. El siguiente código genera una base de datos de nombre `vacunacion` con la información de cuántos niños menores de uno o dos años tienen el esquema completo de cuatro vacunas de acuerdo con las distintas Encuestas Nacionales de Salud  ENSA/ENSANUT. 
 
 ```{r}
-Encuesta   <- rep(c("2000","2006","2012","2018-19","2021"), 2)
-vacperc    <- c(c(0.265, 0.784, 0.742, 0.199, 0.311), c(0.5, 0.847, 0.779, 0.353, 0.358))
-clase      <- c(rep("1 año cumplido", 5), rep("2 años cumplidos", 5))
+Encuesta <- rep(c("2000", "2006", "2012", "2018-19", "2021"), 2)
+vacperc <- c(c(0.265, 0.784, 0.742, 0.199, 0.311), c(0.5, 0.847, 0.779, 0.353, 0.358))
+clase <- c(rep("1 año cumplido", 5), rep("2 años cumplidos", 5))
 
-vacunacion           <- data.frame(Encuesta, vacperc, clase) 
+vacunacion <- data.frame(Encuesta, vacperc, clase)
 colnames(vacunacion) <- c("ENSANUT", "Porcentaje vacunado", "Edad de los niños")
 ```
 
@@ -940,10 +1024,14 @@ Corre el código tal cual y una vez lo hayas corrido, grafica los datos con colu
 imss2019 <- read_csv("datasets/IMSS_BCG_2019.csv", show_col_types = FALSE)
 ggplot(imss2019) +
   geom_col(aes(x = Del, y = `Dosis BCG`), fill = "deepskyblue4") +
-  geom_text(aes(x = Del, 
-                y = 100, 
-                label = scales::comma(`Dosis BCG`)),
-            color = "white", angle = 90, hjust = 0, size = 2) +
+  geom_text(
+    aes(
+      x = Del,
+      y = 100,
+      label = scales::comma(`Dosis BCG`)
+    ),
+    color = "white", angle = 90, hjust = 0, size = 2
+  ) +
   theme_bw() +
   labs(
     x = "Delegación",
@@ -972,28 +1060,28 @@ Dibuja en tu hoja lo que produce cada bloque. Anota siempre: cuántas barras hay
 
 ```{r}
 #| eval: false
-#a)
+# a)
 ggplot(dosis_aplicadas) +
   geom_col(aes(x = jurisdiccion, y = dosis))
 ```
 
 ```{r}
 #| eval: false
-#b)
+# b)
 ggplot(dosis_aplicadas) +
   geom_col(aes(x = dosis, y = jurisdiccion))
 ```
 
 ```{r}
 #| eval: false
-#c) Cuidado: aquí es geom_bar, no geom_col
+# c) Cuidado: aquí es geom_bar, no geom_col
 ggplot(dosis_aplicadas) +
   geom_bar(aes(x = jurisdiccion))
 ```
 
 ```{r}
 #| eval: false
-#d)
+# d)
 ggplot(dosis_aplicadas) +
   geom_col(aes(x = "", y = dosis, fill = jurisdiccion))
 ```
@@ -1005,32 +1093,40 @@ ggplot(dosis_aplicadas) +
 
 ```{r}
 #| echo: false
-ggplot(dosis_aplicadas) + geom_col(aes(x = jurisdiccion, y = dosis)) +
-  labs(title = "a) Ojo: van en orden alfabético") + theme_bw()
+ggplot(dosis_aplicadas) +
+  geom_col(aes(x = jurisdiccion, y = dosis)) +
+  labs(title = "a) Ojo: van en orden alfabético") +
+  theme_bw()
 ```
 
 **b)** Las mismas tres barras pero **acostadas** (horizontales), porque intercambiaste qué va en cada eje. Para nombres largos de jurisdicción o de entidad ésta suele ser la mejor opción: no hay que rotar el texto.
 
 ```{r}
 #| echo: false
-ggplot(dosis_aplicadas) + geom_col(aes(x = dosis, y = jurisdiccion)) +
-  labs(title = "b) Barras horizontales") + theme_bw()
+ggplot(dosis_aplicadas) +
+  geom_col(aes(x = dosis, y = jurisdiccion)) +
+  labs(title = "b) Barras horizontales") +
+  theme_bw()
 ```
 
 **c)** Tres barras **todas de altura 1**. Aquí está la diferencia que más confunde: `geom_col` grafica el valor que tú le das en la `y`, mientras que `geom_bar` **cuenta cuántas filas** hay de cada categoría e ignora la `y`. Como en tu base hay exactamente una fila por jurisdicción, todas las barras miden 1. Regla práctica: **si ya tienes la cifra calculada usa `geom_col`; si quieres que `R` cuente los renglones usa `geom_bar`.**
 
 ```{r}
 #| echo: false
-ggplot(dosis_aplicadas) + geom_bar(aes(x = jurisdiccion)) +
-  labs(title = "c) geom_bar cuenta filas: todas miden 1") + theme_bw()
+ggplot(dosis_aplicadas) +
+  geom_bar(aes(x = jurisdiccion)) +
+  labs(title = "c) geom_bar cuenta filas: todas miden 1") +
+  theme_bw()
 ```
 
 **d)** Una **sola** barra apilada de altura 1000 (la suma de las tres), partida en tres pedazos de colores. Al poner `x = ""` le dijiste que todas las jurisdicciones comparten la misma posición en `x`, y el `fill` las separa por color dentro de la misma barra.
 
 ```{r}
 #| echo: false
-ggplot(dosis_aplicadas) + geom_col(aes(x = "", y = dosis, fill = jurisdiccion)) +
-  labs(title = "d) Una sola barra apilada", x = "") + theme_bw()
+ggplot(dosis_aplicadas) +
+  geom_col(aes(x = "", y = dosis, fill = jurisdiccion)) +
+  labs(title = "d) Una sola barra apilada", x = "") +
+  theme_bw()
 ```
 :::
 
@@ -1040,30 +1136,30 @@ Todos estos quieren graficar las `dosis` por `jurisdiccion` de la base anterior.
 
 ```{r}
 #| eval: false
-#a)
+# a)
 ggplot(dosis_aplicadas) +
   geom_col(aes(x = jurisdiccion, y = dosis), fill = jurisdiccion)
 ```
 
 ```{r}
 #| eval: false
-#b)
+# b)
 ggplot(dosis_aplicadas) +
   geom_col(aes(x = jurisdiccion, y = dosis)) +
   labs(x = "Jurisdicción")
-  labs(y = "Dosis aplicadas")
+labs(y = "Dosis aplicadas")
 ```
 
 ```{r}
 #| eval: false
-#c)
+# c)
 ggplot(dosis_aplicadas) +
   geom_col(aes(x = jurisdiccion, y = "dosis"))
 ```
 
 ```{r}
 #| eval: false
-#d) Queremos las etiquetas del eje x rotadas 45 grados
+# d) Queremos las etiquetas del eje x rotadas 45 grados
 ggplot(dosis_aplicadas) +
   geom_col(aes(x = jurisdiccion, y = dosis)) +
   theme(axis.text.x = element_text(angle = 45)) +
@@ -1097,7 +1193,7 @@ datos_histograma <- tibble(
 ```{r}
 #| echo: false
 datos_histograma %>%
-  kable() %>% 
+  kable() %>%
   kable_styling()
 ```
 
@@ -1106,9 +1202,9 @@ Viendo la base de datos notamos que puede resumirse según fueron cayendo en dis
 ```{r}
 #| echo: false
 datos_histograma %>%
-  mutate(`Intervalo`= cut(estaturas, c(1.3,1.4,1.5,1.6,1.7,1.8))) %>%
-  mutate(Intervalo = str_remove_all(Intervalo,"\\(|\\]")) %>%
-  mutate(Intervalo = str_replace_all(Intervalo,","," - ")) %>%
+  mutate(`Intervalo` = cut(estaturas, c(1.3, 1.4, 1.5, 1.6, 1.7, 1.8))) %>%
+  mutate(Intervalo = str_remove_all(Intervalo, "\\(|\\]")) %>%
+  mutate(Intervalo = str_replace_all(Intervalo, ",", " - ")) %>%
   group_by(Intervalo) %>%
   tally() %>%
   kable() %>%
@@ -1119,9 +1215,9 @@ Podemos elaborar fácilmente una gráfica de barras para ese conteo:
 ```{r}
 #| echo: false
 datos_histograma %>%
-  mutate(`Intervalo`= cut(estaturas, c(1.3,1.4,1.5,1.6,1.7,1.8))) %>%
-  mutate(Intervalo = str_remove_all(Intervalo,"\\(|\\]")) %>%
-  mutate(Intervalo = str_replace_all(Intervalo,","," - ")) %>%
+  mutate(`Intervalo` = cut(estaturas, c(1.3, 1.4, 1.5, 1.6, 1.7, 1.8))) %>%
+  mutate(Intervalo = str_remove_all(Intervalo, "\\(|\\]")) %>%
+  mutate(Intervalo = str_replace_all(Intervalo, ",", " - ")) %>%
   group_by(Intervalo) %>%
   tally() %>%
   ggplot() +
@@ -1135,21 +1231,23 @@ Podemos también hacer una gráfica de barras donde no pongamos el conteo absolu
 ```{r}
 #| echo: false
 datos_histograma %>%
-  mutate(`Intervalo`= cut(estaturas, c(1.3,1.4,1.5,1.6,1.7,1.8))) %>%
-  mutate(Intervalo = str_remove_all(Intervalo,"\\(|\\]")) %>%
-  mutate(Intervalo = str_replace_all(Intervalo,","," - ")) %>%
+  mutate(`Intervalo` = cut(estaturas, c(1.3, 1.4, 1.5, 1.6, 1.7, 1.8))) %>%
+  mutate(Intervalo = str_remove_all(Intervalo, "\\(|\\]")) %>%
+  mutate(Intervalo = str_replace_all(Intervalo, ",", " - ")) %>%
   group_by(Intervalo) %>%
   tally() %>%
   ggplot() +
-  geom_col(aes(x = Intervalo, y = n/10), fill = "purple")
+  geom_col(aes(x = Intervalo, y = n / 10), fill = "purple")
 ```
 
 Un histograma representa la misma idea que estas gráficas de barras de manera simplificada. Usando los datos asignados previamente puedo construir un histograma como sigue:
 
 ```{r}
 ggplot(datos_histograma) +
-  geom_histogram(aes(x = estaturas), color = "white",
-                 breaks = c(1.3, 1.4, 1.5, 1.6, 1.7, 1.8))
+  geom_histogram(aes(x = estaturas),
+    color = "white",
+    breaks = c(1.3, 1.4, 1.5, 1.6, 1.7, 1.8)
+  )
 ```
 
 donde los `breaks` indican a `R` dónde hacer los cortes (volveremos más adelante). 
@@ -1158,9 +1256,10 @@ Si quisiéramos verlo como porcentaje y no cómo conteo basta con agregar una op
 
 ```{r}
 ggplot(datos_histograma) +
-  geom_histogram(aes(x = estaturas, y = (after_stat(count))/sum(after_stat(count))), 
-                 color = "white",
-                 breaks = c(1.3, 1.4, 1.5, 1.6, 1.7, 1.8))
+  geom_histogram(aes(x = estaturas, y = (after_stat(count)) / sum(after_stat(count))),
+    color = "white",
+    breaks = c(1.3, 1.4, 1.5, 1.6, 1.7, 1.8)
+  )
 ```
 
 ¡Hagamos entonces nuestro primer histograma!
@@ -1177,8 +1276,8 @@ datos_diabetes <- read_csv("datasets/diabetes.csv")
 Para armar el histograma es sólo necesario especificar una variable en el `aes`:
 
 ```{r}
-#Graficación de un histograma
-ggplot(datos_diabetes) + 
+# Graficación de un histograma
+ggplot(datos_diabetes) +
   geom_histogram(aes(x = chol))
 ```
 
@@ -1191,197 +1290,232 @@ Según [Ioannidis](http://www.madgik.di.uoa.gr/sites/default/files/vldb03_pp19-3
 Para especificar el número de barras hay dos formas: utilizando el comando `bins` lo que le dice a `R` cuántas barras poner:
 
 ```{r}
-#Graficación de un histograma con 50 barras
-ggplot(datos_diabetes) + 
+# Graficación de un histograma con 50 barras
+ggplot(datos_diabetes) +
   geom_histogram(aes(x = chol), bins = 50)
 ```
 
 O bien especificando el ancho de cada barra y dejando a `R` decidir:
 
 ```{r}
-#Graficación con barras de ancho 10
-ggplot(datos_diabetes) + 
+# Graficación con barras de ancho 10
+ggplot(datos_diabetes) +
   geom_histogram(aes(x = chol), binwidth = 10)
 ```
 
 o bien especificando de dónde a dónde van los puntos de corte de cada barra:
 
 ```{r}
-#Graficación con barras de ancho 10
-ggplot(datos_diabetes) + 
-  geom_histogram(aes(x = chol), 
-                 breaks = c(50, 100, 150, 200, 250, 300, 350))
+# Graficación con barras de ancho 10
+ggplot(datos_diabetes) +
+  geom_histogram(aes(x = chol),
+    breaks = c(50, 100, 150, 200, 250, 300, 350)
+  )
 ```
 
 El comando `fill` cambia el color interno de las barras. 
 ```{r}
-#El comando fill cambia el color
-ggplot(datos_diabetes) + 
+# El comando fill cambia el color
+ggplot(datos_diabetes) +
   geom_histogram(aes(x = chol), bins = 50, fill = "#cef0ff")
 ```
 
 Mientras que el comando `color` cambia el color del borde de la misma:
 ```{r}
-ggplot(datos_diabetes) + 
-  geom_histogram(aes(x = chol), bins = 50, 
-                 fill = "#cef0ff",  color = "#1D1B1B")
+ggplot(datos_diabetes) +
+  geom_histogram(aes(x = chol),
+    bins = 50,
+    fill = "#cef0ff", color = "#1D1B1B"
+  )
 ```
 
 FInalmente, podemos hacer que el histograma muestre no el número de casos totales en la base sino la proporción de los casos mediante `y = after_stat(density)`. La diferencia entre `after_stat(density)` y `(after_stat(count))/sum(after_stat(count))` es que `after_stat(density)` está hecho para que la suma de las áreas de los rectángulos dé $1$ mientras que en `(after_stat(count))/sum(after_stat(count))` la suma de las alturas de los rectángulos es la que da $1$. 
 
 ```{r}
-#after_stat(density) nos da el % de casos de manera normalizada
-#para que los rectángulos sumen sus áreas a área 1
-ggplot(datos_diabetes) + 
-  geom_histogram(aes(x = chol, y = after_stat(density)), 
-                 bins = 50, fill = "#cef0ff",  color = "#1D1B1B")
+# after_stat(density) nos da el % de casos de manera normalizada
+# para que los rectángulos sumen sus áreas a área 1
+ggplot(datos_diabetes) +
+  geom_histogram(aes(x = chol, y = after_stat(density)),
+    bins = 50, fill = "#cef0ff", color = "#1D1B1B"
+  )
 ```
 
 Podemos agregar, además, una densidad kernel que nos dé una idea de cómo se ve la distribución ajustada. Como veremos más adelante, la densidad kernel (aunque puede ser manipulable) es más fácil que no nos dé errores de distribución incorrecta. 
 
 ```{r}
-#Gráfica de histograma con densidad kernel
-ggplot(datos_diabetes) + 
-  geom_histogram(aes(x = chol, y = after_stat(density)), 
-                 bins = 50,
-                 fill = "#cef0ff",  color = "#1D1B1B") + 
+# Gráfica de histograma con densidad kernel
+ggplot(datos_diabetes) +
+  geom_histogram(aes(x = chol, y = after_stat(density)),
+    bins = 50,
+    fill = "#cef0ff", color = "#1D1B1B"
+  ) +
   geom_density(aes(x = chol))
 ```
 
 **Ojo** `ggplot2` funciona por capas por lo cual el orden en el que se agrega cada capa (`geom`) sí afecta el cómo se ve. Si ponemos el `geom_density` antes del `geom_histogram` nos queda la línea _detrás_ del histograma:
 
 ```{r}
-#Gráfica de histograma con densidad kernel
-ggplot(datos_diabetes) + 
+# Gráfica de histograma con densidad kernel
+ggplot(datos_diabetes) +
   geom_density(aes(x = chol)) +
-  geom_histogram(aes(x = chol, y = after_stat(density)), 
-                 bins = 50,
-                 fill = "#cef0ff",  color = "#1D1B1B")  
+  geom_histogram(aes(x = chol, y = after_stat(density)),
+    bins = 50,
+    fill = "#cef0ff", color = "#1D1B1B"
+  )
 ```
 
 Continuando con la edición podemos cambiar los parámetros de `color` y `size` de la distribución para ajustar su color y tamaño. Así mismo, [`linetype` nos da una línea discontinua](https://ggplot2.tidyverse.org/reference/aes_linetype_size_shape.html): 
 
 ```{r}
-#Cambio de color y tipo de línea a la densidad
-ggplot(datos_diabetes) + 
-  geom_histogram(aes(x = chol, y = after_stat(density)), 
-                 bins = 50,
-                 fill = "#cef0ff",  color = "#1D1B1B") + 
-  geom_density(aes(x = chol), color = "deepskyblue4",
-               linetype = "dotted", linewidth = 1)
+# Cambio de color y tipo de línea a la densidad
+ggplot(datos_diabetes) +
+  geom_histogram(aes(x = chol, y = after_stat(density)),
+    bins = 50,
+    fill = "#cef0ff", color = "#1D1B1B"
+  ) +
+  geom_density(aes(x = chol),
+    color = "deepskyblue4",
+    linetype = "dotted", linewidth = 1
+  )
 ```
 
 Finalmente, modificamos los temas:
 
 ```{r}
-#Graficación con barras de ancho 0.05
-ggplot(datos_diabetes) + 
-  geom_histogram(aes(x = chol, y = after_stat(density)), 
-                 bins = 50,
-                 fill = "#cef0ff",  color = "#1D1B1B") + 
-  geom_density(aes(x = chol), color = "deepskyblue4",
-               linetype = "dotted", linewidth = 1) +
+# Graficación con barras de ancho 0.05
+ggplot(datos_diabetes) +
+  geom_histogram(aes(x = chol, y = after_stat(density)),
+    bins = 50,
+    fill = "#cef0ff", color = "#1D1B1B"
+  ) +
+  geom_density(aes(x = chol),
+    color = "deepskyblue4",
+    linetype = "dotted", linewidth = 1
+  ) +
   labs(
     x        = "Colesterol",
     y        = "",
     title    = "Distribución observada de los niveles de colesterol",
     subtitle = "Población afroamericana de Virginia"
-  ) + 
+  ) +
   theme_bw()
 ```
 
 La función `mean` calcula la media de una columna dentro de una base de datos. Podemos calcular la media de la columna de `chol` dentro de `datos_diabetes`:
 ```{r}
-#Media de la columna de colesterol
-#la opción na.rm = T es para no considerar los valores missing
+# Media de la columna de colesterol
+# la opción na.rm = T es para no considerar los valores missing
 
-promedio_colesterol <- mean(datos_diabetes$chol) #No funciona pues tiene un missing
+promedio_colesterol <- mean(datos_diabetes$chol) # No funciona pues tiene un missing
 promedio_colesterol
 
-#Acá le decimos que ignore el missing con na.rm = T
+# Acá le decimos que ignore el missing con na.rm = T
 promedio_colesterol <- mean(datos_diabetes$chol, na.rm = T)
 promedio_colesterol
 ```
 
 Y agregamos una línea vertical a la gráfica exactamente en la media:
 ```{r}
-#Agregamos indicadora del promedio
-ggplot(datos_diabetes) + 
-  geom_histogram(aes(x = chol, y = after_stat(density)), bins = 50,
-                 fill = "#cef0ff",  color = "#1D1B1B") + 
-  geom_density(aes(x = chol), color = "deepskyblue4",
-               linetype = "dotted", linewidth = 1) +
+# Agregamos indicadora del promedio
+ggplot(datos_diabetes) +
+  geom_histogram(aes(x = chol, y = after_stat(density)),
+    bins = 50,
+    fill = "#cef0ff", color = "#1D1B1B"
+  ) +
+  geom_density(aes(x = chol),
+    color = "deepskyblue4",
+    linetype = "dotted", linewidth = 1
+  ) +
   labs(
     x        = "Colesterol",
     y        = "",
     title    = "Distribución observada de los niveles de colesterol",
     subtitle = "Población afroamericana de Virginia"
-  ) + 
+  ) +
   theme_bw() +
   geom_vline(aes(xintercept = promedio_colesterol))
 ```
 
 Podemos cambiar el color de la línea así como el tipo:
 ```{r}
-#Agregamos indicadora del promedio
-ggplot(datos_diabetes) + 
-  geom_histogram(aes(x = chol, y = after_stat(density)), bins = 50,
-                 fill = "#cef0ff",  color = "#1D1B1B") + 
-  geom_density(aes(x = chol), color = "deepskyblue4",
-               linetype = "dotted", linewidth = 1) +
+# Agregamos indicadora del promedio
+ggplot(datos_diabetes) +
+  geom_histogram(aes(x = chol, y = after_stat(density)),
+    bins = 50,
+    fill = "#cef0ff", color = "#1D1B1B"
+  ) +
+  geom_density(aes(x = chol),
+    color = "deepskyblue4",
+    linetype = "dotted", linewidth = 1
+  ) +
   labs(
     x        = "Colesterol",
     y        = "",
     title    = "Distribución observada de los niveles de colesterol",
     subtitle = "Población afroamericana de Virginia"
-  ) + 
+  ) +
   theme_bw() +
   geom_vline(aes(xintercept = promedio_colesterol),
-             color = "tomato3", linetype = "dashed", linewidth = 1)
+    color = "tomato3", linetype = "dashed", linewidth = 1
+  )
 ```
 
 Finalmente, podemos agregar una anotación junto a la media que nos indique que dicha es la media. Para ello usamos el comando `annotate` indicando que agregaremos un texto (`"text"`) y las coordenadas del mismo.  
 
 ```{r}
-#Agregamos indicadora del promedio
-ggplot(datos_diabetes) + 
-  geom_histogram(aes(x = chol, y = after_stat(density)), bins = 50,
-                 fill = "#cef0ff",  color = "#1D1B1B") + 
-  geom_density(aes(x = chol), color = "deepskyblue4",
-               linetype = "dotted", linewidth = 1) +
+# Agregamos indicadora del promedio
+ggplot(datos_diabetes) +
+  geom_histogram(aes(x = chol, y = after_stat(density)),
+    bins = 50,
+    fill = "#cef0ff", color = "#1D1B1B"
+  ) +
+  geom_density(aes(x = chol),
+    color = "deepskyblue4",
+    linetype = "dotted", linewidth = 1
+  ) +
   labs(
     x        = "Colesterol",
     y        = "",
     title    = "Distribución observada de los niveles de colesterol",
     subtitle = "Población afroamericana de Virginia"
-  ) + 
+  ) +
   theme_bw() +
   geom_vline(aes(xintercept = promedio_colesterol),
-             color = "tomato3", linetype = "dashed", linewidth = 1) +
-  annotate("label", x = promedio_colesterol, 
-           y = 0.0001, label = "Media = 208", color = "tomato3")
+    color = "tomato3", linetype = "dashed", linewidth = 1
+  ) +
+  annotate("label",
+    x = promedio_colesterol,
+    y = 0.0001, label = "Media = 208", color = "tomato3"
+  )
 ```
 
 La función de `scale_y_continuous` permite agregar etiquetas al eje vertical (`scale_x_continuous` si fuera el horizontal). En este caso podemos usar porcentajes para mejor representar los datos:
 
 ```{r}
-#Agregamos indicadora del promedio
-ggplot(datos_diabetes) + 
-  geom_histogram(aes(x = chol, y = after_stat(density)), bins = 50,
-                 fill = "#cef0ff",  color = "#1D1B1B") + 
-  geom_density(aes(x = chol), color = "deepskyblue4",
-               linetype = "dotted", linewidth = 1) +
+# Agregamos indicadora del promedio
+ggplot(datos_diabetes) +
+  geom_histogram(aes(x = chol, y = after_stat(density)),
+    bins = 50,
+    fill = "#cef0ff", color = "#1D1B1B"
+  ) +
+  geom_density(aes(x = chol),
+    color = "deepskyblue4",
+    linetype = "dotted", linewidth = 1
+  ) +
   labs(
     x        = "Colesterol",
     y        = "",
     title    = "Distribución observada de los niveles de colesterol",
     subtitle = "Población afroamericana de Virginia"
-  ) + 
+  ) +
   theme_bw() +
   geom_vline(aes(xintercept = promedio_colesterol),
-             color = "tomato3", linetype = "dashed", linewidth = 1) +
-  annotate("label", x = promedio_colesterol, 
-           y = 0.0001, label = "Media = 208",  color = "tomato3") +
+    color = "tomato3", linetype = "dashed", linewidth = 1
+  ) +
+  annotate("label",
+    x = promedio_colesterol,
+    y = 0.0001, label = "Media = 208", color = "tomato3"
+  ) +
   scale_y_continuous(labels = scales::percent)
 ```
 
@@ -1392,33 +1526,46 @@ ggplot(datos_diabetes) +
 
 ```{r}
 #| echo: false
-#Agregamos indicadora del promedio
+# Agregamos indicadora del promedio
 q025 <- quantile(datos_diabetes$chol, 0.025, na.rm = T)
 q975 <- quantile(datos_diabetes$chol, 0.975, na.rm = T)
-ggplot(datos_diabetes) + 
-  geom_histogram(aes(x = chol, y = after_stat(density)), binwidth = 10,
-                 fill = "#cef0ff",  color = "#1D1B1B") + 
-  geom_density(aes(x = chol), color = "deepskyblue4",
-               linetype = "dotted", linewidth = 1) +
+ggplot(datos_diabetes) +
+  geom_histogram(aes(x = chol, y = after_stat(density)),
+    binwidth = 10,
+    fill = "#cef0ff", color = "#1D1B1B"
+  ) +
+  geom_density(aes(x = chol),
+    color = "deepskyblue4",
+    linetype = "dotted", linewidth = 1
+  ) +
   labs(
     x        = "Colesterol",
     y        = "",
     title    = "Distribución observada de los niveles de colesterol",
     subtitle = "Población afroamericana de Virginia"
-  ) + 
+  ) +
   theme_bw() +
   geom_vline(aes(xintercept = promedio_colesterol),
-             color = "tomato3", linetype = "dashed", linewidth = 1) +
+    color = "tomato3", linetype = "dashed", linewidth = 1
+  ) +
   geom_vline(aes(xintercept = q025),
-             color = "tomato3", linetype = "dashed", linewidth = 1) +
+    color = "tomato3", linetype = "dashed", linewidth = 1
+  ) +
   geom_vline(aes(xintercept = q975),
-             color = "tomato3", linetype = "dashed", linewidth = 1) +
-  annotate("label", x = promedio_colesterol, y = 0.0001, label = "Media = 208", 
-           color = "tomato3") +
-  annotate("label", x = q025, y = 0.0001, label = glue::glue("2.5% = {q025}"), 
-           color = "tomato3") +
-  annotate("label", x = q975, y = 0.0001, label = glue::glue("97.5% = {q975}"), 
-           color = "tomato3") +
+    color = "tomato3", linetype = "dashed", linewidth = 1
+  ) +
+  annotate("label",
+    x = promedio_colesterol, y = 0.0001, label = "Media = 208",
+    color = "tomato3"
+  ) +
+  annotate("label",
+    x = q025, y = 0.0001, label = glue::glue("2.5% = {q025}"),
+    color = "tomato3"
+  ) +
+  annotate("label",
+    x = q975, y = 0.0001, label = glue::glue("97.5% = {q975}"),
+    color = "tomato3"
+  ) +
   scale_y_continuous(labels = scales::label_percent())
 ```
 
@@ -1429,18 +1576,24 @@ ggplot(datos_diabetes) +
 
 ```{r}
 #| echo: false
-#Graficación con barras de ancho 0.05
-ggplot(datos_diabetes) + 
-  geom_histogram(aes(x = height, y = after_stat(density)), color = "black",
-               fill = "#fffff8", bins = 10) +
-  geom_density(aes(x = height), color = "red",
-               fill = "deepskyblue3", alpha = 0.5) +
-  xlab("Altura (pulgadas)") + 
+# Graficación con barras de ancho 0.05
+ggplot(datos_diabetes) +
+  geom_histogram(aes(x = height, y = after_stat(density)),
+    color = "black",
+    fill = "#fffff8", bins = 10
+  ) +
+  geom_density(aes(x = height),
+    color = "red",
+    fill = "deepskyblue3", alpha = 0.5
+  ) +
+  xlab("Altura (pulgadas)") +
   ylab("Densidad") +
   ggtitle("Histograma y densidad ajustada de altura") +
-  theme_linedraw() + 
-  theme(plot.background = element_rect(fill = "#fffff8"),
-        panel.background = element_rect(fill = "#fffff8")) + 
+  theme_linedraw() +
+  theme(
+    plot.background = element_rect(fill = "#fffff8"),
+    panel.background = element_rect(fill = "#fffff8")
+  ) +
   scale_y_continuous(labels = scales::label_percent())
 ```
 
@@ -1448,10 +1601,12 @@ ggplot(datos_diabetes) +
 3. Considera la siguiente base de datos:
 ```{r}
 mis.datos <- data.frame(
-  x = c(1.03, 1.24, 1.47, 1.52, 1.92, 1.93, 1.94, 1.95, 1.96, 1.97,
-       1.98, 1.99, 2.72, 2.75, 2.78, 2.81, 2.84, 2.87, 2.90, 2.93,
-       2.96, 2.99, 3.60, 3.64, 3.66, 3.72, 3.77, 3.88, 3.91, 4.14,
-       4.54, 4.77, 4.81, 5.62)
+  x = c(
+    1.03, 1.24, 1.47, 1.52, 1.92, 1.93, 1.94, 1.95, 1.96, 1.97,
+    1.98, 1.99, 2.72, 2.75, 2.78, 2.81, 2.84, 2.87, 2.90, 2.93,
+    2.96, 2.99, 3.60, 3.64, 3.66, 3.72, 3.77, 3.88, 3.91, 4.14,
+    4.54, 4.77, 4.81, 5.62
+  )
 )
 ```
 
@@ -1469,22 +1624,30 @@ Minitab tiene un [blog](https://blog.minitab.com/blog/3-things-a-histogram-can-t
 
 ```{r}
 mis.datos <- data.frame(
-  A =  c(3.15, 5.46, 3.28, 4.20, 1.98, 2.28, 3.12, 4.10, 3.42, 3.91, 
-         2.06, 5.53, 5.19, 2.39, 1.88, 3.43, 5.51, 2.54, 3.64, 4.33, 
-         4.85, 5.56, 1.89, 4.84, 5.74, 3.22, 5.52, 1.84, 4.31, 2.01, 
-         4.01, 5.31, 2.56, 5.11, 2.58, 4.43, 4.96, 1.90, 5.60, 1.92),
-  B =  c(2.90, 5.21, 3.03, 3.95, 1.73, 2.03, 2.87, 3.85, 3.17, 3.66,
-         1.81, 5.28, 4.94, 2.14, 1.63, 3.18, 5.26, 2.29, 3.39, 4.08,
-         4.60, 5.31, 1.64, 4.59, 5.49, 2.97, 5.27, 1.59, 4.06, 1.76, 
-         3.76, 5.06, 2.31, 4.86, 2.33, 4.18, 4.71, 1.65, 5.35, 1.67),
-  C =  c(2.65, 4.96, 2.78, 3.70, 1.48, 1.78, 2.62, 3.60, 2.92, 3.41,
-         1.56, 5.03, 4.69, 1.89, 1.38, 2.93, 5.01, 2.04, 3.14, 3.83,
-         4.35, 5.06, 1.39, 4.34, 5.24, 2.72, 5.02, 1.34, 3.81, 1.51, 
-         3.51, 4.81, 2.06, 4.61, 2.08, 3.93, 4.46, 1.4, 5.1, 1.42),
-  D =  c(2.40, 4.71, 2.53, 3.45, 1.23, 1.53, 2.37, 3.35, 2.67, 3.16,
-         1.31, 4.78, 4.44, 1.64, 1.13, 2.68, 4.76, 1.79, 2.89, 3.58,
-         4.10, 4.81, 1.14, 4.09, 4.99, 2.47, 4.77, 1.09, 3.56, 1.26, 
-         3.26, 4.56, 1.81, 4.36, 1.83, 3.68, 4.21, 1.15, 4.85, 1.17)
+  A = c(
+    3.15, 5.46, 3.28, 4.20, 1.98, 2.28, 3.12, 4.10, 3.42, 3.91,
+    2.06, 5.53, 5.19, 2.39, 1.88, 3.43, 5.51, 2.54, 3.64, 4.33,
+    4.85, 5.56, 1.89, 4.84, 5.74, 3.22, 5.52, 1.84, 4.31, 2.01,
+    4.01, 5.31, 2.56, 5.11, 2.58, 4.43, 4.96, 1.90, 5.60, 1.92
+  ),
+  B = c(
+    2.90, 5.21, 3.03, 3.95, 1.73, 2.03, 2.87, 3.85, 3.17, 3.66,
+    1.81, 5.28, 4.94, 2.14, 1.63, 3.18, 5.26, 2.29, 3.39, 4.08,
+    4.60, 5.31, 1.64, 4.59, 5.49, 2.97, 5.27, 1.59, 4.06, 1.76,
+    3.76, 5.06, 2.31, 4.86, 2.33, 4.18, 4.71, 1.65, 5.35, 1.67
+  ),
+  C = c(
+    2.65, 4.96, 2.78, 3.70, 1.48, 1.78, 2.62, 3.60, 2.92, 3.41,
+    1.56, 5.03, 4.69, 1.89, 1.38, 2.93, 5.01, 2.04, 3.14, 3.83,
+    4.35, 5.06, 1.39, 4.34, 5.24, 2.72, 5.02, 1.34, 3.81, 1.51,
+    3.51, 4.81, 2.06, 4.61, 2.08, 3.93, 4.46, 1.4, 5.1, 1.42
+  ),
+  D = c(
+    2.40, 4.71, 2.53, 3.45, 1.23, 1.53, 2.37, 3.35, 2.67, 3.16,
+    1.31, 4.78, 4.44, 1.64, 1.13, 2.68, 4.76, 1.79, 2.89, 3.58,
+    4.10, 4.81, 1.14, 4.09, 4.99, 2.47, 4.77, 1.09, 3.56, 1.26,
+    3.26, 4.56, 1.81, 4.36, 1.83, 3.68, 4.21, 1.15, 4.85, 1.17
+  )
 )
 ```
 
@@ -1493,32 +1656,49 @@ Grafica un histograma de las variables `A`, `B`, `C` y `D` de dicha base con un 
 #| echo: false
 bw <- 1
 
-plotA <- ggplot(mis.datos) + geom_histogram(aes(x = A, y = (after_stat(count))/sum(after_stat(count))), fill = "tomato3", color = "black", binwidth = bw) +
-  ylab("Proporción") +   theme(plot.background = element_rect(fill = "#fffff8"),
-        panel.background = element_rect(fill = "#fffff8"))
+plotA <- ggplot(mis.datos) +
+  geom_histogram(aes(x = A, y = (after_stat(count)) / sum(after_stat(count))), fill = "tomato3", color = "black", binwidth = bw) +
+  ylab("Proporción") +
+  theme(
+    plot.background = element_rect(fill = "#fffff8"),
+    panel.background = element_rect(fill = "#fffff8")
+  )
 
-plotB <- ggplot(mis.datos) + geom_histogram(aes(x = B, y = (after_stat(count))/sum(after_stat(count))), fill = "forestgreen", color = "black", binwidth = bw) +   theme(plot.background = element_rect(fill = "#fffff8"),
-        panel.background = element_rect(fill = "#fffff8")) +
+plotB <- ggplot(mis.datos) +
+  geom_histogram(aes(x = B, y = (after_stat(count)) / sum(after_stat(count))), fill = "forestgreen", color = "black", binwidth = bw) +
+  theme(
+    plot.background = element_rect(fill = "#fffff8"),
+    panel.background = element_rect(fill = "#fffff8")
+  ) +
   ylab("Proporción")
 
-plotC <- ggplot(mis.datos) + geom_histogram(aes(x = C, y = (after_stat(count))/sum(after_stat(count))), fill = "purple", color = "black", binwidth = bw) +
-  ylab("Proporción") +   theme(plot.background = element_rect(fill = "#fffff8"),
-        panel.background = element_rect(fill = "#fffff8"))
+plotC <- ggplot(mis.datos) +
+  geom_histogram(aes(x = C, y = (after_stat(count)) / sum(after_stat(count))), fill = "purple", color = "black", binwidth = bw) +
+  ylab("Proporción") +
+  theme(
+    plot.background = element_rect(fill = "#fffff8"),
+    panel.background = element_rect(fill = "#fffff8")
+  )
 
-plotD <- ggplot(mis.datos) + geom_histogram(aes(x = D, y = (after_stat(count))/sum(after_stat(count))), fill = "deepskyblue3", color = "black", binwidth = bw) +
-  ylab("Proporción") +   
-  theme(plot.background = element_rect(fill = "#fffff8"),
-        panel.background = element_rect(fill = "#fffff8"))
-
+plotD <- ggplot(mis.datos) +
+  geom_histogram(aes(x = D, y = (after_stat(count)) / sum(after_stat(count))), fill = "deepskyblue3", color = "black", binwidth = bw) +
+  ylab("Proporción") +
+  theme(
+    plot.background = element_rect(fill = "#fffff8"),
+    panel.background = element_rect(fill = "#fffff8")
+  )
 ```
 
 ```{r}
 #| echo: false
-#SI no lo haces así imprime a lo tonto
-ggdraw(arrangeGrob(plotA, plotB, plotC, plotD, 
-                   top = "Son 4 gráficas separadas no intentes hacer una sola (como en esta que es para las notas)")) +
-  theme(plot.background = 
-          element_rect(fill="#fffff8", color = NA))
+# SI no lo haces así imprime a lo tonto
+ggdraw(arrangeGrob(plotA, plotB, plotC, plotD,
+  top = "Son 4 gráficas separadas no intentes hacer una sola (como en esta que es para las notas)"
+)) +
+  theme(
+    plot.background =
+      element_rect(fill = "#fffff8", color = NA)
+  )
 ```
 
 ¿Podemos concluir la forma de la distribución a partir del histograma? Es decir ¿hay distribuciones sesgadas a la izquierda, a la derecha, uniformes, centradas o con colas pesadas?
@@ -1559,8 +1739,10 @@ edades <- data.frame(
 ```{r}
 #| eval: false
 ggplot(edades) +
-  geom_histogram(aes(x = edad), binwidth = 10, boundary = 20,
-                 fill = "deepskyblue3", color = "white") +
+  geom_histogram(aes(x = edad),
+    binwidth = 10, boundary = 20,
+    fill = "deepskyblue3", color = "white"
+  ) +
   theme_bw()
 ```
 
@@ -1575,10 +1757,14 @@ edades <- data.frame(
   edad = c(23, 27, 31, 34, 35, 36, 38, 41, 42, 44, 52, 58)
 )
 ggplot(edades) +
-  geom_histogram(aes(x = edad), binwidth = 10, boundary = 20,
-                 fill = "deepskyblue3", color = "white") +
-  labs(x = "Edad (años)", y = "Personas",
-       title = "Con intervalos de 10 años") +
+  geom_histogram(aes(x = edad),
+    binwidth = 10, boundary = 20,
+    fill = "deepskyblue3", color = "white"
+  ) +
+  labs(
+    x = "Edad (años)", y = "Personas",
+    title = "Con intervalos de 10 años"
+  ) +
   theme_bw()
 ```
 
@@ -1587,10 +1773,14 @@ Con intervalos de 5 años tendrías el doble de barras (8 en lugar de 4) y **tod
 ```{r}
 #| echo: false
 ggplot(edades) +
-  geom_histogram(aes(x = edad), binwidth = 5, boundary = 20,
-                 fill = "tomato3", color = "white") +
-  labs(x = "Edad (años)", y = "Personas",
-       title = "Con intervalos de 5 años: misma gente, otra historia") +
+  geom_histogram(aes(x = edad),
+    binwidth = 5, boundary = 20,
+    fill = "tomato3", color = "white"
+  ) +
+  labs(
+    x = "Edad (años)", y = "Personas",
+    title = "Con intervalos de 5 años: misma gente, otra historia"
+  ) +
   theme_bw()
 ```
 
@@ -1603,28 +1793,28 @@ Predice el error, córrelo, léelo y arréglalo. Usa la base `edades` del ejerci
 
 ```{r}
 #| eval: false
-#a) Queremos un histograma de las edades
+# a) Queremos un histograma de las edades
 ggplot(edades) +
   geom_histogram(aes(x = edad, y = edad))
 ```
 
 ```{r}
 #| eval: false
-#b) Queremos barras de ancho 5
+# b) Queremos barras de ancho 5
 ggplot(edades) +
   geom_histogram(aes(x = edad), binwidth = 5, bins = 30)
 ```
 
 ```{r}
 #| eval: false
-#c) Queremos el histograma en porcentaje
+# c) Queremos el histograma en porcentaje
 ggplot(edades) +
   geom_histogram(aes(x = edad, y = porcentaje))
 ```
 
 ```{r}
 #| eval: false
-#d) Queremos un histograma de la jurisdicción
+# d) Queremos un histograma de la jurisdicción
 ggplot(dosis_aplicadas) +
   geom_histogram(aes(x = jurisdiccion))
 ```
@@ -1660,19 +1850,24 @@ d.  `jurisdiccion` es **texto**, y un histograma sólo funciona con variables **
 #| out-width: "150px"
 #| fig-cap:  "En ggplot2 puedes graficar lo que quieras. Hasta puedes declarar tu amor. Este próximo 14 de febrero usa ggplot2."
 
-dat <- data.frame(t = seq(0, 2*pi, by = 0.01))
-x   <-  function(t) 16 * sin(t)^3
-y   <- function(t) 13*cos(t) - 5*cos(2*t) - 2*cos(3*t) - cos(4*t)
+dat <- data.frame(t = seq(0, 2 * pi, by = 0.01))
+x <- function(t) 16 * sin(t)^3
+y <- function(t) 13 * cos(t) - 5 * cos(2 * t) - 2 * cos(3 * t) - cos(4 * t)
 
 dat$y <- y(dat$t)
 dat$x <- x(dat$t)
 
-heart <- ggplot(dat, aes(x,y)) +
+heart <- ggplot(dat, aes(x, y)) +
   geom_polygon(fill = "red", col = "firebrick", alpha = 0.9) +
-  theme_bw() + ggtitle("El amor según ggplot2") + xlab("") + ylab("")
+  theme_bw() +
+  ggtitle("El amor según ggplot2") +
+  xlab("") +
+  ylab("")
 
-heart +  theme(plot.background = element_rect(fill = "#fffff8"),
-        panel.background = element_rect(fill = "#fffff8"))
+heart + theme(
+  plot.background = element_rect(fill = "#fffff8"),
+  panel.background = element_rect(fill = "#fffff8")
+)
 ```
 
 La base de datos `casos_covid_agosto_2022.csv` contiene datos sobre la cantidad de casos reportados en el Sistema Nacional de Vigilancia Epidemiológica (SINAVE) por covid, sospecha de covid u otra enfermedad respiratoria. Leamos la base:
@@ -1686,16 +1881,16 @@ sinave <- read_csv("datasets/casos_covid_agosto_2022.csv")
 Grafiquemos la cantidad de casos totales en México como puntos
 
 ```{r}
-ggplot(sinave) + 
-  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") 
+ggplot(sinave) +
+  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff")
 ```
 
 podemos agregar una línea que una los puntos pero como hay tantos no se ve muy bien:
 
 ```{r}
-ggplot(sinave) + 
-  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") + 
-  geom_line(aes(x = FECHA_SINTOMAS, y = n), color = "#ffd79d") 
+ggplot(sinave) +
+  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") +
+  geom_line(aes(x = FECHA_SINTOMAS, y = n), color = "#ffd79d")
 ```
 
 podemos mejor usar la función `geom_spline` del paquete `ggformula` para usar una línea que se encargue de eliminar el ruido de los datos y descubrir la forma inherente:
@@ -1705,35 +1900,35 @@ podemos mejor usar la función `geom_spline` del paquete `ggformula` para usar u
 #| warning: false
 library(ggformula)
 
-ggplot(sinave) + 
-  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") + 
-  geom_spline(aes(x = FECHA_SINTOMAS, y = n), color = "#ffd79d") 
+ggplot(sinave) +
+  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") +
+  geom_spline(aes(x = FECHA_SINTOMAS, y = n), color = "#ffd79d")
 ```
 
 nota que el suavizamiento ahora es mucho mejor. Podemos controlar el nivel de suavizamiento con los grados de libertad del spline `df`:
 
 ```{r}
-ggplot(sinave) + 
-  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") + 
+ggplot(sinave) +
+  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") +
   geom_spline(aes(x = FECHA_SINTOMAS, y = n, color = "df 900"), df = 900) +
   geom_spline(aes(x = FECHA_SINTOMAS, y = n, color = "df 45"), df = 45) +
-  geom_spline(aes(x = FECHA_SINTOMAS, y = n, color = "df 20"), df = 15)  +
-  geom_spline(aes(x = FECHA_SINTOMAS, y = n, color = "df 5"), df = 10) 
+  geom_spline(aes(x = FECHA_SINTOMAS, y = n, color = "df 20"), df = 15) +
+  geom_spline(aes(x = FECHA_SINTOMAS, y = n, color = "df 5"), df = 10)
 ```
 
 Hay un equlibrio en el nivel de suavizamiento: poner demasiado poco rompe la forma `df = 10` mientras que suavizamiento alto sigue la tendencia de los datos tal cual `df = 900`. Me quedaré con `df = 45` porque me gusta cómo se ve a ese nivel. 
 
 ```{r}
-ggplot(sinave) + 
-  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") + 
-  geom_spline(aes(x = FECHA_SINTOMAS, y = n), color = "#ffd79d", df = 45) 
+ggplot(sinave) +
+  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") +
+  geom_spline(aes(x = FECHA_SINTOMAS, y = n), color = "#ffd79d", df = 45)
 ```
 
 Lo que sigue es personalizar la gráfica poniendo los títulos, el tema y cambiando los ejes a tener notación con comas. Todo esto lo hemos hecho antes: 
 
 ```{r}
-ggplot(sinave) + 
-  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") + 
+ggplot(sinave) +
+  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") +
   geom_spline(aes(x = FECHA_SINTOMAS, y = n), color = "#ffd79d", df = 45) +
   labs(
     x        = "",
@@ -1748,8 +1943,8 @@ ggplot(sinave) +
 Agregaré un `scale_x_date` para elegir tener cortes en el eje `x` cada 6 meses y:
 
 ```{r}
-ggplot(sinave) + 
-  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") + 
+ggplot(sinave) +
+  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") +
   geom_spline(aes(x = FECHA_SINTOMAS, y = n), color = "#ffd79d", df = 45) +
   labs(
     x        = "",
@@ -1759,16 +1954,18 @@ ggplot(sinave) +
     caption  = "Datos Abiertos de la Dirección General de Epidemiología"
   ) +
   scale_y_continuous(labels = scales::label_comma()) +
-  scale_x_date(date_breaks = "6 months", date_minor_breaks = "3 months",
-               date_labels = "%b/%Y") +
+  scale_x_date(
+    date_breaks = "6 months", date_minor_breaks = "3 months",
+    date_labels = "%b/%Y"
+  ) +
   theme_bw()
 ```
 
 Utilizaremos `theme` para realizar cambios a cada parte de la gráfica comenzando por cambiar el color de fondo:
 
 ```{r}
-ggplot(sinave) + 
-  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") + 
+ggplot(sinave) +
+  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") +
   geom_spline(aes(x = FECHA_SINTOMAS, y = n), color = "#ffd79d", df = 45) +
   labs(
     x        = "",
@@ -1778,8 +1975,10 @@ ggplot(sinave) +
     caption  = "Datos Abiertos de la Dirección General de Epidemiología"
   ) +
   scale_y_continuous(labels = scales::label_comma()) +
-  scale_x_date(date_breaks = "6 months", date_minor_breaks = "3 months",
-               date_labels = "%b/%Y") +
+  scale_x_date(
+    date_breaks = "6 months", date_minor_breaks = "3 months",
+    date_labels = "%b/%Y"
+  ) +
   theme_classic() +
   theme(
     panel.background = element_rect(fill = "#320d3e")
@@ -1789,8 +1988,8 @@ ggplot(sinave) +
 `theme` nos permite cambiar las características de cualquier parte del plot. Por ejemplo haciendo una mezcla de colores horribles podemos hacer **la gráfica más fea que hayas visto**:
 
 ```{r}
-ggplot(sinave) + 
-  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") + 
+ggplot(sinave) +
+  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#f162ff") +
   geom_spline(aes(x = FECHA_SINTOMAS, y = n), color = "#ffd79d", df = 45) +
   labs(
     x        = "",
@@ -1800,29 +1999,31 @@ ggplot(sinave) +
     caption  = "Datos Abiertos de la Dirección General de Epidemiología"
   ) +
   scale_y_continuous(labels = scales::label_comma()) +
-  scale_x_date(date_breaks = "6 months", date_minor_breaks = "3 months",
-               date_labels = "%b/%Y") +
+  scale_x_date(
+    date_breaks = "6 months", date_minor_breaks = "3 months",
+    date_labels = "%b/%Y"
+  ) +
   theme_classic() +
   theme(
-    panel.background = element_rect(fill = "#320d3e"),                  #Fondo de la gráfica
-    plot.background  = element_rect(fill = "green"),                    #Fondo de los títulos
-    axis.text.x      = element_text(color = "red", size = 5),           #Letras de los ejes
-    axis.text.y      = element_text(color = "forestgreen"),             #Letras de los ejes
-    axis.ticks       = element_line(color = "red", linewidth = 2),           #Los | abajo de los ejes
-    axis.line.x      = element_line(color = "orange", linewidth = 2),        #Línea del eje
-    axis.line.y      = element_line(color = "yellow", linewidth = 3),        #Otra línea del eje
-    plot.title       = element_text(color = "blue", size = 20),         #Título
-    plot.subtitle    = element_text(color = "gray25", face = "italic"), #Subtítulo
-    plot.caption     = element_text(color = "purple"),                  #Caption
-    axis.title.y     = element_text(color = "pink"),                    #Lo que dice el eje y
+    panel.background = element_rect(fill = "#320d3e"), # Fondo de la gráfica
+    plot.background  = element_rect(fill = "green"), # Fondo de los títulos
+    axis.text.x      = element_text(color = "red", size = 5), # Letras de los ejes
+    axis.text.y      = element_text(color = "forestgreen"), # Letras de los ejes
+    axis.ticks       = element_line(color = "red", linewidth = 2), # Los | abajo de los ejes
+    axis.line.x      = element_line(color = "orange", linewidth = 2), # Línea del eje
+    axis.line.y      = element_line(color = "yellow", linewidth = 3), # Otra línea del eje
+    plot.title       = element_text(color = "blue", size = 20), # Título
+    plot.subtitle    = element_text(color = "gray25", face = "italic"), # Subtítulo
+    plot.caption     = element_text(color = "purple"), # Caption
+    axis.title.y     = element_text(color = "pink"), # Lo que dice el eje y
   )
 ```
 
 La cual podemos arreglar rápidamente con una mezcla amigable de colores:
 
 ```{r}
-ggplot(sinave) + 
-  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#007677") + 
+ggplot(sinave) +
+  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#007677") +
   geom_spline(aes(x = FECHA_SINTOMAS, y = n), color = "#ffd79d", df = 45) +
   labs(
     x        = "",
@@ -1832,21 +2033,23 @@ ggplot(sinave) +
     caption  = "Datos Abiertos de la Dirección General de Epidemiología"
   ) +
   scale_y_continuous(labels = scales::label_comma()) +
-  scale_x_date(date_breaks = "6 months", date_minor_breaks = "3 months",
-               date_labels = "%b/%Y") +
+  scale_x_date(
+    date_breaks = "6 months", date_minor_breaks = "3 months",
+    date_labels = "%b/%Y"
+  ) +
   theme_classic() +
   theme(
-    panel.background = element_rect(fill = "#003f5c"),                   #Fondo de la gráfica
-    plot.background  = element_rect(fill = "#003f5c", color = "black"),  #Fondo de los títulos
-    axis.text.x      = element_text(color = "gray75"),                   #Letras de los ejes
-    axis.text.y      = element_text(color = "gray75"),                   #Letras de los ejes
-    axis.ticks       = element_line(color = "gray75"),                   #Los | abajo de los ejes
-    axis.line.x      = element_line(color = "gray75"),                   #Línea del eje
-    axis.line.y      = element_line(color = "gray75"),                   #Otra línea del eje
-    plot.title       = element_text(color = "gray75", size = 25),        #Título
-    plot.subtitle    = element_text(color = "#62a757", face = "italic"), #Subtítulo
-    plot.caption     = element_text(color = "#62a757"),                  #Caption
-    axis.title.y     = element_text(color = "gray75"),                   #Lo que dice el eje y
+    panel.background = element_rect(fill = "#003f5c"), # Fondo de la gráfica
+    plot.background  = element_rect(fill = "#003f5c", color = "black"), # Fondo de los títulos
+    axis.text.x      = element_text(color = "gray75"), # Letras de los ejes
+    axis.text.y      = element_text(color = "gray75"), # Letras de los ejes
+    axis.ticks       = element_line(color = "gray75"), # Los | abajo de los ejes
+    axis.line.x      = element_line(color = "gray75"), # Línea del eje
+    axis.line.y      = element_line(color = "gray75"), # Otra línea del eje
+    plot.title       = element_text(color = "gray75", size = 25), # Título
+    plot.subtitle    = element_text(color = "#62a757", face = "italic"), # Subtítulo
+    plot.caption     = element_text(color = "#62a757"), # Caption
+    axis.title.y     = element_text(color = "gray75"), # Lo que dice el eje y
   )
 ```
 
@@ -1854,8 +2057,8 @@ y finalmente podemos agregar anotaciones:
 
 
 ```{r}
-ggplot(sinave) + 
-  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#007677") + 
+ggplot(sinave) +
+  geom_point(aes(x = FECHA_SINTOMAS, y = n), color = "#007677") +
   geom_spline(aes(x = FECHA_SINTOMAS, y = n), color = "#ffd79d", df = 45) +
   labs(
     x        = "",
@@ -1865,29 +2068,35 @@ ggplot(sinave) +
     caption  = "Datos Abiertos de la Dirección General de Epidemiología"
   ) +
   scale_y_continuous(labels = scales::label_comma()) +
-  scale_x_date(date_breaks = "6 months", date_minor_breaks = "3 months",
-           date_labels = "%b/%Y") +
+  scale_x_date(
+    date_breaks = "6 months", date_minor_breaks = "3 months",
+    date_labels = "%b/%Y"
+  ) +
   theme_classic() +
   theme(
-    panel.background = element_rect(fill = "#003f5c"),                   #Fondo de la gráfica
-    plot.background  = element_rect(fill = "#003f5c", color = "black"),  #Fondo de los títulos
-    axis.text.x      = element_text(color = "gray75"),                   #Letras de los ejes
-    axis.text.y      = element_text(color = "gray75"),                   #Letras de los ejes
-    axis.ticks       = element_line(color = "gray75"),                   #Los | abajo de los ejes
-    axis.line.x      = element_line(color = "gray75"),                   #Línea del eje
-    axis.line.y      = element_line(color = "gray75"),                   #Otra línea del eje
-    plot.title       = element_text(color = "gray75", size = 25),        #Título
-    plot.subtitle    = element_text(color = "#62a757", face = "italic"), #Subtítulo
-    plot.caption     = element_text(color = "#62a757"),                  #Caption
-    axis.title.y     = element_text(color = "gray75"),                   #Lo que dice el eje y
+    panel.background = element_rect(fill = "#003f5c"), # Fondo de la gráfica
+    plot.background  = element_rect(fill = "#003f5c", color = "black"), # Fondo de los títulos
+    axis.text.x      = element_text(color = "gray75"), # Letras de los ejes
+    axis.text.y      = element_text(color = "gray75"), # Letras de los ejes
+    axis.ticks       = element_line(color = "gray75"), # Los | abajo de los ejes
+    axis.line.x      = element_line(color = "gray75"), # Línea del eje
+    axis.line.y      = element_line(color = "gray75"), # Otra línea del eje
+    plot.title       = element_text(color = "gray75", size = 25), # Título
+    plot.subtitle    = element_text(color = "#62a757", face = "italic"), # Subtítulo
+    plot.caption     = element_text(color = "#62a757"), # Caption
+    axis.title.y     = element_text(color = "gray75"), # Lo que dice el eje y
   ) +
-  #Anotaciones
+  # Anotaciones
   geom_point(aes(x = as.Date("2020/02/28"), y = 1), color = "gray75", data = NULL, size = 2) +
-  geom_segment(aes(x = as.Date("2020/02/28"), xend = as.Date("2020/02/28"), y = 1,
-                   yend = 75000), color = "gray75") +
+  geom_segment(aes(
+    x = as.Date("2020/02/28"), xend = as.Date("2020/02/28"), y = 1,
+    yend = 75000
+  ), color = "gray75") +
   geom_point(aes(x = as.Date("2020/02/28"), y = 75000), color = "gray75", data = NULL, size = 2) +
-  annotate("text", x = as.Date("2020/03/15"), y = 75000, hjust = 0,
-           label = "Primer caso de COVID-19", color = "gray75")
+  annotate("text",
+    x = as.Date("2020/03/15"), y = 75000, hjust = 0,
+    label = "Primer caso de COVID-19", color = "gray75"
+  )
 ```
 
 ### Ejercicios
@@ -1903,11 +2112,14 @@ ggplot(sinave) +
 library(ggformula)
 
 datos_jal <- read_csv("datasets/dosis_antihep_jalisco.csv",
-                      locale = locale(encoding = "WINDOWS-1252"),
-                      show_col_types = FALSE)
+  locale = locale(encoding = "WINDOWS-1252"),
+  show_col_types = FALSE
+)
 
-ggplot(datos_jal,
-       aes(x = Anio, y = `Dosis de Antihepatitis B en Jalisco`)) + 
+ggplot(
+  datos_jal,
+  aes(x = Anio, y = `Dosis de Antihepatitis B en Jalisco`)
+) +
   geom_spline(color = "#ADADFF", df = 7) +
   geom_point(color = "#A5C9CA") +
   theme_classic() +
@@ -1925,9 +2137,9 @@ ggplot(datos_jal,
     axis.line        = element_line(color = "#395B64"),
     plot.title       = element_text(color = "#ADADFF"),
     plot.subtitle    = element_text(color = "#A5C9CA"),
-    axis.title       = element_text(color = "#ADADFF") 
+    axis.title       = element_text(color = "#ADADFF")
   ) +
-  scale_y_continuous(labels = scales::comma) 
+  scale_y_continuous(labels = scales::comma)
 ```
 
 ### Ejercicio a mano: dibuja la trayectoria
@@ -1947,14 +2159,14 @@ Dibuja lo que sale de cada bloque. Anota cuántos picos tiene la curva, en qué 
 
 ```{r}
 #| eval: false
-#a)
+# a)
 ggplot(brote) +
   geom_line(aes(x = semana, y = casos))
 ```
 
 ```{r}
 #| eval: false
-#b)
+# b)
 ggplot(brote) +
   geom_line(aes(x = semana, y = casos)) +
   geom_point(aes(x = semana, y = casos))
@@ -1962,7 +2174,7 @@ ggplot(brote) +
 
 ```{r}
 #| eval: false
-#c) ¿Qué gráfica sale de los MISMOS datos pero en desorden?
+# c) ¿Qué gráfica sale de los MISMOS datos pero en desorden?
 brote_desordenado <- brote[c(3, 1, 5, 2, 6, 4), ]
 
 ggplot(brote_desordenado) +
@@ -1971,7 +2183,7 @@ ggplot(brote_desordenado) +
 
 ```{r}
 #| eval: false
-#d) La misma base desordenada, pero con geom_path en vez de geom_line
+# d) La misma base desordenada, pero con geom_path en vez de geom_line
 ggplot(brote_desordenado) +
   geom_path(aes(x = semana, y = casos))
 ```
@@ -1984,12 +2196,17 @@ ggplot(brote_desordenado) +
 ```{r}
 #| echo: false
 plot_grid(
-  ggplot(brote) + geom_line(aes(x = semana, y = casos)) +
-    labs(title = "a) sólo línea") + theme_bw(),
-  ggplot(brote) + geom_line(aes(x = semana, y = casos)) +
+  ggplot(brote) +
+    geom_line(aes(x = semana, y = casos)) +
+    labs(title = "a) sólo línea") +
+    theme_bw(),
+  ggplot(brote) +
+    geom_line(aes(x = semana, y = casos)) +
     geom_point(aes(x = semana, y = casos)) +
-    labs(title = "b) línea + puntos") + theme_bw(),
-  ncol = 2)
+    labs(title = "b) línea + puntos") +
+    theme_bw(),
+  ncol = 2
+)
 ```
 
 **c)** Sale **exactamente la misma gráfica que en `a`**, aunque las filas estén revueltas. Esto sorprende a mucha gente: `geom_line` **ordena los datos por el eje `x`** antes de unirlos. Es decir, no une los puntos en el orden en que están en tu base, sino de izquierda a derecha.
@@ -2000,11 +2217,16 @@ plot_grid(
 #| echo: false
 brote_desordenado <- brote[c(3, 1, 5, 2, 6, 4), ]
 plot_grid(
-  ggplot(brote_desordenado) + geom_line(aes(x = semana, y = casos)) +
-    labs(title = "c) geom_line: ordena por x") + theme_bw(),
-  ggplot(brote_desordenado) + geom_path(aes(x = semana, y = casos)) +
-    labs(title = "d) geom_path: respeta el orden") + theme_bw(),
-  ncol = 2)
+  ggplot(brote_desordenado) +
+    geom_line(aes(x = semana, y = casos)) +
+    labs(title = "c) geom_line: ordena por x") +
+    theme_bw(),
+  ggplot(brote_desordenado) +
+    geom_path(aes(x = semana, y = casos)) +
+    labs(title = "d) geom_path: respeta el orden") +
+    theme_bw(),
+  ncol = 2
+)
 ```
 
 > **¿Y esto para qué me sirve?** Para series de tiempo casi siempre quieres `geom_line`. `geom_path` sirve cuando el orden *sí* es la información: por ejemplo para dibujar la trayectoria de un huracán, el recorrido de una brigada, o una gráfica donde el eje `x` es la prevalencia y el `y` la mortalidad y quieres ver cómo se movió un país año con año.
@@ -2014,21 +2236,21 @@ plot_grid(
 
 ```{r}
 #| eval: false
-#a) Queremos una línea del número de casos por semana
+# a) Queremos una línea del número de casos por semana
 ggplot(brote) +
   geom_line(aes(x = semana))
 ```
 
 ```{r}
 #| eval: false
-#b) Queremos la línea en rojo y más gruesa
+# b) Queremos la línea en rojo y más gruesa
 ggplot(brote) +
   geom_line(aes(x = semana, y = casos, color = "red", size = 2))
 ```
 
 ```{r}
 #| eval: false
-#c) Queremos marcar la semana pico con una línea vertical
+# c) Queremos marcar la semana pico con una línea vertical
 ggplot(brote) +
   geom_line(aes(x = semana, y = casos)) +
   geom_hline(xintercept = 3, linetype = "dashed")
@@ -2036,7 +2258,7 @@ ggplot(brote) +
 
 ```{r}
 #| eval: false
-#d) Queremos que el eje y empiece en cero
+# d) Queremos que el eje y empiece en cero
 ggplot(brote) +
   geom_line(aes(x = semana, y = casos)) +
   ylim(0)

@@ -14,7 +14,7 @@ Discutimos por qué vale la pena hacer un curso de `R` y cómo instalar tanto `R
 ```{r}
 #| echo: false
 #| message: false
-library(geomnet, quietly = TRUE) #devtools::install_github("sctyner/geomnet")
+library(geomnet, quietly = TRUE) # devtools::install_github("sctyner/geomnet")
 library(tidyverse, quietly = TRUE)
 library(gridExtra, quietly = TRUE)
 library(latex2exp, quietly = TRUE)
@@ -39,7 +39,7 @@ Yo me enfrenté a `R` por primera vez hace más de 12 años cuando un grupo de i
 #| message: false
 #| out-width: "150px"
 #| fig-cap: "`R` es un programa chido de estadística. FIN."
-knitr::include_graphics('images/rlogo.png')
+knitr::include_graphics("images/rlogo.png")
 ```
 
 
@@ -71,69 +71,84 @@ Finalmente, uno de los consejos más importantes que te puedo dar es que este cu
 #| echo: false
 #| warning: false
 #| message: false
-rojos  <- data.frame(x = rnorm(100, 1), y = rnorm(100,1))
-verdes <- data.frame(x = rnorm(100, -1), y = rnorm(100,-2))
-xmin   <- c(-4,4)
-ymin   <- c(-4,4)
-scatter <- ggplot(mapping=aes(x = x, y = y)) + 
-  geom_point(data = verdes, color = "deepskyblue3", size = 4) + 
+rojos <- data.frame(x = rnorm(100, 1), y = rnorm(100, 1))
+verdes <- data.frame(x = rnorm(100, -1), y = rnorm(100, -2))
+xmin <- c(-4, 4)
+ymin <- c(-4, 4)
+scatter <- ggplot(mapping = aes(x = x, y = y)) +
+  geom_point(data = verdes, color = "deepskyblue3", size = 4) +
   geom_point(data = rojos, color = "tomato3", size = 4) +
   geom_point(data = data.frame(x = 1, y = 2), color = "black", size = 5) +
   geom_point(data = data.frame(x = 1, y = 2), color = "orange", size = 3) +
   theme_classic() +
-  theme(plot.background = element_rect(fill = "#fffff8"),
-        panel.background = element_rect(fill = "#fffff8")) +
-  xlim(xmin[1],xmin[2]) + ylim(ymin[1],ymin[2]) + 
-  xlab("Diferencia de altura respecto a la media") + 
+  theme(
+    plot.background = element_rect(fill = "#fffff8"),
+    panel.background = element_rect(fill = "#fffff8")
+  ) +
+  xlim(xmin[1], xmin[2]) +
+  ylim(ymin[1], ymin[2]) +
+  xlab("Diferencia de altura respecto a la media") +
   ylab("Diferencia de peso respecto a la media") +
   ggtitle("Datos simulados de peso y altura")
 
 empty <- ggplot() +
-         geom_point(aes(1,1), colour="white")+
-         theme(axis.ticks=element_blank(), 
-               axis.text.x=element_blank(), axis.text.y=element_blank(),                
-               plot.background = element_rect(fill = "#fffff8"),
-               panel.background = element_rect(fill = "#fffff8"),
-               axis.title.x=element_blank(), axis.title.y=element_blank())
+  geom_point(aes(1, 1), colour = "white") +
+  theme(
+    axis.ticks = element_blank(),
+    axis.text.x = element_blank(), axis.text.y = element_blank(),
+    plot.background = element_rect(fill = "#fffff8"),
+    panel.background = element_rect(fill = "#fffff8"),
+    axis.title.x = element_blank(), axis.title.y = element_blank()
+  )
 
-xhist <- seq(xmin[1],xmin[2], length.out = 100)
-hist_top <- ggplot(mapping=aes(x=x,y=y)) + 
-  geom_line(color="tomato3", data = data.frame(x = xhist, y = dnorm(xhist,1))) +
-  geom_line(color="deepskyblue3", data = data.frame(x = xhist, y = dnorm(xhist,-1))) +
-  theme_classic() + 
-  xlim(xmin[1],xmin[2]) + 
-  theme(plot.background = element_rect(fill = "#fffff8"),
-        panel.background = element_rect(fill = "#fffff8")) +
-  ylab("Densidad") + xlab("") +
+xhist <- seq(xmin[1], xmin[2], length.out = 100)
+hist_top <- ggplot(mapping = aes(x = x, y = y)) +
+  geom_line(color = "tomato3", data = data.frame(x = xhist, y = dnorm(xhist, 1))) +
+  geom_line(color = "deepskyblue3", data = data.frame(x = xhist, y = dnorm(xhist, -1))) +
+  theme_classic() +
+  xlim(xmin[1], xmin[2]) +
+  theme(
+    plot.background = element_rect(fill = "#fffff8"),
+    panel.background = element_rect(fill = "#fffff8")
+  ) +
+  ylab("Densidad") +
+  xlab("") +
   ggtitle("Altura")
 
-yhist      <- seq(ymin[1],ymin[2], length.out = 100)
-hist_right <- ggplot(mapping=aes(x=x,y=y)) + 
-                geom_line(color="tomato3", data = data.frame(x = yhist, y = dnorm(yhist,1))) +
-                geom_line(color="deepskyblue3", 
-                          data = data.frame(x = yhist, y = dnorm(yhist,-2))) + 
-                ylab("Densidad") + 
-                xlab("") +
-                ggtitle("Peso") +
-                theme_classic() + theme(plot.background = element_rect(fill = "#fffff8"),
-                      panel.background = element_rect(fill = "#fffff8")) +
-                xlim(ymin[1],ymin[2]) + coord_flip()
+yhist <- seq(ymin[1], ymin[2], length.out = 100)
+hist_right <- ggplot(mapping = aes(x = x, y = y)) +
+  geom_line(color = "tomato3", data = data.frame(x = yhist, y = dnorm(yhist, 1))) +
+  geom_line(
+    color = "deepskyblue3",
+    data = data.frame(x = yhist, y = dnorm(yhist, -2))
+  ) +
+  ylab("Densidad") +
+  xlab("") +
+  ggtitle("Peso") +
+  theme_classic() +
+  theme(
+    plot.background = element_rect(fill = "#fffff8"),
+    panel.background = element_rect(fill = "#fffff8")
+  ) +
+  xlim(ymin[1], ymin[2]) +
+  coord_flip()
 
 g <- arrangeGrob(
-            hist_top +  geom_vline(xintercept = 0, linetype="dashed", color = "forestgreen"), 
-            empty, 
-            scatter +  geom_vline(xintercept = 0, linetype="dashed", color = "forestgreen") +
-              geom_hline(yintercept = -0.5, linetype="dashed", color = "forestgreen") + 
-              annotate("text", x = -3.5, y = 3.5, label = TeX("$\\Omega_1$"), color = "black") + 
-              annotate("text", x = 3.5,  y = 3.5, label = TeX("$\\Omega_2$"), color = "tomato3") + 
-              annotate("text", x = 3.5, y = -3.5, label = TeX("$\\Omega_3$"), color = "black") + 
-              annotate("text", x = -3.5, y = -3.5, label = TeX("$\\Omega_4$"), color = "deepskyblue3"), 
-            hist_right +  geom_vline(xintercept = -0.5, linetype="dashed", color = "forestgreen"), ncol=2, nrow=2, widths=c(5, 2), heights=c(2, 5),
-            bottom = textGrob("RESULTADOS DE LA SIMULACIÓN", gp=gpar(fontface="bold", col ="black")))
+  hist_top + geom_vline(xintercept = 0, linetype = "dashed", color = "forestgreen"),
+  empty,
+  scatter + geom_vline(xintercept = 0, linetype = "dashed", color = "forestgreen") +
+    geom_hline(yintercept = -0.5, linetype = "dashed", color = "forestgreen") +
+    annotate("text", x = -3.5, y = 3.5, label = TeX("$\\Omega_1$"), color = "black") +
+    annotate("text", x = 3.5, y = 3.5, label = TeX("$\\Omega_2$"), color = "tomato3") +
+    annotate("text", x = 3.5, y = -3.5, label = TeX("$\\Omega_3$"), color = "black") +
+    annotate("text", x = -3.5, y = -3.5, label = TeX("$\\Omega_4$"), color = "deepskyblue3"),
+  hist_right + geom_vline(xintercept = -0.5, linetype = "dashed", color = "forestgreen"),
+  ncol = 2, nrow = 2, widths = c(5, 2), heights = c(2, 5),
+  bottom = textGrob("RESULTADOS DE LA SIMULACIÓN", gp = gpar(fontface = "bold", col = "black"))
+)
 
-cowplot::ggdraw(g) + 
-  theme(plot.background = element_rect(fill="#fffff8", color = NA))
-
+cowplot::ggdraw(g) +
+  theme(plot.background = element_rect(fill = "#fffff8", color = NA))
 ```
 
 ### Puntos en contra de `R`
@@ -150,40 +165,44 @@ Por supuesto, no todo es miel sobre hojuelas con `R`. Particularmente, algunos d
 #| out-width: "150px"
 #| fig-cap: "La curva de aprendizaje de `R` es más empinada pero después de un rato vale la pena"
 
-#Get data
-x     <- seq(-0.5,2, length.out=250)
+# Get data
+x <- seq(-0.5, 2, length.out = 250)
 pdata <- data.frame(x = x, y = x^2)
 
-ggplot(pdata) + 
+ggplot(pdata) +
   geom_vline(xintercept = 1, linetype = "dashed", color = "gray", linewidth = 0.5) +
   geom_hline(yintercept = 1, linetype = "dashed", color = "gray", linewidth = 0.5) +
   geom_vline(xintercept = 0, linetype = "dashed", color = "gray", linewidth = 0.5) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "gray", linewidth = 0.5) +
   geom_line(aes(x = x, y = y, color = "STATA, SPSS ó SAS"), data = subset(pdata, x > 0)) +
-  geom_line(aes(x = x, y = 0, color = "STATA, SPSS ó SAS"), data = subset(pdata, x < 0)) + 
-  geom_line(aes(x = x, y = x, color = "R")) + 
-  geom_point(aes(x = x, y = y), color = "gray", data = data.frame(x = 1, y = 1)) + 
-  geom_point(aes(x = x, y = y), color = "gray", data = data.frame(x = 0, y = 0)) + 
-  theme_classic() + 
+  geom_line(aes(x = x, y = 0, color = "STATA, SPSS ó SAS"), data = subset(pdata, x < 0)) +
+  geom_line(aes(x = x, y = x, color = "R")) +
+  geom_point(aes(x = x, y = y), color = "gray", data = data.frame(x = 1, y = 1)) +
+  geom_point(aes(x = x, y = y), color = "gray", data = data.frame(x = 0, y = 0)) +
+  theme_classic() +
   ylab(toupper("Dificultad para programar")) +
-  xlab(toupper("Dificultad del modelo")) + 
-  coord_cartesian(ylim = c(-0.5, 4), clip = 'off') + 
+  xlab(toupper("Dificultad del modelo")) +
+  coord_cartesian(ylim = c(-0.5, 4), clip = "off") +
   annotate("text", x = 0.5, y = -0.9, label = "No uses R") +
   annotate("text", x = 1.5, y = -0.9, label = "Usa R") +
   annotate("text", x = -0.25, y = -0.9, label = "¡R!") +
-  theme(axis.text = element_blank(),
-        axis.title.x = element_text(margin = margin(0.5, unit = "cm")),
-        axis.ticks.y = element_blank(),
-        plot.background = element_rect(fill = "#fffff8"),
-        legend.background = element_rect(fill = "#fffff8"),
-        panel.background = element_rect(fill = "#fffff8"),
-        axis.ticks.length.x = unit(.5, "cm")) + 
-  scale_x_continuous(breaks = c(0,1)) +
-  scale_y_continuous(breaks = c(0,1)) + 
-  scale_color_manual("Programa", 
-                     values = c("STATA, SPSS ó SAS" = "tomato3", 
-                                "R" = "deepskyblue3"))
-
+  theme(
+    axis.text = element_blank(),
+    axis.title.x = element_text(margin = margin(0.5, unit = "cm")),
+    axis.ticks.y = element_blank(),
+    plot.background = element_rect(fill = "#fffff8"),
+    legend.background = element_rect(fill = "#fffff8"),
+    panel.background = element_rect(fill = "#fffff8"),
+    axis.ticks.length.x = unit(.5, "cm")
+  ) +
+  scale_x_continuous(breaks = c(0, 1)) +
+  scale_y_continuous(breaks = c(0, 1)) +
+  scale_color_manual("Programa",
+    values = c(
+      "STATA, SPSS ó SAS" = "tomato3",
+      "R" = "deepskyblue3"
+    )
+  )
 ```
 
 - La curva de aprendizaje es mucho más empinada que para otros programas estadísticos (como  `Stata`, `SAS` o `SPSS`) ¡particularmente si es tu primera vez programando!
@@ -199,7 +218,7 @@ ggplot(pdata) +
 #| message: false
 #| out-width: "150px"
 #| fig-cap: "`R` puede ser muy lento pero eso te da oportunidad de hacer otras cosas ;) ."
-knitr::include_graphics('images/compiling.png')
+knitr::include_graphics("images/compiling.png")
 ```
 
 - `R` [de ninguna manera es veloz](https://github.com/matthieugomez/benchmark-stata-r) por lo que algunos programas (lo veremos en simulación) pueden ser extremada (y dolorosamente) lentos.
@@ -232,7 +251,7 @@ Sin embargo, también es una gran ventaja que sean los usuarios de `R` quienes g
 #| message: false
 #| out-width: "150px"
 #| fig-cap: "Oficialmente, la página de `R` es de las páginas más feas del mundo. ¡No te dejes llevar por las apariencias!"
-knitr::include_graphics('images/CRAN1.png')
+knitr::include_graphics("images/CRAN1.png")
 ```
 
 A lo largo de estas notas estaré trabajando con: `r R.Version()$version.string` _`r R.Version()$nickname`_. La más reciente versión de `R` la puedes encontrar en [CRAN](https://cran.r-project.org). Para ello ve al sitio y selecciona tu plataforma. 
@@ -299,7 +318,7 @@ La versión de `RTools` **debe coincidir** con la de tu `R`. Como estas notas se
 #| echo: false
 #| message: false
 #| fig-cap: "RStudio es una empresa que se dedica a hacer cosas para R."
-knitr::include_graphics('images/rstudio.png')
+knitr::include_graphics("images/rstudio.png")
 ```
 
 `RStudio` es una interfaz gráfica (IDE) para `R` desarrollada por la empresa **Posit** (que hasta 2022 se llamaba _RStudio, PBC_; por eso vas a ver los dos nombres por todos lados: el programa sigue llamándose `RStudio`, la empresa ya no). Puedes pensar a `R` como el _Bloc de Notas_ y a `RStudio` como _Word_. El _Bloc_ tiene todas las capacidades que necesitas para poder escribir; empero, es muchísimo mejor trabajar tus _documentos / novelas / autobiografías_ en _Word_. De la misma manera, `R` tiene todas las capacidades para hacer estadística y análisis de datos _pero un formato horrible_ y `RStudio` se ha convertido en la más popular forma de usar `R`. Por supuesto que no es la única; algunas alternativas son [Visual Studio Code](https://code.visualstudio.com/), [Eclipse con StatET](https://marketplace.eclipse.org/content/statet-r) y [RKWard](https://rkward.kde.org). En general es posible seguir estas notas sin que tengas `RStudio` pero, si es tu primera vez programando, no lo recomiendo.
@@ -322,7 +341,7 @@ Una vez hayas instalado `R` y `RStudio`, abre `RStudio`^[Si decidiste no instala
 #| fig-cap: "La primera vez que abres RStudio"
 #| cache: true
 #| echo: false
-knitr::include_graphics('images/RStudio1.png')
+knitr::include_graphics("images/RStudio1.png")
 ```
 
 Si tu RStudio tiene sólo 3 páneles, como en mi caso, ve a la esquina superior izquierda (signo de hoja+) y elige un nuevo `R Script`
@@ -331,7 +350,7 @@ Si tu RStudio tiene sólo 3 páneles, como en mi caso, ve a la esquina superior 
 #| fig-cap: "Elige hoja+ o `CTRL + N` para crear un nuevo archivo"
 #| cache: true
 #| echo: false
-knitr::include_graphics('images/RStudio2.png')
+knitr::include_graphics("images/RStudio2.png")
 ```
 
 Tendrás, entonces, 4 páneles como se ve a continuación: 
@@ -343,20 +362,25 @@ Tendrás, entonces, 4 páneles como se ve a continuación:
 
 # Import the image
 bg <- png::readPNG("images/RStudio3.png")
-ggplot() +  
-  annotation_custom(rasterGrob(bg, 
-                                 width = unit(1,"npc"), 
-                                 height = unit(1,"npc")), 
-                      -Inf, Inf, -Inf, Inf) +
-  geom_circle(aes(x = 2.5, y = 1.5), radius=0.1, fill = "deepskyblue3", color = "deepskyblue3", alpha = 0.95) +
-  annotate("text", x= 2.5, y = 1.5, label = "1", size = 10) +
-  geom_circle(aes(x = 2.5, y = 7.5), radius=0.1, fill = "deepskyblue3", color = "deepskyblue3", alpha = 0.95) +
-  annotate("text", x= 2.5, y = 7.5, label = "2", size = 10) +
-  geom_circle(aes(x = 7.5, y = 1.5), radius=0.1, fill = "deepskyblue3", color = "deepskyblue3", alpha = 0.95) +
-  annotate("text", x= 7.5, y = 1.5, label = "4", size = 10) +
-  geom_circle(aes(x = 7.5, y = 7.5), radius=0.1, fill = "deepskyblue3", color = "deepskyblue3", alpha = 0.95) +
-  annotate("text", x= 7.5, y = 7.5, label = "3", size = 10) +
-  xlim(c(0,10)) + ylim(c(0,10)) + theme_void()
+ggplot() +
+  annotation_custom(
+    rasterGrob(bg,
+      width = unit(1, "npc"),
+      height = unit(1, "npc")
+    ),
+    -Inf, Inf, -Inf, Inf
+  ) +
+  geom_circle(aes(x = 2.5, y = 1.5), radius = 0.1, fill = "deepskyblue3", color = "deepskyblue3", alpha = 0.95) +
+  annotate("text", x = 2.5, y = 1.5, label = "1", size = 10) +
+  geom_circle(aes(x = 2.5, y = 7.5), radius = 0.1, fill = "deepskyblue3", color = "deepskyblue3", alpha = 0.95) +
+  annotate("text", x = 2.5, y = 7.5, label = "2", size = 10) +
+  geom_circle(aes(x = 7.5, y = 1.5), radius = 0.1, fill = "deepskyblue3", color = "deepskyblue3", alpha = 0.95) +
+  annotate("text", x = 7.5, y = 1.5, label = "4", size = 10) +
+  geom_circle(aes(x = 7.5, y = 7.5), radius = 0.1, fill = "deepskyblue3", color = "deepskyblue3", alpha = 0.95) +
+  annotate("text", x = 7.5, y = 7.5, label = "3", size = 10) +
+  xlim(c(0, 10)) +
+  ylim(c(0, 10)) +
+  theme_void()
 ```
 
 1. El primer panel (esquina inferior izquierda) es la `Consola`. Aquí es donde se ejecutan las acciones. Prueba escribir `2 + 3` en él y presiona enter. Aparece el resultado de la suma. Definitivamente, `R` es la calculadora que más trabajo cuesta instalar. 
@@ -366,7 +390,7 @@ ggplot() +
 #| cache: true
 #| echo: false
 #| message: false
-knitr::include_graphics('images/RStudio4.png')
+knitr::include_graphics("images/RStudio4.png")
 ```
 
 2. El segundo panel (esquina superior izquierda) es el panel con el `Script`. Aquí se escribe el programa pero no _se ejecuta_. Prueba escribir `10 + 9`. ¿Ves que no pasa nada? Lo que acabas de hacer es crear un programa que, cuando se ejecute, hará la suma de `10 + 9`. ¡Qué programa más aburrido! Sin embargo, no todo está perdido: presiona `CTRL+Enter` (`Cmd+Enter` en Mac) al final de la línea o bien da clic en `Run` y verás que, en la consola, aparece la instrucción y el resultado de la misma. El `Script` es una excelente fuente para tener un historial de lo que estás haciendo. 
@@ -376,7 +400,7 @@ knitr::include_graphics('images/RStudio4.png')
 #| cache: true
 #| echo: false
 #| message: false
-knitr::include_graphics('images/RStudio5.png')
+knitr::include_graphics("images/RStudio5.png")
 ```
 
 3. El tercer panel contiene el ambiente. Aquí aparecerán las variables que vayamos creando. Por ahora, para poner un ejemplo, importaremos el archivo `Example1.csv` (con valores simulados) dando clic en `Import Dataset` y `From Text (base)`. Selecciona el archivo y elige las opciones en la ventana de previsualización que hagan que se vea bien. Nota que una vez realizada la importación aparece en el panel derecho `Example1.` Al dar clic podrás ver la base de datos. Las bases de datos y variables que utilices durante tus análisis aparecerán en esa sección.
@@ -384,7 +408,7 @@ knitr::include_graphics('images/RStudio5.png')
 ```{r, echo = FALSE}
 set.seed(371)
 Example1 <- data.frame(Alturas = rnorm(100, 1.65, 0.3), Peso = rnorm(100, 80, 1))
-write.csv(Example1, paste0("Example1.csv"), row.names=FALSE)
+write.csv(Example1, paste0("Example1.csv"), row.names = FALSE)
 ```
 
 ```{r}
@@ -392,7 +416,7 @@ write.csv(Example1, paste0("Example1.csv"), row.names=FALSE)
 #| cache: true
 #| echo: false
 #| message: false
-knitr::include_graphics('images/RStudio6.png')
+knitr::include_graphics("images/RStudio6.png")
 ```
 
 4. Para entender mejor lo que ocurre en el último de los páneles, lo mejor es trabajar con nuestra base. Escribe en la consola `plot(Example1)` . En el cuarto pánel aparecerá una gráfica. El cuarto de los páneles para nosotros tendrá esa utilidad: mostrará las gráficas que hagamos así como la ayuda. Para ver la ayuda para las instrucciones de `R` puedes escribir `?`. Prueba teclear `?plot` en la consola. El signo de interrogación es un `help()` que muestra las instrucciones para usar una función.  
@@ -413,7 +437,7 @@ plot(Example1)
 #| cache: true
 #| echo: false
 #| message: false
-knitr::include_graphics('images/RStudio7.png')
+knitr::include_graphics("images/RStudio7.png")
 ```
 
 Mi sugerencia personal es que escribas todo lo que haces en el `Script` y que sólo utilices la consola para verificar valores. De esta manera podrás almacenar todas las instrucciones ejecutadas y volver a ellas cuando se requieran. Por último te sugiero utilizar `#` gatos para comentar tu código. Así, el código anterior lo podrías ver en la consola como:
@@ -428,20 +452,20 @@ Mi sugerencia personal es que escribas todo lo que haces en el `Script` y que s�
 Finalmente y como aclaración para estas notas, el código de `R` aparece como:
 ```{r}
 #| eval: false
-#Esto es código de R
+# Esto es código de R
 7 - 2
 ```
 
 Mientras que los resultados de evaluar en `R` se ven con `[]`:
 ```{r}
 #| echo: false
-#Esto es código de R
+# Esto es código de R
 7 - 2
 ```
 
 Así, la evaluación con su resultado se ve de la siguiente forma:
 ```{r}
-#Esto es código de R
+# Esto es código de R
 7 - 2
 ```
 
@@ -467,7 +491,7 @@ Una vez la descargues comparte tu **ID** y tu **password** con el docente para q
 #| cache: true
 #| echo: false
 #| message: false
-knitr::include_graphics('images/teamviewer.png')
+knitr::include_graphics("images/teamviewer.png")
 ```
 
 

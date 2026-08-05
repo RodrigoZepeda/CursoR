@@ -25,3 +25,28 @@ table td:empty {
   overflow-x: auto;
   max-width: 100%;
 }
+
+/* --------------------------------------------------------------------------
+   Ocultar el índice general de la izquierda.
+   Se pidió expresamente no verlo: saturaba la página. La navegación entre
+   capítulos queda en los botones de "anterior / siguiente" de abajo, en el
+   buscador de la barra superior y en el índice de la portada.
+   Para volver a mostrarlo: borra este bloque y regresa sidebar-width a 250px
+   en _quarto.yml.
+   -------------------------------------------------------------------------- */
+#quarto-sidebar,
+#quarto-sidebar-glass,
+.quarto-sidebar-toggle {
+  display: none !important;
+}
+
+/* Sin barra lateral, el botón de menú de pantallas chicas tampoco hace falta */
+.quarto-btn-toggle {
+  display: none !important;
+}
+
+/* El contenido queda centrado y con aire */
+#quarto-content {
+  margin-left: auto;
+  margin-right: auto;
+}

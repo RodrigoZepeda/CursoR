@@ -16,11 +16,11 @@ A lo largo de esta sección usaremos los siguientes paquetes:
 #| output: false
 library(tidyverse)
 library(tidymodels)
-library(ggfortify) #autoplot para diagnósticos
-library(rstanarm) #para bayesiana
-library(poissonreg) #modelo Poisson
+library(ggfortify) # autoplot para diagnósticos
+library(rstanarm) # para bayesiana
+library(poissonreg) # modelo Poisson
 
-#Siempre que uses tidymodels
+# Siempre que uses tidymodels
 tidymodels_prefer()
 ```
 
@@ -54,9 +54,9 @@ Para los datos usaremos la información de *Generalized Linear Models for Cross-
 
 ```{r}
 #| warning: false
-#Copia local de los datos de ceb.dat de https://data.princeton.edu/wws509/datasets/
-niños <- read_table("datasets/niños.txt", skip = 1, col_names = F) 
-colnames(niños) <- c("Fila",  "dur", "res", "educ", "mean", "var", "n", "y")
+# Copia local de los datos de ceb.dat de https://data.princeton.edu/wws509/datasets/
+niños <- read_table("datasets/niños.txt", skip = 1, col_names = F)
+colnames(niños) <- c("Fila", "dur", "res", "educ", "mean", "var", "n", "y")
 niños <- niños %>% mutate(y = round(y))
 ```
 
@@ -124,8 +124,10 @@ La educación, sin embargo, es una variable ordinal donde `No educación` es men
 
 ```{r}
 niños <- niños %>%
-  mutate(edf = factor(educ, levels = c("none","lower", "sec+","upper"),
-                            ordered = T))
+  mutate(edf = factor(educ,
+    levels = c("none", "lower", "sec+", "upper"),
+    ordered = T
+  ))
 poisson_reg() %>%
   set_engine("glm") %>%
   fit(y ~ edf + res, data = niños) %>%
@@ -199,26 +201,30 @@ y \sim \textrm{Bernoulli}\big(\Phi(\beta_0 + \beta_1 x)\big)
 $$ donde $\Phi$ es la función de distribución acumulada de una normal. En ambos casos la especificación es similar:
 
 ```{r}
-#Copia local de los datos de cuse.raw de https://data.princeton.edu/wws509/datasets/
+# Copia local de los datos de cuse.raw de https://data.princeton.edu/wws509/datasets/
 anticonceptivos <- read_table("datasets/anticonceptivos.txt",
-                              skip = 0, col_names = F) %>% uncount(X5)
+  skip = 0, col_names = F
+) %>% uncount(X5)
 
-colnames(anticonceptivos) <- c("age", "education", "wants_more_children",
-                               "using_contraceptive")
+colnames(anticonceptivos) <- c(
+  "age", "education", "wants_more_children",
+  "using_contraceptive"
+)
 
 anticonceptivos <- anticonceptivos %>%
   mutate(
     age = case_when(
       age == 1 ~ "<25",
-      age == 2 ~ "25-29", 
-      age == 3 ~ "30-39", 
+      age == 2 ~ "25-29",
+      age == 3 ~ "30-39",
       age == 4 ~ "40-49"
     )
   ) %>%
   mutate(education = if_else(education == 0, "None", "Some")) %>%
   mutate(wants_more_children = if_else(wants_more_children == 0, "No", "More")) %>%
-  mutate(usa_anticonceptivo = factor(using_contraceptive, 
-                                      levels = c(0,1), labels = c("No","Yes"))) 
+  mutate(usa_anticonceptivo = factor(using_contraceptive,
+    levels = c(0, 1), labels = c("No", "Yes")
+  ))
 ```
 
 Podemos checar si la gente está usando o no anticonceptivos en función del grupo de edad con una regresión logística:
@@ -226,7 +232,7 @@ Podemos checar si la gente está usando o no anticonceptivos en función del gru
 ```{r}
 modelo_logit <- logistic_reg() %>%
   set_engine("glm") %>%
-  fit(usa_anticonceptivo ~ age + education, data = anticonceptivos) 
+  fit(usa_anticonceptivo ~ age + education, data = anticonceptivos)
 ```
 
 donde podemos ver sus estadísticas por ejemplo con `tidy`:
@@ -257,9 +263,9 @@ linear_reg() %>%
   set_engine("glm", family = binomial(link = "logit")) %>%
   fit(using_contraceptive ~ age + education, data = anticonceptivos) %>%
   extract_fit_engine() %>%
-   tbl_regression(exponentiate = TRUE) %>%
-   as_flex_table() %>%
-   save_as_docx(path = "Tabla.docx")
+  tbl_regression(exponentiate = TRUE) %>%
+  as_flex_table() %>%
+  save_as_docx(path = "Tabla.docx")
 ```
 
 [Acá](https://www.danieldsjoberg.com/gtsummary/) hay más opciones para personalizar tu tabla de Word. **Ojo** `tbl_regression` sólo está disponible para los modelos que aparecen [en la tabla](https://www.danieldsjoberg.com/gtsummary/articles/tbl_regression.html)
@@ -293,11 +299,11 @@ http://www.sthda.com/english/articles/36-classification-methods-essentials/148-l
 Mientras que una logística sirve para clasificar en dos categorías, una multinomial clasifica en múltiples. Leamos los datos:
 
 ```{r}
-library(forcats) #para el as_factor
+library(forcats) # para el as_factor
 library(haven)
 ml <- read_dta("https://stats.idre.ucla.edu/stat/data/hsbdemo.dta")
 
-#Ponerle las etiquetas de stata
+# Ponerle las etiquetas de stata
 ml <- ml %>%
   mutate(across(c(female:prog, honors), ~ as_factor(.)))
 ```
@@ -322,9 +328,9 @@ modelo_multi <- multinom_reg() %>%
 Y listo:
 
 ```{r}
-modelo_multi  %>%
+modelo_multi %>%
   extract_fit_engine() %>%
-  tidy(exponentiate = TRUE) 
+  tidy(exponentiate = TRUE)
 ```
 
 ## Ejercicio
@@ -341,9 +347,9 @@ Construye un modelo para clasificar un pingüino según su especie (`species`). 
 
 ```{r}
 pinguinos_a_determinar <- tibble(
- island            = c("Torgersen","Torgersen","Dream"),
- bill_length_mm    = c(20, 18, 14),
- flipper_length_mm = c(180, 200, 190)
+  island            = c("Torgersen", "Torgersen", "Dream"),
+  bill_length_mm    = c(20, 18, 14),
+  flipper_length_mm = c(180, 200, 190)
 )
 ```
 
@@ -354,13 +360,15 @@ pinguinos_a_determinar <- tibble(
 En muchos casos al hacer modelos predictivos lo que interesa es solamente si puedes predecir bien el caso. En ese sentido las métricas anteriores no son las mejores.
 
 ```{r}
-#Nos interesa predecir diabetes
+# Nos interesa predecir diabetes
 diabetes <- read_csv(file = "https://raw.githubusercontent.com/MicrosoftDocs/ml-basics/master/data/diabetes.csv")
 
-#Limpiamos como factor diabetic
+# Limpiamos como factor diabetic
 diabetes <- diabetes %>%
-  mutate(Diabetic = factor(Diabetic, levels = c("1","0"),
-                           labels = c("Diabetico","No diabético"))) %>% 
+  mutate(Diabetic = factor(Diabetic,
+    levels = c("1", "0"),
+    labels = c("Diabetico", "No diabético")
+  )) %>%
   select(-PatientID)
 ```
 
@@ -368,13 +376,15 @@ Visualización:
 
 ```{r}
 # Pivot data to a long format
-diabetes_select_long <- diabetes %>% 
-    pivot_longer(!Diabetic, names_to = "features", values_to = "values")
+diabetes_select_long <- diabetes %>%
+  pivot_longer(!Diabetic, names_to = "features", values_to = "values")
 
-ggplot(diabetes_select_long, 
-       aes(x = Diabetic, y = values, fill = features)) +
-  geom_boxplot() + 
-  facet_wrap(~ features, scales = "free", ncol = 4) +
+ggplot(
+  diabetes_select_long,
+  aes(x = Diabetic, y = values, fill = features)
+) +
+  geom_boxplot() +
+  facet_wrap(~features, scales = "free", ncol = 4) +
   scale_color_viridis_d(option = "plasma", end = .7) +
   theme(legend.position = "none") +
   theme_light()
@@ -383,37 +393,37 @@ ggplot(diabetes_select_long,
 Comenzamos dividiendo los datos
 
 ```{r}
-#Seleccionamos 70% para entrenar (usualmente 70-80)
+# Seleccionamos 70% para entrenar (usualmente 70-80)
 set.seed(2056)
-diabetes_split <- diabetes %>% 
+diabetes_split <- diabetes %>%
   initial_split(prop = 0.70)
 
 diabetes_train <- training(diabetes_split)
-diabetes_test  <- testing(diabetes_split)
+diabetes_test <- testing(diabetes_split)
 ```
 
 Construimos el modelo:
 
 ```{r}
-modelo_logreg <- logistic_reg() %>% 
-  set_engine("glm") 
+modelo_logreg <- logistic_reg() %>%
+  set_engine("glm")
 ```
 
 Ajustamos:
 
 ```{r}
-logreg_fit <- modelo_logreg %>% 
-  fit(Diabetic ~ ., data = diabetes_train) #. significa vs todos
+logreg_fit <- modelo_logreg %>%
+  fit(Diabetic ~ ., data = diabetes_train) # . significa vs todos
 ```
 
 Checamos contra los observados:
 
 ```{r}
-predichos <- logreg_fit %>% 
+predichos <- logreg_fit %>%
   predict(new_data = diabetes_test)
 
-results <- diabetes_test %>% 
-  select(Diabetic) %>% 
+results <- diabetes_test %>%
+  select(Diabetic) %>%
   bind_cols(predichos)
 ```
 
@@ -421,8 +431,10 @@ Midamos precisión (positive predictive value), accuracy, sensibilidad (recall),
 
 ```{r}
 # Combine metrics and evaluate them all at once
-eval_metrics <- metric_set(precision, sensitivity, 
-                           accuracy, specificity)
+eval_metrics <- metric_set(
+  precision, sensitivity,
+  accuracy, specificity
+)
 eval_metrics(data = results, truth = Diabetic, estimate = .pred_class)
 ```
 
@@ -435,16 +447,16 @@ conf_mat(data = results, truth = Diabetic, estimate = .pred_class)
 También podemos armar nuestra curva `roc`:
 
 ```{r}
-predice_proba <- logreg_fit %>% 
-              predict(new_data = diabetes_test, type = "prob")
+predice_proba <- logreg_fit %>%
+  predict(new_data = diabetes_test, type = "prob")
 
-results <- results %>% 
+results <- results %>%
   bind_cols(predice_proba)
 ```
 
 ```{r}
 results %>%
-  roc_curve(truth = Diabetic, .pred_Diabetico) %>% 
+  roc_curve(truth = Diabetic, .pred_Diabetico) %>%
   autoplot()
 ```
 
@@ -454,9 +466,9 @@ results %>%
 
 ```{r}
 diabedatos <- diabetes %>%
-  select(-PlasmaGlucose)   #quitamos la glucosa a propósito
+  select(-PlasmaGlucose) # quitamos la glucosa a propósito
 
-#Así queda
+# Así queda
 dim(diabedatos)
 table(diabedatos$Diabetic)
 ```
@@ -495,7 +507,7 @@ Casos de campylobacter en Alemania (copia y pega)
 
 ```{r}
 library(readxl)
-#Copia local. Originalmente venía del Epi R Handbook, pero esa liga ya da 404.
+# Copia local. Originalmente venía del Epi R Handbook, pero esa liga ya da 404.
 campylobacter_germany <- read_excel("datasets/campylobacter_germany.xlsx")
 ```
 
@@ -517,20 +529,20 @@ campylobacter_germany %>%
 Partes de una serie de tiempo clásica:
 
 ```{r}
-campylobacter_germany %>% 
+campylobacter_germany %>%
   plot_acf_diagnostics(date, case, .interactive = T, .lags = 52)
 ```
 
 ```{r}
-campylobacter_germany %>% 
+campylobacter_germany %>%
   plot_seasonal_diagnostics(date, case, .interactive = T)
 ```
 
 ```{r}
-campylobacter_germany %>% 
+campylobacter_germany %>%
   plot_stl_diagnostics(date, case, .interactive = F)
 
-#Como no se ve completo
+# Como no se ve completo
 ggsave("Diags.pdf", width = 10, height = 25)
 ```
 
@@ -539,64 +551,69 @@ ggsave("Diags.pdf", width = 10, height = 25)
 En esta sección haremos `arima_reg()` y `linear_reg()`. En teoría el `arima` debería ser mejor que una regresión lineal.
 
 ```{r}
-#Para decidir el modelo primero obtenemos splits
+# Para decidir el modelo primero obtenemos splits
 splits <- initial_time_split(campylobacter_germany, prop = 0.8)
 
 entrena <- training(splits)
-testea  <- testing(splits)
+testea <- testing(splits)
 
-#Ajuste de un ARIMA
+# Ajuste de un ARIMA
 modelo_ARIMA <- arima_reg() %>%
-    set_engine(engine = "auto_arima") %>%
-    fit(case ~ date + factor(month(date, label = TRUE), 
-                             ordered = FALSE), data = entrena)
+  set_engine(engine = "auto_arima") %>%
+  fit(case ~ date + factor(month(date, label = TRUE),
+    ordered = FALSE
+  ), data = entrena)
 
-#Regresión lineal con mes como cofactor
+# Regresión lineal con mes como cofactor
 model_lm <- linear_reg() %>%
-    set_engine("lm") %>%
-    fit(case ~ as.numeric(date) + 
-          factor(month(date, label = TRUE), ordered = FALSE),
-        data = entrena)
+  set_engine("lm") %>%
+  fit(
+    case ~ as.numeric(date) +
+      factor(month(date, label = TRUE), ordered = FALSE),
+    data = entrena
+  )
 
-#Junto mis modelos
+# Junto mis modelos
 models_tbl <- modeltime_table(
   modelo_ARIMA, model_lm
 )
 
-#Veo contra el test
+# Veo contra el test
 calibration_tbl <- models_tbl %>%
-    modeltime_calibrate(new_data = testea)
+  modeltime_calibrate(new_data = testea)
 
-#Veo
+# Veo
 calibration_tbl %>%
-   modeltime_forecast(
-        new_data    = testea,
-        actual_data = campylobacter_germany
-    ) %>%
-    plot_modeltime_forecast(
-      .interactive      = T
-    )
+  modeltime_forecast(
+    new_data    = testea,
+    actual_data = campylobacter_germany
+  ) %>%
+  plot_modeltime_forecast(
+    .interactive = T
+  )
 
-#Tabulo métricas
+# Tabulo métricas
 calibration_tbl %>%
-    modeltime_accuracy() %>%
-    table_modeltime_accuracy(
-        .interactive = T
-    )
+  modeltime_accuracy() %>%
+  table_modeltime_accuracy(
+    .interactive = T
+  )
 
-#Reajuste y predicción del futuro
+# Reajuste y predicción del futuro
 refit_tbl <- calibration_tbl %>%
-    modeltime_refit(data = campylobacter_germany)
+  modeltime_refit(data = campylobacter_germany)
 
 futuro <- refit_tbl %>%
-    modeltime_forecast(h = "3 years", 
-                       actual_data = campylobacter_germany) 
+  modeltime_forecast(
+    h = "3 years",
+    actual_data = campylobacter_germany
+  )
 
 futuro %>%
   filter(.model_desc != "UPDATE: REGRESSION WITH ARIMA(3,1,0)(0,0,1)[13] ERRORS") %>%
-    plot_modeltime_forecast(
-      .interactive      = T
-    )
+  plot_modeltime_forecast(
+    .interactive = T
+  )
 ```
 
 ## Ejercicio

@@ -12,15 +12,15 @@ A lo largo de esta sección usaremos los siguientes paquetes:
 #| output: false
 library(tidyverse)
 library(tidymodels)
-library(ggfortify)  #autoplot para diagnósticos
-library(rstanarm)   #para bayesiana
-library(poissonreg) #modelo Poisson
-library(car)        #para el VIF (multicolinealidad)
-library(forecast)   #series de tiempo, la forma clásica
-library(modeltime)  #series de tiempo, la forma tidymodels
-library(timetk)     #utilerías de series de tiempo
+library(ggfortify) # autoplot para diagnósticos
+library(rstanarm) # para bayesiana
+library(poissonreg) # modelo Poisson
+library(car) # para el VIF (multicolinealidad)
+library(forecast) # series de tiempo, la forma clásica
+library(modeltime) # series de tiempo, la forma tidymodels
+library(timetk) # utilerías de series de tiempo
 
-#Siempre que uses tidymodels
+# Siempre que uses tidymodels
 tidymodels_prefer()
 ```
 
@@ -89,7 +89,7 @@ Si la relación fuera perfecta todos los casos caerían *exactamente* en una lí
 tibble(
   PovPct = seq(0, 25, length.out = 51),
 ) %>%
-  mutate(Brth15to17 = 3*PovPct + 5) %>%
+  mutate(Brth15to17 = 3 * PovPct + 5) %>%
   ggplot() +
   geom_segment(aes(x = 10, xend = 15, y = 35, yend = 50)) +
   geom_point(aes(x = PovPct, y = Brth15to17), color = "#bc5090", size = 3) +
@@ -100,13 +100,20 @@ tibble(
   annotate("label", x = 16, y = 40, label = "Δ Natalidad = 15", hjust = 0) +
   annotate("label", x = 12.5, y = 45, label = "Pendiente = Δ Natalidad / Δ Pobreza = 3", hjust = 1) +
   geom_segment(aes(x = 0, xend = 0, y = 29, yend = 6),
-               arrow = arrow(length = unit(0.2,"inches"))) +
-  geom_point(aes(x = 0, y = 5), color = "#ff6361", size = 3,
-             data = NULL) +
-  geom_point(aes(x = 10, y = 35), color = "#ff6361", size = 3,
-             data = NULL) +
-  geom_point(aes(x = 15, y = 50), color = "#ff6361", size = 3,
-             data = NULL) +
+    arrow = arrow(length = unit(0.2, "inches"))
+  ) +
+  geom_point(aes(x = 0, y = 5),
+    color = "#ff6361", size = 3,
+    data = NULL
+  ) +
+  geom_point(aes(x = 10, y = 35),
+    color = "#ff6361", size = 3,
+    data = NULL
+  ) +
+  geom_point(aes(x = 15, y = 50),
+    color = "#ff6361", size = 3,
+    data = NULL
+  ) +
   labs(
     x = "Porcentaje en pobreza",
     y = "Tasa bruta de natalidad (por cada 1,000 mujeres adolescentes)",
@@ -140,11 +147,11 @@ La idea es que el intercepto ($\beta_0$ ó $5$) te indica dónde comienza tu lí
 tibble(
   x = 0:25,
 ) %>%
-  mutate(y1 = 5 + 3*x) %>%
-  mutate(y2 = 10 + 3*x) %>%
-  mutate(y3 = 0 + 3*x) %>%
-  mutate(y4 = -5 + 3*x) %>%
-  mutate(y5 = 15 + 3*x) %>%
+  mutate(y1 = 5 + 3 * x) %>%
+  mutate(y2 = 10 + 3 * x) %>%
+  mutate(y3 = 0 + 3 * x) %>%
+  mutate(y4 = -5 + 3 * x) %>%
+  mutate(y5 = 15 + 3 * x) %>%
   pivot_longer(cols = y1:y5) %>%
   mutate(intercepto = case_when(
     name == "y1" ~ 5,
@@ -155,8 +162,9 @@ tibble(
   )) %>%
   ggplot() +
   geom_line(aes(x = x, y = value, color = as.character(intercepto))) +
-  scale_color_manual("Interceptos", 
-                     values = c("#003f5c","#58508d","#bc5090","#ff6361","#ffa600")) +
+  scale_color_manual("Interceptos",
+    values = c("#003f5c", "#58508d", "#bc5090", "#ff6361", "#ffa600")
+  ) +
   labs(
     x = "Porcentaje en pobreza",
     y = "Tasa bruta de natalidad (por cada 1,000 mujeres adolescentes)",
@@ -172,11 +180,11 @@ por otro lado la idea de la pendiente ($\beta_1$ ó $3$) es retratar cómo cambi
 tibble(
   x = 0:25,
 ) %>%
-  mutate(y1 = 5 + 3*x) %>%
-  mutate(y2 = 5 + 6*x) %>%
-  mutate(y3 = 5 + 0*x) %>%
-  mutate(y4 = 5 + -3*x) %>%
-  mutate(y5 = 5 + -6*x) %>%
+  mutate(y1 = 5 + 3 * x) %>%
+  mutate(y2 = 5 + 6 * x) %>%
+  mutate(y3 = 5 + 0 * x) %>%
+  mutate(y4 = 5 + -3 * x) %>%
+  mutate(y5 = 5 + -6 * x) %>%
   pivot_longer(cols = y1:y5) %>%
   mutate(pendiente = case_when(
     name == "y1" ~ 3,
@@ -187,8 +195,9 @@ tibble(
   )) %>%
   ggplot() +
   geom_line(aes(x = x, y = value, color = as.character(pendiente))) +
-  scale_color_manual("Pendientes", 
-                     values = c("#003f5c","#58508d","#bc5090","#ff6361","#ffa600")) +
+  scale_color_manual("Pendientes",
+    values = c("#003f5c", "#58508d", "#bc5090", "#ff6361", "#ffa600")
+  ) +
   labs(
     x = "Porcentaje en pobreza",
     y = "Tasa bruta de natalidad (por cada 1,000 mujeres adolescentes)",
@@ -218,13 +227,13 @@ $$
 ```{r}
 #| echo: false
 library(ggridges)
-x    <- c(0, 5, 10, 15)
+x <- c(0, 5, 10, 15)
 vals <- seq(-5, 5, length.out = 1000)
 tibble(
-  y1 = rnorm(1000000, mean = 5 + 3*x[1], 4),
-  y2 = rnorm(1000000, mean = 5 + 3*x[2], 4),
-  y3 = rnorm(1000000, mean = 5 + 3*x[3], 4),
-  y4 = rnorm(1000000, mean = 5 + 3*x[4], 4),
+  y1 = rnorm(1000000, mean = 5 + 3 * x[1], 4),
+  y2 = rnorm(1000000, mean = 5 + 3 * x[2], 4),
+  y3 = rnorm(1000000, mean = 5 + 3 * x[3], 4),
+  y4 = rnorm(1000000, mean = 5 + 3 * x[4], 4),
 ) %>%
   pivot_longer(cols = everything()) %>%
   mutate(xvals = case_when(
@@ -234,9 +243,10 @@ tibble(
     name == "y4" ~ x[4]
   )) %>%
   ggplot() +
-  geom_density_ridges(aes(x = value, y = xvals, group = xvals), 
-                      bandwidth = 0.14, fill = "#003f5c", 
-                      alpha = 0.5, rel_min_height = 0.0001) +
+  geom_density_ridges(aes(x = value, y = xvals, group = xvals),
+    bandwidth = 0.14, fill = "#003f5c",
+    alpha = 0.5, rel_min_height = 0.0001
+  ) +
   coord_flip() +
   labs(
     y = "Porcentaje en pobreza",
@@ -244,14 +254,22 @@ tibble(
     title = "Las y's provienen de realizaciones de una normal con media 5 + 3x"
   ) +
   theme_bw() +
-  geom_line(aes(y = x, x = 3*x + 5), data = tibble(x = c(0, 5, 10, 15)),
-            color = "#58508d", linewidth = 1) +
-  geom_point(aes(y = x, x = 3*x + 5), data = tibble(x = c(0, 5, 10, 15)),
-            color = "#58508d", size = 3) +
-  geom_point(aes(y = x, x = 3*x + 5), data = tibble(x = c(0, 5, 10, 15)),
-            color = "white", size = 1) +
-  annotate("label", x = 20, y = 20, 
-           label = "La idea es que para cada valor de x\nhay una normal con media 3x + 5")
+  geom_line(aes(y = x, x = 3 * x + 5),
+    data = tibble(x = c(0, 5, 10, 15)),
+    color = "#58508d", linewidth = 1
+  ) +
+  geom_point(aes(y = x, x = 3 * x + 5),
+    data = tibble(x = c(0, 5, 10, 15)),
+    color = "#58508d", size = 3
+  ) +
+  geom_point(aes(y = x, x = 3 * x + 5),
+    data = tibble(x = c(0, 5, 10, 15)),
+    color = "white", size = 1
+  ) +
+  annotate("label",
+    x = 20, y = 20,
+    label = "La idea es que para cada valor de x\nhay una normal con media 3x + 5"
+  )
 ```
 
 Dicho de otra forma, suponemos que en un mundo perfecto los valores de $y$ (`Brth15to17`) estarían completamente determinados por los de $x$ (`PovPct`) mediante la ecuación de la recta. **Pero** como el mundo no es perfecto entonces la $y$ proviene de una normal con promedio dado por la recta. Los puntos (como puedes ver an la siguiente gráfica) se centran más en torno a los promedios de las normales sin embargo están colocados aleatoriamente pues corresponden a distintas realizaciones de $y$.
@@ -259,13 +277,13 @@ Dicho de otra forma, suponemos que en un mundo perfecto los valores de $y$ (`Brt
 ```{r}
 #| echo: false
 library(ggridges)
-x    <- c(0, 5, 10, 15)
+x <- c(0, 5, 10, 15)
 vals <- seq(-5, 5, length.out = 1000)
 tibble(
-  y1 = rnorm(1000000, mean = 5 + 3*x[1], 4),
-  y2 = rnorm(1000000, mean = 5 + 3*x[2], 4),
-  y3 = rnorm(1000000, mean = 5 + 3*x[3], 4),
-  y4 = rnorm(1000000, mean = 5 + 3*x[4], 4),
+  y1 = rnorm(1000000, mean = 5 + 3 * x[1], 4),
+  y2 = rnorm(1000000, mean = 5 + 3 * x[2], 4),
+  y3 = rnorm(1000000, mean = 5 + 3 * x[3], 4),
+  y4 = rnorm(1000000, mean = 5 + 3 * x[4], 4),
 ) %>%
   pivot_longer(cols = everything()) %>%
   mutate(xvals = case_when(
@@ -275,9 +293,10 @@ tibble(
     name == "y4" ~ x[4]
   )) %>%
   ggplot() +
-  geom_density_ridges(aes(x = value, y = xvals, group = xvals), 
-                      bandwidth = 0.14, fill = "#003f5c", 
-                      alpha = 0.5, rel_min_height = 0.0001) +
+  geom_density_ridges(aes(x = value, y = xvals, group = xvals),
+    bandwidth = 0.14, fill = "#003f5c",
+    alpha = 0.5, rel_min_height = 0.0001
+  ) +
   coord_flip() +
   labs(
     y = "Porcentaje en pobreza",
@@ -285,18 +304,26 @@ tibble(
     title = "Las y's provienen de realizaciones de una normal con media 5 + 3x"
   ) +
   theme_bw() +
-  geom_line(aes(y = x, x = 3*x + 5), data = tibble(x = c(0, 5, 10, 15)),
-            color = "#58508d", linewidth = 1) +
-  geom_point(aes(y = x, x = 3*x + 5), data = tibble(x = c(0, 5, 10, 15)),
-            color = "#58508d", size = 3) +
-  geom_point(aes(y = x, x = 3*x + 5), data = tibble(x = c(0, 5, 10, 15)),
-            color = "white", size = 1) +
+  geom_line(aes(y = x, x = 3 * x + 5),
+    data = tibble(x = c(0, 5, 10, 15)),
+    color = "#58508d", linewidth = 1
+  ) +
+  geom_point(aes(y = x, x = 3 * x + 5),
+    data = tibble(x = c(0, 5, 10, 15)),
+    color = "#58508d", size = 3
+  ) +
+  geom_point(aes(y = x, x = 3 * x + 5),
+    data = tibble(x = c(0, 5, 10, 15)),
+    color = "white", size = 1
+  ) +
   geom_point(aes(y = x, x = y), color = "#bc5090", data = (tibble(
     x = seq(0, 15, length.out = 100),
   ) %>%
-    mutate(y = rnorm(100, 3*x + 5, sd = 4)))) +
-  annotate("label", x = 20, y = 20, 
-           label = "La idea es que para cada valor de x\nhay una normal con media 3x + 5")
+    mutate(y = rnorm(100, 3 * x + 5, sd = 4)))) +
+  annotate("label",
+    x = 20, y = 20,
+    label = "La idea es que para cada valor de x\nhay una normal con media 3x + 5"
+  )
 ```
 
 Por ejemplo si el porcentaje de pobreza (`PovPct`) es $10$ entonces la normal de la que provienen estos datos es:
@@ -372,18 +399,18 @@ $$
 En `R` el `engine` que necesitamos es "lm" que es el clásico:
 
 ```{r}
-#Ajusta un modelo lineal 
-#Brth15to17 = intercepto + pendiente*PovPct
-modelo_ajustado <- linear_reg() %>% 
+# Ajusta un modelo lineal
+# Brth15to17 = intercepto + pendiente*PovPct
+modelo_ajustado <- linear_reg() %>%
   set_engine("lm") %>%
-  fit(Brth15to17 ~ PovPct, data = emb_pob) #Notación y ~ x
+  fit(Brth15to17 ~ PovPct, data = emb_pob) # Notación y ~ x
 ```
 
 Nota que a diferencia de `Stata`, `R` no arroja demasiados resultados. Podemos usar `extract_fit_engine` combinado con `summary` para obtenerlos:
 
 ```{r}
-#Ajusta un modelo lineal 
-#Brth15to17 = intercepto + pendiente*PovPct
+# Ajusta un modelo lineal
+# Brth15to17 = intercepto + pendiente*PovPct
 modelo_ajustado %>%
   extract_fit_engine() %>%
   summary()
@@ -392,8 +419,8 @@ modelo_ajustado %>%
 o bien con `tidy` si deseamos nos devuelva una tabla de resultados:
 
 ```{r}
-#Ajusta un modelo lineal
-#Brth15to17 = intercepto + pendiente*PovPct
+# Ajusta un modelo lineal
+# Brth15to17 = intercepto + pendiente*PovPct
 modelo_ajustado %>%
   extract_fit_engine() %>%
   tidy()
@@ -406,7 +433,7 @@ en `R` desde siempre. La fórmula (`y ~ x`) es **idéntica**; lo que cambia es q
 no hay que declarar el motor ni llamar a `fit`:
 
 ```{r}
-#La misma regresión, en un solo renglón
+# La misma regresión, en un solo renglón
 modelo_clasico <- lm(Brth15to17 ~ PovPct, data = emb_pob)
 ```
 
@@ -426,11 +453,11 @@ tidy(modelo_clasico, conf.int = TRUE, conf.level = 0.90)
 Comprobemos que de verdad son el mismo modelo comparando los coeficientes:
 
 ```{r}
-#Los coeficientes de las dos rutas
+# Los coeficientes de las dos rutas
 coef(modelo_clasico)
 coef(extract_fit_engine(modelo_ajustado))
 
-#¿Son iguales?
+# ¿Son iguales?
 all.equal(coef(modelo_clasico), coef(extract_fit_engine(modelo_ajustado)))
 ```
 
@@ -481,8 +508,8 @@ pública— `lm` está perfecto.
 Según el tipo de regresión que estemos haciendo es el tipo de tabla que regresa `tidy` (ver `?tidy`). En particular, por ejemplo, podemos modificar para que devuelva intervalos de confianza al 90%:
 
 ```{r}
-#Ajusta un modelo lineal 
-#Brth15to17 = intercepto + pendiente*PovPct
+# Ajusta un modelo lineal
+# Brth15to17 = intercepto + pendiente*PovPct
 modelo_ajustado %>%
   tidy(conf.int = T, conf.level = 0.90)
 ```
@@ -492,26 +519,28 @@ En este caso, el modelo estima que el intercepto ($\beta_0$) es $4.27$ y la pend
 Podemos utilizar la función de `predict` para que el modelo nos muestre cómo cree que son los verdaderos valores en relación a los ajustados:
 
 ```{r}
-#Ajusta un modelo lineal 
-#Brth15to17 = intercepto + pendiente*PovPct
+# Ajusta un modelo lineal
+# Brth15to17 = intercepto + pendiente*PovPct
 predichos <- modelo_ajustado %>%
   predict(new_data = emb_pob)
 
 intervalo_predichos <- modelo_ajustado %>%
   predict(new_data = emb_pob, type = "pred_int", level = 0.95)
 
-#Juntamos los predichos con los observados
-obs_y_modelo <- emb_pob %>% 
+# Juntamos los predichos con los observados
+obs_y_modelo <- emb_pob %>%
   cbind(predichos) %>%
   cbind(intervalo_predichos)
 
-#Graficamos
+# Graficamos
 ggplot(obs_y_modelo) +
-  geom_ribbon(aes(x = PovPct, ymin = .pred_lower, ymax = .pred_upper), 
-              fill = "#003f5c", linewidth = 1, alpha = 0.5) +
+  geom_ribbon(aes(x = PovPct, ymin = .pred_lower, ymax = .pred_upper),
+    fill = "#003f5c", linewidth = 1, alpha = 0.5
+  ) +
   geom_point(aes(x = PovPct, y = Brth15to17), color = "#bc5090", size = 3) +
-  geom_line(aes(x = PovPct, y = .pred), 
-            color = "#003f5c", linewidth = 1) +
+  geom_line(aes(x = PovPct, y = .pred),
+    color = "#003f5c", linewidth = 1
+  ) +
   labs(
     x = "Porcentaje en pobreza",
     y = "Tasa bruta de natalidad (por cada 1,000 mujeres adolescentes)",
@@ -527,10 +556,10 @@ resumen_ajuste <- modelo_ajustado %>%
   extract_fit_engine() %>%
   summary()
 
-#R^2 clásica
+# R^2 clásica
 resumen_ajuste$r.squared
 
-#R^2 ajustada
+# R^2 ajustada
 resumen_ajuste$adj.r.squared
 ```
 
@@ -585,9 +614,9 @@ library(cowplot)
 datos_bien <- tibble(
   x = seq(0, 25, length.out = 100)
 ) %>%
-  mutate(y = rnorm(n(), mean = 3*x + 5, 4))
+  mutate(y = rnorm(n(), mean = 3 * x + 5, 4))
 
-modelo_1 <- linear_reg() %>% 
+modelo_1 <- linear_reg() %>%
   set_engine("lm") %>%
   fit(y ~ x, data = datos_bien)
 
@@ -600,7 +629,7 @@ datos_bien <- datos_bien %>%
   ) %>%
   mutate(residuales = y - .pred)
 
-modelo_bien <-   ggplot(datos_bien) +
+modelo_bien <- ggplot(datos_bien) +
   geom_point(aes(x = x, y = y), color = "#ff6361") +
   geom_line(aes(x = x, y = .pred), color = "#003f5c") +
   labs(
@@ -608,7 +637,7 @@ modelo_bien <-   ggplot(datos_bien) +
     y = "y",
     title = "Un buen modelo"
   ) +
-  theme_bw() 
+  theme_bw()
 
 plot_bien <- ggplot(datos_bien) +
   geom_point(aes(x = .pred, y = residuales), color = "#ff6361") +
@@ -623,9 +652,9 @@ plot_bien <- ggplot(datos_bien) +
 datos_mal <- tibble(
   x = seq(0, 25, length.out = 100)
 ) %>%
-  mutate(y = rnorm(n(), mean = 2*x^2 + 3*x + 5, 4))
+  mutate(y = rnorm(n(), mean = 2 * x^2 + 3 * x + 5, 4))
 
-modelo_2 <- linear_reg() %>% 
+modelo_2 <- linear_reg() %>%
   set_engine("lm") %>%
   fit(y ~ x, data = datos_mal)
 
@@ -637,8 +666,8 @@ datos_mal <- datos_mal %>%
     predict(modelo_2, new_data = datos_mal, type = "conf_int", level = 0.9)
   ) %>%
   mutate(residuales = y - .pred)
-  
-modelo_mal <-   ggplot(datos_mal) +
+
+modelo_mal <- ggplot(datos_mal) +
   geom_point(aes(x = x, y = y), color = "#ffa600") +
   geom_line(aes(x = x, y = .pred), color = "#003f5c") +
   labs(
@@ -647,7 +676,7 @@ modelo_mal <-   ggplot(datos_mal) +
     title = "Un mal modelo"
   ) +
   theme_bw()
-  
+
 plot_mal <- ggplot(datos_mal) +
   geom_point(aes(x = .pred, y = residuales), color = "#ffa600") +
   labs(
@@ -673,7 +702,7 @@ estos residuales estandarizados los podemos calcular en `R` como sigue:
 
 ```{r}
 obs_y_modelo <- obs_y_modelo %>%
-  mutate(residuales_std = residuales/sd(residuales))
+  mutate(residuales_std = residuales / sd(residuales))
 ```
 
 Si los graficamos contra los valores ajustados no deberíamos de ver ningún patrón:
@@ -697,9 +726,9 @@ Podemos ver cómo se ven estos puntos en el modelo ideal vs en un modelo donde l
 datos_bien <- tibble(
   x = seq(0, 25, length.out = 100)
 ) %>%
-  mutate(y = rnorm(n(), mean = 3*x + 5, 4))
+  mutate(y = rnorm(n(), mean = 3 * x + 5, 4))
 
-modelo_1 <- linear_reg() %>% 
+modelo_1 <- linear_reg() %>%
   set_engine("lm") %>%
   fit(y ~ x, data = datos_bien)
 
@@ -711,9 +740,9 @@ datos_bien <- datos_bien %>%
     predict(modelo_1, new_data = datos_bien, type = "conf_int", level = 0.9)
   ) %>%
   mutate(residuales = y - .pred) %>%
-  mutate(residuales_std = residuales/sd(residuales))
+  mutate(residuales_std = residuales / sd(residuales))
 
-modelo_bien <-   ggplot(datos_bien) +
+modelo_bien <- ggplot(datos_bien) +
   geom_point(aes(x = x, y = y), color = "#ff6361") +
   geom_line(aes(x = x, y = .pred), color = "#003f5c") +
   labs(
@@ -721,7 +750,7 @@ modelo_bien <-   ggplot(datos_bien) +
     y = "y",
     title = "Un buen modelo"
   ) +
-  theme_bw() 
+  theme_bw()
 
 plot_bien <- ggplot(datos_bien) +
   geom_point(aes(x = .pred, y = residuales_std), color = "#ff6361") +
@@ -736,9 +765,9 @@ plot_bien <- ggplot(datos_bien) +
 datos_mal <- tibble(
   x = seq(0, 25, length.out = 100)
 ) %>%
-  mutate(y = rnorm(n(), mean = 3*x + 5, x^2))
+  mutate(y = rnorm(n(), mean = 3 * x + 5, x^2))
 
-modelo_2 <- linear_reg() %>% 
+modelo_2 <- linear_reg() %>%
   set_engine("lm") %>%
   fit(y ~ x, data = datos_mal)
 
@@ -750,9 +779,9 @@ datos_mal <- datos_mal %>%
     predict(modelo_2, new_data = datos_mal, type = "conf_int", level = 0.9)
   ) %>%
   mutate(residuales = y - .pred) %>%
-  mutate(residuales_std = residuales/sd(residuales))
-  
-modelo_mal <-   ggplot(datos_mal) +
+  mutate(residuales_std = residuales / sd(residuales))
+
+modelo_mal <- ggplot(datos_mal) +
   geom_point(aes(x = x, y = y), color = "#ffa600") +
   geom_line(aes(x = x, y = .pred), color = "#003f5c") +
   labs(
@@ -761,11 +790,11 @@ modelo_mal <-   ggplot(datos_mal) +
     title = "Un mal modelo"
   ) +
   theme_bw()
-  
+
 plot_mal <- ggplot(datos_mal) +
   geom_point(aes(x = .pred, y = residuales_std), color = "#ffa600") +
   labs(
-      x = "Valores ajustados (predichos)",
+    x = "Valores ajustados (predichos)",
     y = "Residuales estandarizados",
     title = "Modelo mal (con patrón)"
   ) +
@@ -781,12 +810,16 @@ La segunda gráfica corresponde a una gráfica cuantil cuantil. Esta la utilizam
 
 ```{r}
 #| echo: false
-ggplot(tibble(x = c(-2, -1, 0, 1, 2), 
-              y = c(-1, 0, 0.1, 0.4, 1))) +
+ggplot(tibble(
+  x = c(-2, -1, 0, 1, 2),
+  y = c(-1, 0, 0.1, 0.4, 1)
+)) +
   geom_point(aes(x = x, y = y)) +
   theme_bw() +
-  annotate("text", x = 0, y = 0, 
-           label = "Cada punto es el cuantil q1 de la normal\ncontra el cuantil q1 de los residuales") +
+  annotate("text",
+    x = 0, y = 0,
+    label = "Cada punto es el cuantil q1 de la normal\ncontra el cuantil q1 de los residuales"
+  ) +
   labs(
     x = "Cuantiles teóricos de la normal",
     y = "Cuantiles observados de los residuales",
@@ -797,8 +830,8 @@ ggplot(tibble(x = c(-2, -1, 0, 1, 2),
 Podemos armar una gráfica cuantil cuantil con `ggplot2`:
 
 ```{r}
-ggplot(obs_y_modelo, aes(sample = residuales)) + 
-  stat_qq(color = "#ff6361") + 
+ggplot(obs_y_modelo, aes(sample = residuales)) +
+  stat_qq(color = "#ff6361") +
   stat_qq_line(color = "#58508d") +
   theme_bw() +
   labs(
@@ -812,8 +845,8 @@ La idea de la gráfica cuantil cuantil es que los puntos sigan la línea lo más
 
 ```{r}
 #| echo: false
-qqmal <- ggplot(datos_mal, aes(sample = residuales)) + 
-  stat_qq(color = "#ffa600") + 
+qqmal <- ggplot(datos_mal, aes(sample = residuales)) +
+  stat_qq(color = "#ffa600") +
   stat_qq_line(color = "#58508d") +
   theme_bw() +
   labs(
@@ -822,8 +855,8 @@ qqmal <- ggplot(datos_mal, aes(sample = residuales)) +
     title = "QQPLOT mal"
   )
 
-qqbien <- ggplot(datos_bien, aes(sample = residuales)) + 
-  stat_qq(color = "#ff6361") + 
+qqbien <- ggplot(datos_bien, aes(sample = residuales)) +
+  stat_qq(color = "#ff6361") +
   stat_qq_line(color = "#58508d") +
   theme_bw() +
   labs(
@@ -843,26 +876,34 @@ El apalancamiento representa qué tanto cambia el modelo al quitar una sola obse
 #| echo: false
 datos_bien <- tibble(
   x = seq(0, 25, length.out = 100)
-  ) %>%
-  mutate(y = rnorm(n(), mean = 3*x + 5, 4))
-datos_bien[50,"y"] <- 100 #outlier
-datos_bien[50,"x"] <- 100 #outlier
+) %>%
+  mutate(y = rnorm(n(), mean = 3 * x + 5, 4))
+datos_bien[50, "y"] <- 100 # outlier
+datos_bien[50, "x"] <- 100 # outlier
 
 ggplot(datos_bien) +
   geom_point(aes(x = x, y = y), color = "#003f5c", size = 2) +
-  geom_segment(aes(x = 12, xend = as.numeric(datos_bien[50,"x"]), 
-                   y = 76, yend = as.numeric(datos_bien[50,"y"])),
-               color = "#bc5090",
-               arrow = arrow(length = unit(0.2,"inches"))) +
-  geom_segment(aes(x = 3, xend = as.numeric(datos_bien[12,"x"]), 
-                   y = 40, yend = as.numeric(datos_bien[12,"y"])),
-               color = "#bc5090",
-               arrow = arrow(length = unit(0.2,"inches"))) +
+  geom_segment(
+    aes(
+      x = 12, xend = as.numeric(datos_bien[50, "x"]),
+      y = 76, yend = as.numeric(datos_bien[50, "y"])
+    ),
+    color = "#bc5090",
+    arrow = arrow(length = unit(0.2, "inches"))
+  ) +
+  geom_segment(
+    aes(
+      x = 3, xend = as.numeric(datos_bien[12, "x"]),
+      y = 40, yend = as.numeric(datos_bien[12, "y"])
+    ),
+    color = "#bc5090",
+    arrow = arrow(length = unit(0.2, "inches"))
+  ) +
   annotate("label", x = 3, y = 40, label = "Normal") +
   annotate("label", x = 12, y = 75, label = "Influyente") +
-  geom_point(aes(x = x, y = y), data = datos_bien[50,], size = 2, color = "#ff6361") +
-  geom_point(aes(x = x, y = y), data = datos_bien[12,], size = 2, color = "#ffa600") +
-  theme_bw() 
+  geom_point(aes(x = x, y = y), data = datos_bien[50, ], size = 2, color = "#ff6361") +
+  geom_point(aes(x = x, y = y), data = datos_bien[12, ], size = 2, color = "#ffa600") +
+  theme_bw()
 ```
 
 Veamos cómo cambia la regresión si dejo todos los puntos, si quito el normal y si quito el influyente:
@@ -871,23 +912,29 @@ Veamos cómo cambia la regresión si dejo todos los puntos, si quito el normal y
 #| echo: false
 ggplot(datos_bien) +
   geom_point(aes(x = x, y = y), color = "#003f5c", size = 2) +
-  geom_smooth(aes(x = x, y = y, color = "Sin el normal"), method = "lm", 
-              formula = y ~ x, se = F, data = datos_bien[-12,]) +
-  geom_smooth(aes(x = x, y = y, color = "Sin el influyente"), method = "lm", 
-              formula = y ~ x, se = F, data = datos_bien[-50,]) +
-  geom_smooth(aes(x = x, y = y, color = "Todos los datos"), method = "lm", 
-              formula = y ~ x, se = F) +
+  geom_smooth(aes(x = x, y = y, color = "Sin el normal"),
+    method = "lm",
+    formula = y ~ x, se = F, data = datos_bien[-12, ]
+  ) +
+  geom_smooth(aes(x = x, y = y, color = "Sin el influyente"),
+    method = "lm",
+    formula = y ~ x, se = F, data = datos_bien[-50, ]
+  ) +
+  geom_smooth(aes(x = x, y = y, color = "Todos los datos"),
+    method = "lm",
+    formula = y ~ x, se = F
+  ) +
   theme_bw() +
-  scale_color_manual("Modelo", values = c("#bc5090","#ff6361","#ffa600"))
+  scale_color_manual("Modelo", values = c("#bc5090", "#ff6361", "#ffa600"))
 ```
 
 Nota que el modelo no cambia prácticamente nada cuando hago la regresión sin el dato que marqué como `normal` pero cambia mucho cuando quito el que marqué como `influyente`. La gráfica de residuales contra apalancamiento muestra también el valor extraño:
 
 ```{r}
 #| echo: false
-modelo_res <-  linear_reg() %>% 
+modelo_res <- linear_reg() %>%
   set_engine("lm") %>%
-  fit(y ~ x, data = datos_bien) 
+  fit(y ~ x, data = datos_bien)
 
 residuales <- modelo_res %>%
   extract_fit_engine() %>%
@@ -906,7 +953,7 @@ ggplot() +
   ) +
   theme_bw() +
   geom_hline(aes(yintercept = 0), linetype = "dashed") +
-  annotate("label", x = 0.5, y = -80, label = "El influyente") 
+  annotate("label", x = 0.5, y = -80, label = "El influyente")
 ```
 
 El apalancamiento mide la influencia de un dato y en `R` se puede calcular con `hatvalues`. Los datos con mayor **apalancamiento** siempre valen la pena checarlos para verificar que todo opera en orden.
@@ -919,7 +966,7 @@ apalancamiento <- modelo_ajustado %>%
 obs_y_modelo <- obs_y_modelo %>%
   cbind(apalancamiento)
 
-#Graficamos residuales contra apalancamiento
+# Graficamos residuales contra apalancamiento
 ggplot(obs_y_modelo) +
   geom_point(aes(x = apalancamiento, y = residuales), color = "#ff6361") +
   labs(
@@ -943,7 +990,7 @@ distanciaCook <- modelo_ajustado %>%
 obs_y_modelo <- obs_y_modelo %>%
   cbind(distanciaCook)
 
-#Graficamos residuales contra apalancamiento
+# Graficamos residuales contra apalancamiento
 ggplot(obs_y_modelo) +
   geom_col(aes(x = 1:nrow(obs_y_modelo), y = distanciaCook), fill = "#ff6361") +
   labs(
@@ -951,7 +998,7 @@ ggplot(obs_y_modelo) +
     y = "Distancia de Cook",
     title = "Distancia de Cook"
   ) +
-  theme_bw() 
+  theme_bw()
 ```
 
 podemos ver que en el ejemplo anterior (el de la observación influyente) la distancia de Cook es exagerada, tan exagerada que ni se alcanzan a ver los otros:
@@ -970,7 +1017,7 @@ ggplot() +
     title = "Cook"
   ) +
   theme_bw() +
-  annotate("label", x = 50, y = 40, label = "El influyente") 
+  annotate("label", x = 50, y = 40, label = "El influyente")
 ```
 
 ## Regresión múltiple: más de una variable
@@ -1054,7 +1101,7 @@ tiende a elegir modelos más pequeños.
 ### Forma clásica
 
 ```{r}
-#Entre más chico, mejor
+# Entre más chico, mejor
 AIC(modelo_clasico, modelo_multiple)
 BIC(modelo_clasico, modelo_multiple)
 ```
@@ -1066,8 +1113,8 @@ en los dos dialectos:
 
 ```{r}
 bind_rows(
-  glance(modelo_ajustado)      %>% mutate(modelo = "PovPct"),
-  glance(modelo_multiple_tm)   %>% mutate(modelo = "PovPct + ViolCrime")
+  glance(modelo_ajustado) %>% mutate(modelo = "PovPct"),
+  glance(modelo_multiple_tm) %>% mutate(modelo = "PovPct + ViolCrime")
 ) %>%
   select(modelo, r.squared, adj.r.squared, AIC, BIC, df)
 ```
@@ -1155,12 +1202,12 @@ exactamente esto: para cada variable, cuánto se infla su varianza por culpa de
 estar correlacionada con las demás. Se calcula con `vif` del paquete `car`:
 
 ```{r}
-#Nuestro modelo bueno
+# Nuestro modelo bueno
 vif(modelo_multiple)
 ```
 
 ```{r}
-#El modelo con el problema
+# El modelo con el problema
 vif(modelo_colineal)
 ```
 
@@ -1249,7 +1296,7 @@ serie_covid <- read_csv("datasets/casos_covid_agosto_2022.csv") %>%
   rename(fecha = FECHA_SINTOMAS, casos = n) %>%
   arrange(fecha)
 
-#Así se ven los datos
+# Así se ven los datos
 head(serie_covid)
 ```
 
@@ -1269,10 +1316,10 @@ donde le dices cada cuántas observaciones se repite el patrón. Como son datos
 diarios con patrón semanal, la frecuencia es `7`:
 
 ```{r}
-#frequency = 7 porque el patrón se repite cada semana
+# frequency = 7 porque el patrón se repite cada semana
 serie_ts <- ts(serie_covid$casos, frequency = 7)
 
-#auto.arima elige solo el tipo de modelo ARIMA
+# auto.arima elige solo el tipo de modelo ARIMA
 modelo_arima <- auto.arima(serie_ts)
 modelo_arima
 ```
@@ -1318,7 +1365,7 @@ que evalúes el pronóstico contra datos que el modelo no vio:
 
 ```{r}
 #| message: false
-#Apartamos los últimos 14 días para evaluar
+# Apartamos los últimos 14 días para evaluar
 particion <- time_series_split(
   serie_covid,
   date_var   = fecha,
@@ -1326,7 +1373,7 @@ particion <- time_series_split(
   cumulative = TRUE
 )
 
-#Mismo auto.arima, sintaxis tidymodels
+# Mismo auto.arima, sintaxis tidymodels
 modelo_arima_tm <- arima_reg() %>%
   set_engine("auto_arima") %>%
   fit(casos ~ fecha, data = training(particion))
@@ -1388,10 +1435,10 @@ Identifica cuáles regresiones sí ajustan bien y cuáles no mediante los gráfi
 ```{r}
 dat <- datasets::anscombe
 datLong <- data.frame(
-    grupo  = rep(1:4, each = 11),
-    x = unlist(dat[,c(1:4)]),
-    y = unlist(dat[,c(5:8)])
-    )
+  grupo = rep(1:4, each = 11),
+  x = unlist(dat[, c(1:4)]),
+  y = unlist(dat[, c(5:8)])
+)
 rownames(datLong) <- NULL
 ```
 
@@ -1404,11 +1451,11 @@ rownames(datLong) <- NULL
 Para hacer la misma regresión lineal pero con estadística bayesiana podemos nada más cambiar el `engine`:
 
 ```{r}
-#Ajusta un modelo lineal 
-#Brth15to17 = intercepto + pendiente*PovPct
-modelo_bayesiano <- linear_reg() %>% 
+# Ajusta un modelo lineal
+# Brth15to17 = intercepto + pendiente*PovPct
+modelo_bayesiano <- linear_reg() %>%
   set_engine("stan") %>%
-  fit(Brth15to17 ~ PovPct, data = emb_pob) #Notación y ~ x
+  fit(Brth15to17 ~ PovPct, data = emb_pob) # Notación y ~ x
 ```
 
 Y podemos ver el ajuste:
@@ -1428,20 +1475,22 @@ predichos <- modelo_bayesiano %>%
 
 ic <- modelo_bayesiano %>%
   extract_fit_engine() %>%
-  predictive_interval(newdata = emb_pob, prob = 0.95) #Para bayesiana
+  predictive_interval(newdata = emb_pob, prob = 0.95) # Para bayesiana
 
-#Juntamos los predichos con los observados
-obs_y_modelo <- emb_pob %>% 
+# Juntamos los predichos con los observados
+obs_y_modelo <- emb_pob %>%
   cbind(predichos) %>%
   cbind(ic)
 
-#Graficamos
+# Graficamos
 ggplot(obs_y_modelo) +
-  geom_ribbon(aes(x = PovPct, ymin = `2.5%`, ymax = `97.5%`), 
-              fill = "#003f5c", linewidth = 1, alpha = 0.5) +
+  geom_ribbon(aes(x = PovPct, ymin = `2.5%`, ymax = `97.5%`),
+    fill = "#003f5c", linewidth = 1, alpha = 0.5
+  ) +
   geom_point(aes(x = PovPct, y = Brth15to17), color = "#ffa600", size = 3) +
-  geom_line(aes(x = PovPct, y = predichos), 
-            color = "#003f5c", linewidth = 1) +
+  geom_line(aes(x = PovPct, y = predichos),
+    color = "#003f5c", linewidth = 1
+  ) +
   labs(
     x = "Porcentaje en pobreza",
     y = "Tasa bruta de natalidad (por cada 1,000 mujeres adolescentes)",
@@ -1454,7 +1503,7 @@ Para validación del modelo puedes checar [esta página](https://mc-stan.org/rst
 
 ```{r}
 modelo_bayesiano %>%
-  extract_fit_engine() %>% 
+  extract_fit_engine() %>%
   loo()
 ```
 
@@ -1462,7 +1511,7 @@ asi como su visualización (si el modelo no fuera bueno)
 
 ```{r}
 modelo_bayesiano %>%
-  extract_fit_engine() %>% 
+  extract_fit_engine() %>%
   loo() %>%
   plot(label_points = TRUE)
 ```

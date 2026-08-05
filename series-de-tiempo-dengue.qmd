@@ -13,12 +13,12 @@ Usamos veinte años de casos semanales de dengue para entender por qué una regr
 #| message: false
 #| warning: false
 library(tidyverse)
-library(broom)        #para tidy()
-library(NobBS)        #trae los datos de dengue
-library(scoringutils) #evaluación de pronósticos
-library(forecast)     #ARIMA
-library(bsts)         #modelos estructurales bayesianos
-library(WaveletComp)  #escalograma
+library(broom) # para tidy()
+library(NobBS) # trae los datos de dengue
+library(scoringutils) # evaluación de pronósticos
+library(forecast) # ARIMA
+library(bsts) # modelos estructurales bayesianos
+library(WaveletComp) # escalograma
 ```
 
 ::: callout-warning
@@ -144,9 +144,11 @@ dengue <- read_csv("datasets/dengue_puerto_rico_semanal.csv")
 #| fig-cap: "Casos semanales de dengue en Puerto Rico, 1990-2010."
 ggplot(dengue) +
   geom_line(aes(x = semana, y = casos), color = "#003f5c", linewidth = 0.4) +
-  labs(x = "", y = "Casos semanales",
-       title = "Dengue en Puerto Rico",
-       caption = "Fuente: datos denguedat del paquete NobBS") +
+  labs(
+    x = "", y = "Casos semanales",
+    title = "Dengue en Puerto Rico",
+    caption = "Fuente: datos denguedat del paquete NobBS"
+  ) +
   scale_y_continuous(labels = scales::label_comma()) +
   theme_bw()
 ```
@@ -166,9 +168,12 @@ dengue %>%
   mutate(semana_anio = as.numeric(format(semana, "%V"))) %>%
   ggplot() +
   geom_boxplot(aes(x = semana_anio, y = casos, group = semana_anio),
-               fill = "#bc5090", alpha = 0.6, outlier.size = 0.5) +
-  labs(x = "Semana del año", y = "Casos",
-       title = "El dengue tiene una estación bien marcada") +
+    fill = "#bc5090", alpha = 0.6, outlier.size = 0.5
+  ) +
+  labs(
+    x = "Semana del año", y = "Casos",
+    title = "El dengue tiene una estación bien marcada"
+  ) +
   theme_bw()
 ```
 
@@ -181,8 +186,10 @@ El patrón es clarísimo: los casos suben en la segunda mitad del año. Esto es
 
 ```{r}
 #| fig-cap: "Descomposición STL: la serie es la suma de las tres partes de abajo."
-serie_ts <- ts(dengue$casos, frequency = 52,
-               start = c(1990, 1))
+serie_ts <- ts(dengue$casos,
+  frequency = 52,
+  start = c(1990, 1)
+)
 
 descomp <- stl(serie_ts, s.window = "periodic")
 autoplot(descomp) +
@@ -211,14 +218,14 @@ ciclo, y el color es qué tan fuerte está ese ciclo en ese momento.
 #| results: hide
 onda <- analyze.wavelet(
   data.frame(x = dengue$casos), "x",
-  loess.span  = 0,       #no quitar tendencia
-  dt          = 1,       #cada observación es 1 semana
-  dj          = 1/12,
-  lowerPeriod = 8,       #de 8 semanas...
-  upperPeriod = 512,     #...a ~10 años
-  make.pval   = TRUE,
-  n.sim       = 10,
-  verbose     = FALSE
+  loess.span = 0, # no quitar tendencia
+  dt = 1, # cada observación es 1 semana
+  dj = 1 / 12,
+  lowerPeriod = 8, # de 8 semanas...
+  upperPeriod = 512, # ...a ~10 años
+  make.pval = TRUE,
+  n.sim = 10,
+  verbose = FALSE
 )
 ```
 
@@ -227,10 +234,11 @@ onda <- analyze.wavelet(
 #| fig-width: 9
 #| fig-height: 5
 wt.image(onda,
-         main        = "¿Qué ciclos tiene el dengue y cuándo?",
-         periodlab   = "Periodo del ciclo (semanas)",
-         timelab     = "Semanas desde 1990",
-         legend.params = list(lab = "Potencia"))
+  main = "¿Qué ciclos tiene el dengue y cuándo?",
+  periodlab = "Periodo del ciclo (semanas)",
+  timelab = "Semanas desde 1990",
+  legend.params = list(lab = "Potencia")
+)
 ```
 
 ¿Cuál es el ciclo dominante?
@@ -263,14 +271,14 @@ Para poder evaluar honestamente (paso 7 del flujo de trabajo), apartamos el
 **último año** y no lo dejamos ver a ningún modelo:
 
 ```{r}
-H <- 52  #vamos a pronosticar un año
+H <- 52 # vamos a pronosticar un año
 
 entrena <- head(dengue, nrow(dengue) - H)
-prueba  <- tail(dengue, H)
+prueba <- tail(dengue, H)
 
-#el tiempo como número, para la regresión lineal
+# el tiempo como número, para la regresión lineal
 entrena$t <- seq_len(nrow(entrena))
-prueba$t  <- nrow(entrena) + seq_len(H)
+prueba$t <- nrow(entrena) + seq_len(H)
 
 c(entrena = nrow(entrena), prueba = nrow(prueba))
 ```
@@ -320,8 +328,10 @@ tibble(anterior = head(res_lm, -1), actual = tail(res_lm, -1)) %>%
   ggplot(aes(x = anterior, y = actual)) +
   geom_point(color = "#003f5c", alpha = 0.4, size = 0.8) +
   geom_smooth(method = "lm", formula = "y ~ x", color = "#ff6361") +
-  labs(x = "Residual de la semana anterior", y = "Residual de esta semana",
-       title = "Los errores NO son independientes") +
+  labs(
+    x = "Residual de la semana anterior", y = "Residual de esta semana",
+    title = "Los errores NO son independientes"
+  ) +
   theme_bw()
 ```
 
@@ -361,10 +371,10 @@ regresión que pronostique el año que apartamos:
 ```{r}
 pred_lm <- predict(modelo_lm, newdata = prueba, se.fit = TRUE)
 
-#desviación de la predicción (incluye el error del modelo y el ruido)
+# desviación de la predicción (incluye el error del modelo y el ruido)
 sd_lm <- sqrt(pred_lm$se.fit^2 + summary(modelo_lm)$sigma^2)
 
-#ancho del intervalo al 95%, en la primera y la última semana pronosticada
+# ancho del intervalo al 95%, en la primera y la última semana pronosticada
 ancho_lm <- 2 * qt(0.975, df = modelo_lm$df.residual) * sd_lm
 round(c(semana_1 = ancho_lm[1], semana_52 = ancho_lm[H]), 1)
 ```
@@ -405,9 +415,9 @@ semanas son demasiadas para un `ARIMA` estacional clásico):
 ```{r}
 serie_entrena <- ts(entrena$casos, frequency = 52)
 
-#K = 3 pares de senos y cosenos para la estacionalidad anual
+# K = 3 pares de senos y cosenos para la estacionalidad anual
 fourier_dentro <- fourier(serie_entrena, K = 3)
-fourier_fuera  <- fourier(serie_entrena, K = 3, h = H)
+fourier_fuera <- fourier(serie_entrena, K = 3, h = H)
 
 modelo_arima <- auto.arima(serie_entrena, seasonal = FALSE, xreg = fourier_dentro)
 modelo_arima
@@ -440,17 +450,21 @@ Y ahora el pronóstico:
 ```{r}
 pron_arima <- forecast(modelo_arima, xreg = fourier_fuera, level = c(50, 80, 90, 95))
 
-#ancho del intervalo al 95% en la primera y la última semana
-ancho_arima <- c(pron_arima$upper[1, 4] - pron_arima$lower[1, 4],
-                 pron_arima$upper[H, 4] - pron_arima$lower[H, 4])
+# ancho del intervalo al 95% en la primera y la última semana
+ancho_arima <- c(
+  pron_arima$upper[1, 4] - pron_arima$lower[1, 4],
+  pron_arima$upper[H, 4] - pron_arima$lower[H, 4]
+)
 round(ancho_arima, 1)
 ```
 
 ```{r}
 #| fig-cap: "Pronóstico del ARIMA. El abanico se abre conforme se aleja en el tiempo."
 autoplot(pron_arima) +
-  labs(x = "Semanas (en años de 52)", y = "Casos",
-       title = "Pronóstico ARIMA a un año") +
+  labs(
+    x = "Semanas (en años de 52)", y = "Casos",
+    title = "Pronóstico ARIMA a un año"
+  ) +
   theme_bw()
 ```
 
@@ -484,19 +498,20 @@ ciclo anual no es igual de fuerte en todas las épocas.
 ```{r}
 #| results: hide
 #| message: false
-#La semilla va ANTES de construir la estructura: esos comandos también usan
-#números aleatorios, así que si la pones después el resultado cambia entre
-#corridas. El argumento seed = de bsts fija además el muestreo interno.
+# La semilla va ANTES de construir la estructura: esos comandos también usan
+# números aleatorios, así que si la pones después el resultado cambia entre
+# corridas. El argumento seed = de bsts fija además el muestreo interno.
 set.seed(97531)
 
 estructura <- AddLocalLevel(list(), entrena$casos)
 estructura <- AddSeasonal(estructura, entrena$casos, nseasons = 52)
 
 modelo_bsts <- bsts(entrena$casos,
-                    state.specification = estructura,
-                    niter = 2000,
-                    seed  = 97531,
-                    ping  = 0)
+  state.specification = estructura,
+  niter = 2000,
+  seed = 97531,
+  ping = 0
+)
 ```
 
 ::: callout-note
@@ -522,9 +537,10 @@ Y el pronóstico:
 ```{r}
 pron_bsts <- predict(modelo_bsts, horizon = H, burn = 200)
 
-#ancho del intervalo al 95%
+# ancho del intervalo al 95%
 q_bsts <- t(apply(pron_bsts$distribution, 2, quantile,
-                  probs = c(0.025, 0.975)))
+  probs = c(0.025, 0.975)
+))
 ancho_bsts <- c(q_bsts[1, 2] - q_bsts[1, 1], q_bsts[H, 2] - q_bsts[H, 1])
 round(ancho_bsts, 1)
 ```
@@ -659,16 +675,16 @@ armar <- function(cuantiles, nombre) {
   tibble(
     modelo     = nombre,
     semana     = rep(prueba$semana, times = length(niveles)),
-    observado  = rep(prueba$casos,  times = length(niveles)),
+    observado  = rep(prueba$casos, times = length(niveles)),
     nivel      = rep(niveles, each = H),
     prediccion = as.vector(cuantiles)
   )
 }
 
 pronosticos <- bind_rows(
-  armar(q_lm,          "Regresion lineal"),
-  armar(q_arima,       "ARIMA"),
-  armar(q_bsts_todos,  "bsts")
+  armar(q_lm, "Regresion lineal"),
+  armar(q_arima, "ARIMA"),
+  armar(q_bsts_todos, "bsts")
 )
 
 head(pronosticos)
@@ -780,21 +796,26 @@ semanas, no para anticipar una epidemia a un año.
 #| fig-height: 5
 bandas <- pronosticos %>%
   filter(nivel %in% c(0.025, 0.5, 0.975)) %>%
-  mutate(cual = case_when(nivel == 0.025 ~ "bajo",
-                          nivel == 0.5   ~ "medio",
-                          TRUE           ~ "alto")) %>%
+  mutate(cual = case_when(
+    nivel == 0.025 ~ "bajo",
+    nivel == 0.5 ~ "medio",
+    TRUE ~ "alto"
+  )) %>%
   select(-nivel) %>%
   pivot_wider(names_from = cual, values_from = prediccion)
 
 ggplot(bandas) +
   geom_ribbon(aes(x = semana, ymin = bajo, ymax = alto),
-              fill = "#003f5c", alpha = 0.25) +
+    fill = "#003f5c", alpha = 0.25
+  ) +
   geom_line(aes(x = semana, y = medio), color = "#003f5c") +
   geom_line(aes(x = semana, y = observado), color = "#ff6361", linewidth = 0.8) +
   facet_wrap(~modelo, ncol = 1, scales = "free_y") +
-  labs(x = "", y = "Casos",
-       title = "Pronóstico a un año contra lo observado",
-       subtitle = "En rojo lo que pasó; en azul el pronóstico con su intervalo al 95%") +
+  labs(
+    x = "", y = "Casos",
+    title = "Pronóstico a un año contra lo observado",
+    subtitle = "En rojo lo que pasó; en azul el pronóstico con su intervalo al 95%"
+  ) +
   theme_bw()
 ```
 
@@ -819,19 +840,19 @@ ggplot(bandas) +
 
 ```{r}
 #| eval: false
-#a) Queremos el ACF de los residuales del modelo lineal
+# a) Queremos el ACF de los residuales del modelo lineal
 acf(modelo_lm)
 ```
 
 ```{r}
 #| eval: false
-#b) Queremos pronosticar 52 semanas con el ARIMA
+# b) Queremos pronosticar 52 semanas con el ARIMA
 forecast(modelo_arima, h = 52)
 ```
 
 ```{r}
 #| eval: false
-#c) Queremos evaluar qué tan bueno fue el ajuste del ARIMA
+# c) Queremos evaluar qué tan bueno fue el ajuste del ARIMA
 pron <- forecast(modelo_arima, xreg = fourier_fuera, h = 52)
 mean(abs(pron$mean - entrena$casos))
 ```

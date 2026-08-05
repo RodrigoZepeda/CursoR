@@ -15,13 +15,13 @@ Antes de cualquier análisis, enlistaremos las librerías que vamos a usar:
 
 ```{r}
 #| message: false
-library(tidyverse)   #Análisis exploratorio de datos y gráficas
-library(officer)     #Paquete para que R trabaje con Microsoft Office (Word / Power Point)
-library(readxl)      #Para leer archivos de Excel
-library(flextable)   #Armar tablas en formato word  
-library(sf)          #Para usar mapas
-library(httr)        #Descargar archivos web
-library(lubridate)   #Para calcular fechas
+library(tidyverse) # Análisis exploratorio de datos y gráficas
+library(officer) # Paquete para que R trabaje con Microsoft Office (Word / Power Point)
+library(readxl) # Para leer archivos de Excel
+library(flextable) # Armar tablas en formato word
+library(sf) # Para usar mapas
+library(httr) # Descargar archivos web
+library(lubridate) # Para calcular fechas
 ```
 
 ## Datos
@@ -38,13 +38,13 @@ Comenzamos leyendo los casos:
 
 ```{r}
 #| message: false
-#Nota que podemos bajar el archivo directo de la página web
+# Nota que podemos bajar el archivo directo de la página web
 pagina_web <- "https://datosabiertos.salud.gob.mx/gobmx/salud/datos_abiertos/etv/historicos/2021/datos_abiertos_dengue_301221.zip"
 
-#Descagamos los datos
-GET(pagina_web, write_disk("dengue.zip", overwrite=TRUE))
+# Descagamos los datos
+GET(pagina_web, write_disk("dengue.zip", overwrite = TRUE))
 
-#Los leemos
+# Los leemos
 dengue <- read_csv("dengue.zip", show_col_types = FALSE)
 ```
 
@@ -53,29 +53,28 @@ Por otro lado descargamos el diccionario de datos:
 ```{r}
 #| message: false
 
-#Bajamos el diccionario
+# Bajamos el diccionario
 pagina_diccionario <- "https://datosabiertos.salud.gob.mx/gobmx/salud/datos_abiertos/etv/diccionario_datos_dengue.zip"
 
-#Descagamos los datos
-GET(pagina_diccionario, write_disk("diccionario_datos_dengue.zip", overwrite=TRUE))
+# Descagamos los datos
+GET(pagina_diccionario, write_disk("diccionario_datos_dengue.zip", overwrite = TRUE))
 
-#Descomprimimos el archivo
+# Descomprimimos el archivo
 zip::unzip("diccionario_datos_dengue.zip", exdir = getwd())
 
-#Le cambio de nombre porque sale con problemas
-file.rename("Cat\xa0logos_Dengue.xlsx","Catalogos_Dengue.xlsx")
+# Le cambio de nombre porque sale con problemas
+file.rename("Cat\xa0logos_Dengue.xlsx", "Catalogos_Dengue.xlsx")
 
-#Leemos el catálogo de datos en hoja entidad y en hoja municipio
-entidades  <- read_excel("Catalogos_Dengue.xlsx", sheet = "CATÁLOGO ENTIDAD")
+# Leemos el catálogo de datos en hoja entidad y en hoja municipio
+entidades <- read_excel("Catalogos_Dengue.xlsx", sheet = "CATÁLOGO ENTIDAD")
 municipios <- read_excel("Catalogos_Dengue.xlsx", sheet = "CATÁLOGO MUNICIPIO")
-
 ```
 
 Pegamos a los datos el nombre de la entidad de residencia y de municipio de residencia a partir del diccionario
 
 ```{r}
-#Pegamos las bases y luego
-#Cambiamos los nombres a algo más informativo que entidad y abreviatura
+# Pegamos las bases y luego
+# Cambiamos los nombres a algo más informativo que entidad y abreviatura
 dengue <- dengue %>%
   left_join(entidades, by = c("ENTIDAD_RES" = "CLAVE_ENTIDAD")) %>%
   rename(ENTIDAD_RESIDENCIA = ENTIDAD_FEDERATIVA) %>%
@@ -86,8 +85,9 @@ Repetimos el proceso para municipio
 
 ```{r}
 dengue <- dengue %>%
-  left_join(municipios, 
-            by = c("ENTIDAD_RES" = "CLAVE_ENTIDAD", "MUNICIPIO_RES" = "CLAVE_MUNICIPIO")) %>%
+  left_join(municipios,
+    by = c("ENTIDAD_RES" = "CLAVE_ENTIDAD", "MUNICIPIO_RES" = "CLAVE_MUNICIPIO")
+  ) %>%
   rename(MUNICIPIO_RESIDENCIA = MUNICIPIO)
 ```
 
@@ -131,13 +131,14 @@ Para hacer la tabla primero creamos un `tibble` con los resultados tal como los 
 ```{r}
 tabla_1 <- dengue %>%
   filter(ENTIDAD_RESIDENCIA == "SINALOA") %>%
-  mutate(EDAD_GRUPO = cut(EDAD_ANOS, 
-                          breaks = c(0, 20, 60, 120), 
-                          labels = c("0-20","21-60","61 +"),
-                          include.lowest = TRUE)) %>%
+  mutate(EDAD_GRUPO = cut(EDAD_ANOS,
+    breaks = c(0, 20, 60, 120),
+    labels = c("0-20", "21-60", "61 +"),
+    include.lowest = TRUE
+  )) %>%
   group_by(SEXO, EDAD_GRUPO) %>%
   tally() %>%
-  mutate(SEXO = if_else(SEXO == 1, "Hombre","Mujer")) %>%
+  mutate(SEXO = if_else(SEXO == 1, "Hombre", "Mujer")) %>%
   pivot_wider(id_cols = EDAD_GRUPO, names_from = SEXO, values_from = n)
 ```
 
@@ -158,7 +159,7 @@ flextable(tabla_1) %>%
   add_header_row(
     colwidths = c(1, 2),
     values = c("", "Sexo")
-  ) 
+  )
 ```
 
 Y cambiar el `EDAD_GRUPO` de la primera fila:
@@ -169,7 +170,7 @@ flextable(tabla_1) %>%
     colwidths = c(1, 2),
     values = c("", "Sexo")
   ) %>%
-  set_header_labels("EDAD_GRUPO" = "Grupo de edad") 
+  set_header_labels("EDAD_GRUPO" = "Grupo de edad")
 ```
 
 Así como poner título y nota al pie:+
@@ -211,7 +212,7 @@ municipios <- read_sf("sinaloa/conjunto_de_datos/25mun.shp")
 y les juntamos los casos de dengue contados por municipio:
 
 ```{r}
-#Conteo por municipio
+# Conteo por municipio
 municipio_dengue <- dengue %>%
   filter(ENTIDAD_RESIDENCIA == "SINALOA") %>%
   group_by(MUNICIPIO_RES, MUNICIPIO_RESIDENCIA) %>%

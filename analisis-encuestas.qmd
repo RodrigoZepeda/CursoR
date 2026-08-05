@@ -15,7 +15,7 @@ library(tidyverse)
 library(srvyr)
 library(kableExtra)
 library(survey)
-library(broom)  #para tidy() sobre los modelos
+library(broom) # para tidy() sobre los modelos
 ```
 
 Para los ejercicios usaremos al Encuesta Nacional de Salud y Nutrición 2021 (ENSANUT 2021) disponible en la siguiente liga: <https://ensanut.insp.mx/encuestas/ensanutcontinua2021/descargas.php>
@@ -32,24 +32,29 @@ antropometria <- read_csv("datasets/ensaantro21_entrega_w_17_12_2021.csv")
 Finalmente, a modo de práctica y explicación utilizaremos la siguiente base de datos generada por el código de abajo. La base consiste en $12$ individuos con dos grupos de edad (`Menor a 30` y `Mayor o igual a 30`) que viven en distintos hogares numerados del 1 al 5 en la columna (`hogar`). Los hogares se encuentran en diferentes localidades (del 1 al 3) y tienen cierta estatura (`estatura`) y sexo (`sexo`).
 
 ```{r}
-#Código para generar un marco muestral imaginario (sencillo)
-#y entender cómo se construye la ENSANUT
-set.seed(2457) 
+# Código para generar un marco muestral imaginario (sencillo)
+# y entender cómo se construye la ENSANUT
+set.seed(2457)
 datos <- tibble(
-  nombre    = c("René","Alexis","Francis","Andy","Charlie",
-                "Andrea","Sasha","Guadalupe","Akira","Sol",
-                "Paris","Li"),
-  edad      = sample(c("Menor a 30", "Mayor o igual a 30"), 12, T, 
-                     c(0.25, 0.75)),
-  sexo      = sample(c("Masc", "Fem"), 12, T, c(0.49, 0.51)),
-  hogar     = sample(1:5, 12, T, c(0.1, 0.2, 0.3, 0.1, 0.3))
+  nombre = c(
+    "René", "Alexis", "Francis", "Andy", "Charlie",
+    "Andrea", "Sasha", "Guadalupe", "Akira", "Sol",
+    "Paris", "Li"
+  ),
+  edad = sample(
+    c("Menor a 30", "Mayor o igual a 30"), 12, T,
+    c(0.25, 0.75)
+  ),
+  sexo = sample(c("Masc", "Fem"), 12, T, c(0.49, 0.51)),
+  hogar = sample(1:5, 12, T, c(0.1, 0.2, 0.3, 0.1, 0.3))
 )
 
 datos <- datos %>%
   group_by(edad) %>%
   mutate(estatura = if_else(edad == "Menor a 30",
-                            rnorm(n(), mean = 1.8, sd = 0.1),
-                            rnorm(n(), mean = 1.6, sd = 0.1))) %>%
+    rnorm(n(), mean = 1.8, sd = 0.1),
+    rnorm(n(), mean = 1.6, sd = 0.1)
+  )) %>%
   group_by(hogar) %>%
   mutate(localidad = sample(1:4, 1, T, c(0.25, 0.5, 0.1, 0.15))) %>%
   ungroup()
@@ -59,7 +64,7 @@ La tabla se ve así:
 
 ```{r}
 #| echo: false
-datos %>% 
+datos %>%
   kable() %>%
   kable_styling()
 ```
@@ -77,30 +82,30 @@ Podemos pensar que la elección es *paso a paso* en el sentido de que primero se
 ```{r}
 nombres <- datos$nombre
 
-#Extraigo el primer nombre
+# Extraigo el primer nombre
 primer_nombre <- sample(nombres, size = 1)
 primer_nombre
 
-#Actualizo los nombres que quedan
+# Actualizo los nombres que quedan
 nombres <- nombres[which(nombres != primer_nombre)]
 
-#Extraigo el segundo nombre para mi muestra:
+# Extraigo el segundo nombre para mi muestra:
 segundo_nombre <- sample(nombres, size = 1)
 segundo_nombre
 
-#El proceso puede continuar según el tamaño de muestra
+# El proceso puede continuar según el tamaño de muestra
 ```
 
 Sin embargo, como notarás, es un poco engorroso hacer la extracción de uno en uno. No sólo eso sino que tenemos que muestrear un vector de nombres para luego ir a buscarlos en la tabla. ¡Qué poco óptimo! En `R` podemos muestrear de la tabla directamente y especificar cuántos queremos que extraiga sin reemplazo (es decir de uno en uno reduciendo el tamaño de la muestra sin que vuelvan a participar). Para ello existe el comando `sample_n`:
 
 ```{r}
-muestra <- datos %>% 
+muestra <- datos %>%
   sample_n(size = 7, replace = FALSE)
 ```
 
 ```{r}
 #| echo: false
-muestra %>% 
+muestra %>%
   kable() %>%
   kable_styling()
 ```
@@ -112,19 +117,19 @@ $$
 $$
 
 ```{r}
-#Media de estatura 
+# Media de estatura
 muestra %>%
   summarise(
     Estatura_Promedio = mean(estatura)
   )
 
-#Proporción de sexos
+# Proporción de sexos
 muestra %>%
   group_by(sexo) %>%
   tally() %>%
   mutate(Proporcion_sexo = n / sum(n))
 
-#Media de estatura por sexo
+# Media de estatura por sexo
 muestra %>%
   group_by(sexo) %>%
   summarise(
@@ -135,19 +140,19 @@ muestra %>%
 Compara los resultados previos con las métricas poblacionales:
 
 ```{r}
-#Media de estatura 
+# Media de estatura
 datos %>%
   summarise(
     Estatura_Promedio = mean(estatura)
   )
 
-#Proporción de sexos
+# Proporción de sexos
 datos %>%
   group_by(sexo) %>%
   tally() %>%
   mutate(Proporcion_sexo = n / sum(n))
 
-#Media de estatura por sexo
+# Media de estatura por sexo
 datos %>%
   group_by(sexo) %>%
   summarise(
@@ -160,11 +165,13 @@ datos %>%
 Complicaremos un poco el muestreo. Supongamos que como ser mayor a 30 incluye más grupos de edad que ser menor, nos interesa que las personas `mayores a 30 años` tengan el doble de probabilidad de aparecer en la muestra que las menores. Para esto, es necesario establecer probabilidades (mal llamadas `weights`) que le indiquen a `R` que extraiga con mayor probabilidad `0.66` a los mayores de 30 años que a los menores (proba `0.33`):
 
 ```{r}
-#Agregamos la columna del ponderador a los datos
-#nota que está amañanda para sumar 1
+# Agregamos la columna del ponderador a los datos
+# nota que está amañanda para sumar 1
 datos <- datos %>%
-  mutate(probabilidad = 
-           if_else(edad == "Mayor o igual a 30", 0.667, 0.333))
+  mutate(
+    probabilidad =
+      if_else(edad == "Mayor o igual a 30", 0.667, 0.333)
+  )
 
 muestra_ponderada <- datos %>%
   sample_n(size = 7, weight = probabilidad)
@@ -172,7 +179,7 @@ muestra_ponderada <- datos %>%
 
 ```{r}
 #| echo: false
-muestra_ponderada %>% 
+muestra_ponderada %>%
   kable() %>%
   kable_styling()
 ```
@@ -187,7 +194,7 @@ En `R` podemos construir el ponderador como sigue:
 
 ```{r}
 muestra_ponderada <- muestra_ponderada %>%
-  mutate(ponderador = 1/probabilidad)
+  mutate(ponderador = 1 / probabilidad)
 ```
 
 Y una forma en la que podemos calcular la media ponderada es con `weighted.mean`
@@ -201,7 +208,7 @@ Esta es la opción más sencilla pero se queda corta para otros resultados. La o
 
 ```{r}
 muestra_ponderada %>%
-  as_survey_design(1,  weight = ponderador) %>%
+  as_survey_design(1, weight = ponderador) %>%
   summarize(`Media ponderada` = survey_mean(estatura, vartype = "ci"))
 ```
 
@@ -225,8 +232,8 @@ datos %>%
 Si se quisiera un tamaño distinto (digamos $4$ `Masc` y $3$ `Fem`) puede agregarse una columna de tamaño de muestra y muestrear de acuerdo a esa columna:
 
 ```{r}
-#Fuente:
-#https://stackoverflow.com/questions/51671856/dplyr-sample-n-by-group-with-unique-size-argument-per-group
+# Fuente:
+# https://stackoverflow.com/questions/51671856/dplyr-sample-n-by-group-with-unique-size-argument-per-group
 muestra_estratificada <- datos %>%
   mutate(tamaño = if_else(sexo == "Fem", 3, 4)) %>%
   group_by(sexo) %>%
@@ -235,7 +242,7 @@ muestra_estratificada <- datos %>%
 
 ```{r}
 #| echo: false
-muestra_ponderada %>% 
+muestra_ponderada %>%
   kable() %>%
   kable_styling()
 ```
@@ -272,12 +279,12 @@ muestra_ponderada %>%
 Usualmente en las encuestas existe más de un nivel de aleatoriedad. Por ejemplo, se selecciona aleatoriamente una vivienda (unidad primaria) y luego se selecciona aleatoriamente una persona (unidad secundaria) dentro de la vivienda. Esto porque de inicio se desconocen cuántas personas hay por vivienda. Para muestrear de esta forma en nuestro código en el caso donde haya que muestrear $3$ viviendas y luego máximo dos personas de cada estrato (sexo) por vivienda:
 
 ```{r}
-#Primero muestreo n viviendas
+# Primero muestreo n viviendas
 viviendas <- datos %>%
   distinct(hogar) %>%
   sample_n(3)
 
-#Luego muestreo personas por vivienda
+# Luego muestreo personas por vivienda
 muestra_hogar <- datos %>%
   filter(hogar %in% !!viviendas$hogar) %>%
   group_by(hogar, sexo) %>%
@@ -287,16 +294,16 @@ muestra_hogar <- datos %>%
 Nota que en el primer hogar sólo se muestreo una persona pues no vivía nadie más ahí. Esto va a requerir un ajuste dado que el individuo está solitario (no hay uno de los estratos en la unidad). Hay varias [opciones](https://r-survey.r-forge.r-project.org/survey/exmample-lonely.html) en `R` para manejar esto. Para la ENSANUT nosotros pediremos que se ajuste la varianza de dicho estrato (para los intervalos) usando las varianzas de los demás con la siguiente opción:
 
 ```{r}
-options(survey.lonely.psu="adjust")
+options(survey.lonely.psu = "adjust")
 ```
 
 Una vez establecida la opción podemos indicar a `R` el diseño de la encuesta estableciendo cuáles fueron las unidades primarias de muestreo:
 
 ```{r}
-#Nota la opción de psu no es necesaria en R ponerla pero
-#si se requieren opciones más avanzadas de Bootstrap/Jacknife sí
+# Nota la opción de psu no es necesaria en R ponerla pero
+# si se requieren opciones más avanzadas de Bootstrap/Jacknife sí
 muestra_ponderada %>%
-  as_survey_design(1, strata = sexo, weight = ponderador,  psu = upm) %>%
+  as_survey_design(1, strata = sexo, weight = ponderador, psu = upm) %>%
   group_by(sexo) %>%
   summarize(`Media ponderada` = survey_mean(estatura, vartype = "ci"))
 ```
@@ -304,12 +311,12 @@ muestra_ponderada %>%
 Para no tener que estar llamando el diseño de la encuesta cada que operamos podemos guardar el objeto como una tabla tipo encuesta:
 
 ```{r}
-#Antes de volverla encuesta
+# Antes de volverla encuesta
 muestra_ponderada
 
-#Después
+# Después
 muestra_ponderada <- muestra_ponderada %>%
-  as_survey_design(1, strata = sexo, weight = ponderador,  psu = upm) 
+  as_survey_design(1, strata = sexo, weight = ponderador, psu = upm)
 muestra_ponderada
 ```
 
@@ -324,14 +331,16 @@ La ENSANUT 2021 (ver @romero2021metodologia y @martinez2021metodologia) es una e
 En nuestro caso para el de adultos se establece así la estructura de encuesta:
 
 ```{r}
-#Armamos nuestra tabla con estructura de encuesta
-#Nota la opción de psu no es necesaria en R ponerla pero
-#si se requieren opciones más avanzadas de Bootstrap/Jacknife sí
-options(survey.lonely.psu = "adjust") #singleunit(centered) en Stata
+# Armamos nuestra tabla con estructura de encuesta
+# Nota la opción de psu no es necesaria en R ponerla pero
+# si se requieren opciones más avanzadas de Bootstrap/Jacknife sí
+options(survey.lonely.psu = "adjust") # singleunit(centered) en Stata
 salud_adultos_svy <- salud_adultos %>%
   filter(!is.na(ponde_f)) %>%
-  as_survey_design(id = FOLIO_INT, strata = est_sel, 
-                   psu = upm, weights = ponde_f, nest = TRUE)
+  as_survey_design(
+    id = FOLIO_INT, strata = est_sel,
+    psu = upm, weights = ponde_f, nest = TRUE
+  )
 ```
 
 Una vez armada la estructura podemos empezar a hacerle preguntas a la base. Por ejemplo a qué porcentaje de personas les dijeron que tenían diabetes o niveles de azucar altos:
@@ -347,7 +356,7 @@ En hombres y mujeres así se vieron:
 
 ```{r}
 salud_adultos_svy %>%
-  mutate(sexo_name = if_else(sexo == 1,"Hombre","Mujer")) %>%
+  mutate(sexo_name = if_else(sexo == 1, "Hombre", "Mujer")) %>%
   group_by(sexo_name) %>%
   summarise(
     Diabetes = survey_mean(a0301 == 1, na.rm = T, vartype = "ci")
@@ -358,7 +367,7 @@ Mientras que una tabla por edad y sexo es así:
 
 ```{r}
 salud_adultos_svy %>%
-  mutate(sexo_name = if_else(sexo == 1,"Hombre","Mujer")) %>%
+  mutate(sexo_name = if_else(sexo == 1, "Hombre", "Mujer")) %>%
   mutate(edad_name = case_when(
     edad < 40 ~ "20 a 39",
     edad >= 40 & edad < 60 ~ "49 a 59",
@@ -374,7 +383,7 @@ Si quisiéramos conteos en lugar de utilizar `survey_mean` podemos usar el `surv
 
 ```{r}
 salud_adultos_svy %>%
-  mutate(sexo_name = if_else(sexo == 1,"Hombre","Mujer")) %>%
+  mutate(sexo_name = if_else(sexo == 1, "Hombre", "Mujer")) %>%
   mutate(edad_name = case_when(
     edad < 40 ~ "20 a 39",
     edad >= 40 & edad < 60 ~ "49 a 59",
@@ -390,7 +399,7 @@ Y si queremos resultados de la muestra hay que usar `unweighted`. ¡Es posible e
 
 ```{r}
 salud_adultos_svy %>%
-  mutate(sexo_name = if_else(sexo == 1,"Hombre","Mujer")) %>%
+  mutate(sexo_name = if_else(sexo == 1, "Hombre", "Mujer")) %>%
   mutate(edad_name = case_when(
     edad < 40 ~ "20 a 39",
     edad >= 40 & edad < 60 ~ "49 a 59",
@@ -408,7 +417,7 @@ Podemos filtrar para obtener la tabla para una entidad en particular. Por ejempl
 ```{r}
 salud_adultos_svy %>%
   filter(entidad == "09") %>%
-  mutate(sexo_name = if_else(sexo == 1,"Hombre","Mujer")) %>%
+  mutate(sexo_name = if_else(sexo == 1, "Hombre", "Mujer")) %>%
   mutate(edad_name = case_when(
     edad < 40 ~ "20 a 39",
     edad >= 40 & edad < 60 ~ "49 a 59",
@@ -432,7 +441,7 @@ Responde las siguientes preguntas:
 ```{r}
 #| echo: false
 salud_adultos_svy %>%
-  mutate(sexo_name = if_else(sexo == 1,"Hombre","Mujer")) %>%
+  mutate(sexo_name = if_else(sexo == 1, "Hombre", "Mujer")) %>%
   mutate(edad_name = case_when(
     edad < 40 ~ "20 a 39",
     edad >= 40 & edad < 60 ~ "49 a 59",
@@ -445,19 +454,25 @@ salud_adultos_svy %>%
     n    = unweighted(sum(a0604 == 1, na.rm = T))
   ) %>%
   select(sexo_name, edad_name, starts_with("prop"), N, n) %>%
-  mutate(Proporción = paste0(scales::percent(prop, accuracy = 2),
-                          " [", 
-                          scales::percent(prop_low, accuracy = 2),
-                          ", ",
-                          scales::percent(prop_upp, accuracy = 2),
-                          "]")) %>%
+  mutate(Proporción = paste0(
+    scales::percent(prop, accuracy = 2),
+    " [",
+    scales::percent(prop_low, accuracy = 2),
+    ", ",
+    scales::percent(prop_upp, accuracy = 2),
+    "]"
+  )) %>%
   select(-prop_low, -prop_upp) %>%
   mutate(`Total (muestra)` = paste0(scales::comma(N), " (", n, ")")) %>%
   select(-N, -n) %>%
-  pivot_wider(id_cols = `edad_name`, names_from = sexo_name,
-              values_from = c(Proporción, `Total (muestra)`)) %>%
-  select(edad_name, `Proporción_Hombre`, `Total (muestra)_Hombre`,
-         `Proporción_Mujer`, `Total (muestra)_Mujer`) %>%
+  pivot_wider(
+    id_cols = `edad_name`, names_from = sexo_name,
+    values_from = c(Proporción, `Total (muestra)`)
+  ) %>%
+  select(
+    edad_name, `Proporción_Hombre`, `Total (muestra)_Hombre`,
+    `Proporción_Mujer`, `Total (muestra)_Mujer`
+  ) %>%
   rename(`Grupo de edad` = edad_name) %>%
   rename(`Proporción de Hombres` = `Proporción_Hombre`) %>%
   rename(`Proporción de Mujeres` = `Proporción_Mujer`) %>%
@@ -477,10 +492,10 @@ salud_adultos_svy %>%
 
 ```{r}
 library(lubridate)
-suma_periodo <- months(3) + years(5) #En meses: 5*12 + 3 = 63
+suma_periodo <- months(3) + years(5) # En meses: 5*12 + 3 = 63
 
-#Para convertir cambia unit a:
-#meses (months) / días (days) / años (years) / semanas (weeks)
+# Para convertir cambia unit a:
+# meses (months) / días (days) / años (years) / semanas (weeks)
 time_length(suma_periodo, unit = "months")
 ```
 
@@ -490,25 +505,28 @@ Armamos el diseño de cuestionaro
 
 ```{r}
 antropometria_cuest <- antropometria %>%
-  left_join(salud_adultos, 
-            by = c("FOLIO_INT", "upm","est_sel")) %>%
-  rename(ponde_f = ponde_f.x) #Nos quedamos con el ponderador adecuado
+  left_join(salud_adultos,
+    by = c("FOLIO_INT", "upm", "est_sel")
+  ) %>%
+  rename(ponde_f = ponde_f.x) # Nos quedamos con el ponderador adecuado
 ```
 
 ```{r}
-#Armamos nuestra tabla con estructura de encuesta
-options(survey.lonely.psu = "adjust") #singleunit(centered) en Stata
+# Armamos nuestra tabla con estructura de encuesta
+options(survey.lonely.psu = "adjust") # singleunit(centered) en Stata
 antropometria_svy <- antropometria_cuest %>%
   filter(!is.na(ponde_f)) %>%
-  as_survey_design(id = FOLIO_INT, strata = est_sel, 
-                   psu = upm, weights = ponde_f, nest = TRUE)
+  as_survey_design(
+    id = FOLIO_INT, strata = est_sel,
+    psu = upm, weights = ponde_f, nest = TRUE
+  )
 ```
 
 El promedio de peso en menores de 60 (quitando a las embarazadas) puede calcularse como siempre con `svy_mean`:
 
 ```{r}
 antropometria_svy %>%
-  filter(an06 != 1 & an06 != 3) %>% #Embarazadas
+  filter(an06 != 1 & an06 != 3) %>% # Embarazadas
   summarise(Promedio_peso = survey_mean(an01_1, na.rm = T, "ci"))
 ```
 
@@ -516,11 +534,13 @@ No sólo podemos calcular la `media` sino también la mediana y los cuantiles (p
 
 ```{r}
 antropometria_svy %>%
-  filter(an06 != 1 & an06 != 3) %>% #Embarazadas
+  filter(an06 != 1 & an06 != 3) %>% # Embarazadas
   summarise(
-    Mediana_peso  = survey_median(an01_1, na.rm = T, "se"),
-    Q_peso        = survey_quantile(an01_1, quantiles = c(0.25, 0.75), 
-                                    na.rm = T, "se")
+    Mediana_peso = survey_median(an01_1, na.rm = T, "se"),
+    Q_peso = survey_quantile(an01_1,
+      quantiles = c(0.25, 0.75),
+      na.rm = T, "se"
+    )
   )
 ```
 
@@ -528,16 +548,18 @@ Podemos dentro del mismo paquete hacer algunas pruebas estadísticas (por ahora 
 
 ```{r}
 antropometria_svy %>%
-  svyttest(design = ., #Notación para decirle que el diseño ya está
-           formula = an01_1 ~ sexo, #Peso por sexo
-           na.rm = TRUE) 
+  svyttest(
+    design = ., # Notación para decirle que el diseño ya está
+    formula = an01_1 ~ sexo, # Peso por sexo
+    na.rm = TRUE
+  )
 ```
 
 Podemos crear nuevas variables como en `tidyverse` por ejemplo una del [índice cintura altura](https://es.wikipedia.org/wiki/%C3%8Dndice_cintura-altura) que combina la medida de la cintura (`an08_1`) con la estatura (`an04_1`) en personas de 20 a 60 años:
 
 ```{r}
 antropometria_svy <- antropometria_svy %>%
-  mutate(ica = ifelse(edad > 20 & edad < 60, an08_1/an04_1, NA)) %>%
+  mutate(ica = ifelse(edad > 20 & edad < 60, an08_1 / an04_1, NA)) %>%
   mutate(
     interpreta_ica = case_when(
       ica < 0.35 ~ "Extremadamente delgado",
@@ -558,10 +580,12 @@ antropometria_svy <- antropometria_svy %>%
 
 ```{r}
 antropometria_svy %>%
-  svychisq(design = ., #Notación para decirle que el diseño ya está
-           formula =~ interpreta_ica + sexo, #Peso por sexo
-           na.rm = TRUE,
-           statistic = "Wald") 
+  svychisq(
+    design = ., # Notación para decirle que el diseño ya está
+    formula = ~ interpreta_ica + sexo, # Peso por sexo
+    na.rm = TRUE,
+    statistic = "Wald"
+  )
 ```
 
 En este caso, por ejemplo, nuestro valor $p < \alpha$ nos indica que [hay una asociación entre las variables](https://support.minitab.com/en-us/minitab/21/help-and-how-to/statistics/tables/how-to/chi-square-test-for-association/interpret-the-results/key-results/).
@@ -609,36 +633,36 @@ regresión: es la limpieza**.
 
 ```{r}
 #| message: false
-library(svydiags)     #diagnósticos de regresión que respetan el diseño
-library(WeightedROC)  #curva ROC con ponderadores
+library(svydiags) # diagnósticos de regresión que respetan el diseño
+library(WeightedROC) # curva ROC con ponderadores
 
 base_modelos <- antropometria %>%
   left_join(salud_adultos, by = c("FOLIO_INT", "upm", "est_sel")) %>%
   rename(ponde_f = ponde_f.x) %>%
   mutate(
-    #Presión arterial: 999 es código de NO RESPUESTA, no una presión de 999
-    across(c(an27_01s, an27_02s, an27_03s, an27_01d, an27_02d, an27_03d),
-           ~ if_else(.x >= 900, NA_real_, as.numeric(.x))),
+    # Presión arterial: 999 es código de NO RESPUESTA, no una presión de 999
+    across(
+      c(an27_01s, an27_02s, an27_03s, an27_01d, an27_02d, an27_03d),
+      ~ if_else(.x >= 900, NA_real_, as.numeric(.x))
+    ),
 
-    #Peso y talla: 222.2 también es código de no respuesta
-    peso  = if_else(an01_1 > 200, NA_real_, as.numeric(an01_1)),
+    # Peso y talla: 222.2 también es código de no respuesta
+    peso = if_else(an01_1 > 200, NA_real_, as.numeric(an01_1)),
     talla = if_else(an04_1 > 200 | an04_1 < 100, NA_real_, as.numeric(an04_1)),
-
     imc = peso / (talla / 100)^2,
 
-    #Se descarta la 1a toma de presión y se promedian la 2a y la 3a,
-    #que es la práctica estándar: la primera suele salir alta por el nervio
-    sistolica  = rowMeans(cbind(an27_02s, an27_03s), na.rm = TRUE),
+    # Se descarta la 1a toma de presión y se promedian la 2a y la 3a,
+    # que es la práctica estándar: la primera suele salir alta por el nervio
+    sistolica = rowMeans(cbind(an27_02s, an27_03s), na.rm = TRUE),
     diastolica = rowMeans(cbind(an27_02d, an27_03d), na.rm = TRUE),
 
-    #Conteo: ¿en cuántas de las 3 tomas salió la presión elevada?
+    # Conteo: ¿en cuántas de las 3 tomas salió la presión elevada?
     tomas_altas = (an27_01s >= 140 | an27_01d >= 90) +
-                  (an27_02s >= 140 | an27_02d >= 90) +
-                  (an27_03s >= 140 | an27_03d >= 90),
-
+      (an27_02s >= 140 | an27_02d >= 90) +
+      (an27_03s >= 140 | an27_03d >= 90),
     diabetes = if_else(a0301 == 1, 1, 0),
-    sexo_f   = factor(if_else(sexo == 1, "Hombre", "Mujer")),
-    edad     = as.numeric(edad)
+    sexo_f = factor(if_else(sexo == 1, "Hombre", "Mujer")),
+    edad = as.numeric(edad)
   ) %>%
   filter(edad >= 20, !is.na(ponde_f))
 ```
@@ -662,8 +686,10 @@ Armamos el diseño como siempre:
 options(survey.lonely.psu = "adjust")
 
 diseno_modelos <- base_modelos %>%
-  as_survey_design(id = FOLIO_INT, strata = est_sel,
-                   psu = upm, weights = ponde_f, nest = TRUE)
+  as_survey_design(
+    id = FOLIO_INT, strata = est_sel,
+    psu = upm, weights = ponde_f, nest = TRUE
+  )
 ```
 
 ### Regresión lineal: presión sistólica
@@ -672,7 +698,8 @@ La pregunta: **¿cómo cambia la presión sistólica con la edad y el IMC?**
 
 ```{r}
 modelo_lineal <- svyglm(sistolica ~ edad + imc + sexo_f,
-                        design = diseno_modelos)
+  design = diseno_modelos
+)
 
 tidy(modelo_lineal, conf.int = TRUE)
 ```
@@ -701,10 +728,10 @@ hace es **predecir** para valores que a uno le interesen y graficar eso:
 
 ```{r}
 #| fig-cap: "Presión sistólica predicha por el modelo, con su intervalo de confianza al 95%."
-#Una malla de valores: edades de 20 a 90, con IMC fijo en tres niveles
+# Una malla de valores: edades de 20 a 90, con IMC fijo en tres niveles
 malla <- expand_grid(
   edad   = seq(20, 90, by = 1),
-  imc    = c(22, 27, 32),           #normal, sobrepeso, obesidad
+  imc    = c(22, 27, 32), # normal, sobrepeso, obesidad
   sexo_f = factor(c("Hombre", "Mujer"))
 )
 
@@ -713,25 +740,33 @@ pred <- predict(modelo_lineal, newdata = malla, se.fit = TRUE)
 malla <- malla %>%
   mutate(
     ajuste = as.numeric(pred),
-    ee     = sqrt(attr(pred, "var")),
-    bajo   = ajuste - 1.96 * ee,
-    alto   = ajuste + 1.96 * ee,
-    imc_et = factor(imc, levels = c(22, 27, 32),
-                    labels = c("IMC 22 (normal)", "IMC 27 (sobrepeso)",
-                               "IMC 32 (obesidad)"))
+    ee = sqrt(attr(pred, "var")),
+    bajo = ajuste - 1.96 * ee,
+    alto = ajuste + 1.96 * ee,
+    imc_et = factor(imc,
+      levels = c(22, 27, 32),
+      labels = c(
+        "IMC 22 (normal)", "IMC 27 (sobrepeso)",
+        "IMC 32 (obesidad)"
+      )
+    )
   )
 
 ggplot(malla, aes(x = edad, y = ajuste, color = imc_et, fill = imc_et)) +
   geom_ribbon(aes(ymin = bajo, ymax = alto), alpha = 0.2, color = NA) +
   geom_line(linewidth = 1) +
   geom_hline(yintercept = 140, linetype = "dashed", color = "gray40") +
-  annotate("text", x = 26, y = 143, label = "Umbral de hipertensión",
-           color = "gray40", size = 3) +
+  annotate("text",
+    x = 26, y = 143, label = "Umbral de hipertensión",
+    color = "gray40", size = 3
+  ) +
   facet_wrap(~sexo_f) +
-  labs(x = "Edad (años)", y = "Presión sistólica predicha (mmHg)",
-       color = "", fill = "",
-       title = "Presión sistólica según edad, IMC y sexo",
-       caption = "ENSANUT 2021. Estimación con diseño de encuesta.") +
+  labs(
+    x = "Edad (años)", y = "Presión sistólica predicha (mmHg)",
+    color = "", fill = "",
+    title = "Presión sistólica según edad, IMC y sexo",
+    caption = "ENSANUT 2021. Estimación con diseño de encuesta."
+  ) +
   theme_bw() +
   theme(legend.position = "bottom")
 ```
@@ -751,8 +786,9 @@ salieron elevadas (`tomas_altas`, que va de 0 a 3).
 
 ```{r}
 modelo_poisson <- svyglm(tomas_altas ~ edad + imc + sexo_f,
-                         design = diseno_modelos,
-                         family = quasipoisson())
+  design = diseno_modelos,
+  family = quasipoisson()
+)
 
 tidy(modelo_poisson, conf.int = TRUE)
 ```
@@ -820,8 +856,9 @@ previo de diabetes?
 
 ```{r}
 modelo_logistico <- svyglm(diabetes ~ edad + imc + sexo_f,
-                           design = diseno_modelos,
-                           family = quasibinomial())
+  design = diseno_modelos,
+  family = quasibinomial()
+)
 
 exp(cbind(OR = coef(modelo_logistico), confint(modelo_logistico))) %>%
   round(3)
@@ -842,8 +879,9 @@ con Poisson en lugar de logística. Cuando el desenlace es 0/1, eso estima la
 
 ```{r}
 modelo_rp <- svyglm(diabetes ~ edad + imc + sexo_f,
-                    design = diseno_modelos,
-                    family = quasipoisson())
+  design = diseno_modelos,
+  family = quasipoisson()
+)
 
 exp(cbind(RP = coef(modelo_rp), confint(modelo_rp))) %>%
   round(3)
@@ -938,9 +976,11 @@ pesos <- weights(diseno_modelos, "sampling")[filas_usadas]
 
 vif_diseno <- svyvif(mobj = modelo_lineal, X = X_modelo, w = pesos)
 
-#La función devuelve muchas cosas; nos quedamos con el VIF de diseño
-setNames(round(unlist(vif_diseno$`Intercept adjusted`$svy.vif.m), 3),
-         colnames(X_modelo))
+# La función devuelve muchas cosas; nos quedamos con el VIF de diseño
+setNames(
+  round(unlist(vif_diseno$`Intercept adjusted`$svy.vif.m), 3),
+  colnames(X_modelo)
+)
 ```
 
 Con valores tan cerca de 1 no hay problema de colinealidad: edad, IMC y sexo
@@ -951,9 +991,11 @@ aportan información distinta.
 ```{r}
 cook <- svyCooksD(modelo_lineal)
 
-c(observaciones = length(cook),
-  maximo        = round(max(cook, na.rm = TRUE), 3),
-  por_encima_del_umbral = sum(cook > 4 / length(cook), na.rm = TRUE))
+c(
+  observaciones = length(cook),
+  maximo = round(max(cook, na.rm = TRUE), 3),
+  por_encima_del_umbral = sum(cook > 4 / length(cook), na.rm = TRUE)
+)
 ```
 
 ::: callout-warning
@@ -977,10 +1019,10 @@ la curva ROC (`AUC`), y hay que calcularla **con los ponderadores**:
 
 ```{r}
 #| fig-cap: "Curva ROC ponderada del modelo logístico de diabetes."
-prob   <- as.numeric(predict(modelo_logistico, type = "response"))
-obs    <- as.numeric(modelo_logistico$y)
-filas  <- as.integer(rownames(modelo_logistico$model))
-w_roc  <- weights(diseno_modelos, "sampling")[filas]
+prob <- as.numeric(predict(modelo_logistico, type = "response"))
+obs <- as.numeric(modelo_logistico$y)
+filas <- as.integer(rownames(modelo_logistico$model))
+w_roc <- weights(diseno_modelos, "sampling")[filas]
 
 roc <- WeightedROC(prob, obs, weight = w_roc)
 auc <- WeightedAUC(roc)
@@ -988,10 +1030,14 @@ auc <- WeightedAUC(roc)
 ggplot(roc, aes(x = FPR, y = TPR)) +
   geom_line(color = "#003f5c", linewidth = 1) +
   geom_abline(linetype = "dashed", color = "gray50") +
-  annotate("text", x = 0.6, y = 0.2,
-           label = paste0("AUC = ", round(auc, 3)), size = 5) +
-  labs(x = "1 - Especificidad", y = "Sensibilidad",
-       title = "¿Qué tan bien distingue el modelo quién tiene diabetes?") +
+  annotate("text",
+    x = 0.6, y = 0.2,
+    label = paste0("AUC = ", round(auc, 3)), size = 5
+  ) +
+  labs(
+    x = "1 - Especificidad", y = "Sensibilidad",
+    title = "¿Qué tan bien distingue el modelo quién tiene diabetes?"
+  ) +
   theme_bw()
 ```
 
@@ -1031,46 +1077,89 @@ Lo bonito es que funciona para **cualquier** indicador, por raro que sea.
 
 ### Crear las réplicas
 
+Usaremos `srs.bootstrap.sample` del paquete `surveybootstrap`. La función es
+directa: le das tu base y cuántas réplicas quieres.
+
 ```{r}
 #| cache: true
+library(surveybootstrap)
+
 set.seed(2026)
 
 base_imc <- base_modelos %>% filter(!is.na(imc))
 
-diseno_imc <- base_imc %>%
-  as_survey_design(id = FOLIO_INT, strata = est_sel,
-                   psu = upm, weights = ponde_f, nest = TRUE)
+replicas <- srs.bootstrap.sample(base_imc, num.reps = 300)
 
-#type = "subbootstrap" es el bootstrap reescalado de Rao-Wu, apropiado
-#para muestreo sin reemplazo dentro de estratos
-diseno_boot <- as.svrepdesign(diseno_imc, type = "subbootstrap",
-                              replicates = 200)
-
-#Matriz de ponderadores: una columna por réplica
-W <- weights(diseno_boot, "analysis")
-dim(W)
+length(replicas)
 ```
 
-Cada columna de `W` son los ponderadores de una muestra bootstrap distinta.
+¿Qué hay dentro de cada réplica? No son los datos, sino **instrucciones para
+rearmarlos**:
+
+```{r}
+head(replicas[[1]])
+```
+
+-   **`index`**: qué renglones de tu base entran en esta muestra bootstrap. Se
+    eligen **con reemplazo**, así que un mismo renglón puede salir varias veces (o
+    ninguna). Ésa es toda la magia del bootstrap.
+-   **`weight.scale`**: un factor por el que hay que multiplicar los ponderadores
+    originales. En el bootstrap `srs` vale 1.
+
+```{r}
+c(
+  renglones = nrow(replicas[[1]]),
+  distintos = length(unique(replicas[[1]]$index))
+)
+```
+
+::: callout-important
+## Lo que `srs` supone (y por qué hay que decirlo)
+
+El `srs` de `srs.bootstrap.sample` significa *simple random sample*: la función
+remuestrea renglones **como si la ENSANUT fuera una muestra aleatoria simple**,
+sin tomar en cuenta los estratos ni las UPM.
+
+Es la versión más fácil de entender, y por eso la usamos para aprender el
+mecanismo. Pero tenlo presente: cuando hay conglomerados, la gente de una misma
+manzana se parece entre sí y aporta menos información de la que aparenta, así que
+el error estándar "verdadero" suele ser **mayor**.
+
+El mismo paquete trae `rescaled.bootstrap.sample`, que sí respeta los
+conglomerados y se usa igual (también devuelve `index` y `weight.scale`):
+
+```{r}
+#| eval: false
+replicas_diseno <- rescaled.bootstrap.sample(
+  base_imc,
+  survey.design = ~upm, # la unidad primaria de muestreo
+  num.reps = 300
+)
+```
+
+Al final del capítulo comparamos los tres resultados.
+:::
 
 ### Definir los indicadores a mano
 
 Necesitamos versiones **ponderadas** de lo que queremos calcular:
 
 ```{r}
-#Mediana ponderada: el valor donde el peso acumulado llega al 50%
+# Mediana ponderada: el valor donde el peso acumulado llega al 50%
 mediana_ponderada <- function(x, w) {
   orden <- order(x)
-  x <- x[orden]; w <- w[orden]
+  x <- x[orden]
+  w <- w[orden]
   x[which(cumsum(w) / sum(w) >= 0.5)[1]]
 }
 
-#Coeficiente de Gini: qué tan desigual está repartida una variable.
-#NO existe survey_gini(), por eso lo hacemos a mano.
+# Coeficiente de Gini: qué tan desigual está repartida una variable.
+# NO existe survey_gini(), por eso lo hacemos a mano.
 gini_ponderado <- function(x, w) {
   orden <- order(x)
-  x <- x[orden]; w <- w[orden]
-  p  <- cumsum(w) / sum(w)
+  x <- x[orden]
+  w <- w[orden]
+  p <- cumsum(w) / sum(w)
   cw <- cumsum(w * x) / sum(w * x)
   sum(cw[-1] * p[-length(p)]) - sum(cw[-length(cw)] * p[-1])
 }
@@ -1080,29 +1169,42 @@ gini_ponderado <- function(x, w) {
 
 ```{r}
 #| cache: true
-n_rep <- ncol(W)
+n_rep <- length(replicas)
 
 medianas <- numeric(n_rep)
-ginis    <- numeric(n_rep)
+ginis <- numeric(n_rep)
 
 for (i in 1:n_rep) {
-  medianas[i] <- mediana_ponderada(base_imc$imc, W[, i])
-  ginis[i]    <- gini_ponderado(base_imc$imc, W[, i])
+  # Qué renglones entran en esta réplica
+  filas <- replicas[[i]]$index
+
+  # Sus ponderadores, ajustados por el factor de escala
+  w_i <- base_imc$ponde_f[filas] * replicas[[i]]$weight.scale
+
+  # Y el indicador calculado con esa muestra
+  medianas[i] <- mediana_ponderada(base_imc$imc[filas], w_i)
+  ginis[i] <- gini_ponderado(base_imc$imc[filas], w_i)
 }
 ```
+
+::: callout-note
+Fíjate en que el `for` no tiene nada de especial: es el mismo ciclo que viste en
+el [capítulo de ciclos](ciclos.qmd). Lo único que cambia en cada vuelta son los
+renglones que entran y sus ponderadores.
+:::
 
 Y ya con eso tenemos todo:
 
 ```{r}
-w_original <- weights(diseno_boot, "sampling")
-
 resultados_boot <- tibble(
-  Indicador  = c("Mediana de IMC", "Gini del IMC"),
-  Estimacion = c(mediana_ponderada(base_imc$imc, w_original),
-                 gini_ponderado(base_imc$imc, w_original)),
-  EE         = c(sd(medianas), sd(ginis)),
-  IC_bajo    = c(quantile(medianas, 0.025), quantile(ginis, 0.025)),
-  IC_alto    = c(quantile(medianas, 0.975), quantile(ginis, 0.975))
+  Indicador = c("Mediana de IMC", "Gini del IMC"),
+  Estimacion = c(
+    mediana_ponderada(base_imc$imc, base_imc$ponde_f),
+    gini_ponderado(base_imc$imc, base_imc$ponde_f)
+  ),
+  EE = c(sd(medianas), sd(ginis)),
+  IC_bajo = c(quantile(medianas, 0.025), quantile(ginis, 0.025)),
+  IC_alto = c(quantile(medianas, 0.975), quantile(ginis, 0.975))
 )
 
 resultados_boot
@@ -1115,6 +1217,12 @@ en el bootstrap para el Gini —que no tiene función directa— hay que comprob
 en algo que **sí** tiene función directa. Por eso incluimos la mediana:
 
 ```{r}
+diseno_imc <- base_imc %>%
+  as_survey_design(
+    id = FOLIO_INT, strata = est_sel,
+    psu = upm, weights = ponde_f, nest = TRUE
+  )
+
 diseno_imc %>%
   summarise(mediana = survey_median(imc, na.rm = TRUE, vartype = "se"))
 ```
