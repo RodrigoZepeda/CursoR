@@ -36,6 +36,13 @@ diccionario_datos_dengue.zip
 diccionario_datos_dengue*/
 catalogos*/
 
+# Copias de bases que a veces quedan en la raíz al descargarlas.
+# Las bases van en datasets/, que tampoco se versiona.
+/asthma.csv
+/stroke.dta
+/coronary.dta
+/dengue_puerto_rico_semanal.csv
+
 # --- Restos del sistema anterior (knitr/rmarkdown por archivo) ---
 *_cache/
 *_files/
