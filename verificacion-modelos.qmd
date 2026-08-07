@@ -1,0 +1,941 @@
+---
+title: "Verificación de modelos"
+subtitle: "¿Ajustó bien? ¿Predice bien? ¿Sobran variables?"
+---
+
+::: {.callout-note appearance="simple"}
+## Resumen
+
+Ajustamos un modelo lineal, uno de Poisson y uno logístico y les aplicamos **todas** las pruebas de bondad de ajuste y de capacidad predictiva que se usan en epidemiología: `R²`, `AIC`, ji cuadrada, sobredispersión, Hosmer-Lemeshow, curva ROC, sensibilidad, especificidad, `MAE`, `RMSE` y `WIS`. Usamos un *spline* para descubrir un efecto no lineal y efectos marginales para interpretar. Cada número viene con su lectura, redactada como se redactaría en un artículo.
+:::
+
+```{r}
+#| message: false
+#| warning: false
+library(tidyverse)
+library(haven)
+library(broom)
+library(splines) # para los splines naturales
+library(car) # VIF y pruebas de supuestos
+library(AER) # prueba de sobredispersión
+library(MASS) # binomial negativa
+library(pROC) # curva ROC
+library(ResourceSelection) # Hosmer-Lemeshow
+library(marginaleffects) # efectos marginales
+library(scoringutils) # WIS
+library(forecast) # ARIMA
+
+# Evita que dplyr::select choque con MASS::select
+select <- dplyr::select
+```
+
+::: callout-important
+## Las dos preguntas que nunca hay que confundir
+
+Verificar un modelo es en realidad **dos** trabajos distintos:
+
+1.  **¿Ajusta bien?** (*bondad de ajuste*). ¿El modelo es compatible con los datos
+    que ya vio? ¿Se cumplen sus supuestos? Aquí viven la `R²`, la ji cuadrada, la
+    prueba de Hosmer-Lemeshow y los residuales.
+
+2.  **¿Predice bien?** (*capacidad predictiva*). ¿Le atina a datos que **no**
+    vio? Aquí viven el `MAE`, el `RMSE`, el área bajo la curva ROC y el `WIS`.
+
+Un modelo puede ajustar perfecto y predecir pésimo (le pasa a cualquier modelo con
+demasiadas variables), y puede predecir bien con supuestos violados. **Son
+preguntas distintas y se contestan con herramientas distintas.**
+:::
+
+## Los datos
+
+Tres bases, cada una para un tipo de modelo:
+
+```{r}
+#| message: false
+# Ataques de asma: 120 pacientes (conteo -> Poisson)
+asma <- read_csv("datasets/asthma.csv", show_col_types = FALSE) |>
+  mutate(
+    gender = factor(gender),
+    res_inf = factor(res_inf, levels = c("no", "yes"))
+  )
+
+# Evento vascular cerebral: 226 pacientes (sí/no -> logística)
+acv <- read_dta("datasets/stroke.dta") |>
+  mutate(across(where(is.labelled), as_factor)) |>
+  mutate(muerte = as.integer(status == "dead"))
+
+# Dengue semanal en Puerto Rico (serie de tiempo)
+dengue <- read_csv("datasets/dengue_puerto_rico_semanal.csv", show_col_types = FALSE)
+```
+
+```{r}
+#| echo: false
+tibble(
+  Base = c("`asma`", "`acv`", "`dengue`"),
+  n = c(nrow(asma), nrow(acv), nrow(dengue)),
+  Desenlace = c(
+    "`attack`: ataques de asma al año (0 a 9)",
+    "`status`: vivo o muerto al egreso",
+    "`casos`: casos semanales"
+  ),
+  Modelo = c("Poisson", "Logística", "ARIMA")
+) |> knitr::kable()
+```
+
+Las dos primeras vienen de *Data Analysis in Medicine and Health using R*.
+
+## Modelo lineal: presión sistólica al ingreso
+
+Empecemos con el más sencillo. ¿La presión sistólica al ingreso (`sbp`) depende de
+la edad, el sexo, la diabetes y el tipo de evento?
+
+```{r}
+modelo_lineal <- lm(sbp ~ age + sex + dm + stroke_type, data = acv)
+
+tidy(modelo_lineal, conf.int = TRUE) |>
+  mutate(across(where(is.numeric), ~ round(.x, 3)))
+```
+
+### `R²` y `R²` ajustada
+
+```{r}
+glance(modelo_lineal) |>
+  select(r.squared, adj.r.squared, statistic, p.value, AIC, BIC) |>
+  mutate(across(everything(), ~ round(.x, 4)))
+```
+
+::: callout-important
+## Cómo se lee cada número
+
+-   **`r.squared` = 0.025.** El modelo explica el **2.5%** de la variabilidad de la
+    presión sistólica. El otro 97.5% se debe a cosas que no medimos. Se lee así:
+    *"si te digo la edad, el sexo, la diabetes y el tipo de evento de un paciente,
+    apenas mejoro un 2.5% mi capacidad de adivinar su presión respecto a decir
+    siempre el promedio"*.
+
+-   **`adj.r.squared` = 0.007.** La `R²` ajustada **castiga por cada variable que
+    metes**. Si al agregar una variable la `R²` sube pero la ajustada baja, esa
+    variable **no está aportando**: sólo está usando grados de libertad. Aquí la
+    caída de 0.025 a 0.007 es una señal de alarma.
+
+-   **`statistic` = 1.42 con `p.value` = 0.23.** Es la prueba `F` **global**:
+    *"¿este modelo, en conjunto, sirve de algo comparado con no tener modelo?"*.
+    Con `p = 0.23` la respuesta es **no**. Es la prueba más importante de la tabla
+    y la que más se ignora.
+:::
+
+### Error de predicción: `MAE`, `MSE` y `RMSE`
+
+```{r}
+res <- residuals(modelo_lineal)
+
+c(
+  MAE = mean(abs(res)),
+  MSE = mean(res^2),
+  RMSE = sqrt(mean(res^2))
+) |> round(2)
+```
+
+::: callout-tip
+## Los tres errores, en español
+
+Los tres miden lo mismo (qué tan lejos quedó el modelo) pero castigan distinto:
+
+-   **`MAE`** (*error absoluto medio*) = 26.8 mmHg. **El más fácil de explicar**:
+    en promedio, el modelo se equivoca por 26.8 mmHg. Está en las mismas unidades
+    del desenlace, así que se puede poner tal cual en un resultado.
+
+-   **`MSE`** (*error cuadrático medio*) = 1150. Eleva los errores al cuadrado, así
+    que **castiga mucho más los errores grandes**. Su problema: está en mmHg², que
+    no significa nada para nadie.
+
+-   **`RMSE`** = 33.9 mmHg. Es la raíz del `MSE`, así que **regresa a las unidades
+    originales** y sigue castigando los errores grandes.
+
+**La comparación entre `MAE` y `RMSE` te dice algo.** Si `RMSE` es mucho mayor que
+`MAE` (aquí 33.9 contra 26.8), es porque hay **unos pocos errores muy grandes**
+jalando el promedio. Si fueran parecidos, los errores estarían repartidos parejo.
+:::
+
+### Supuestos: normalidad, homocedasticidad y colinealidad
+
+```{r}
+# ¿Los residuales son normales?
+shapiro.test(res)
+```
+
+```{r}
+# ¿La varianza es constante? (Breusch-Pagan)
+ncvTest(modelo_lineal)
+```
+
+```{r}
+# ¿Hay variables que se explican entre sí?
+vif(modelo_lineal) |> round(3)
+```
+
+::: callout-important
+## La lección más importante de este capítulo
+
+Mira lo que acaba de pasar. **Todos los supuestos se cumplen**:
+
+| Prueba | Resultado | Lectura |
+|:-------|:----------|:--------|
+| Shapiro-Wilk | `p` = 0.14 | No se rechaza la normalidad de los residuales |
+| Breusch-Pagan | `p` = 0.89 | La varianza es constante |
+| `VIF` | todos ≈ 1 | Sin colinealidad |
+
+Y sin embargo el modelo **no sirve**: `R²` de 0.025 y prueba `F` global con
+`p` = 0.23.
+
+> **Que un modelo cumpla sus supuestos no quiere decir que sea útil.** Los
+> supuestos dicen si el modelo está *bien construido*; la `R²` y la `F` dicen si
+> *tiene algo que decir*. Un modelo puede estar impecablemente construido sobre
+> variables que no explican nada.
+
+Cómo se reportaría esto en un artículo:
+
+> *La presión sistólica al ingreso no se asoció de manera significativa con la
+> edad, el sexo, el antecedente de diabetes ni el tipo de evento vascular
+> (F(4,221) = 1.42; p = 0.23; R² ajustada = 0.007). Los supuestos de normalidad
+> de residuales (Shapiro-Wilk p = 0.14) y homocedasticidad (Breusch-Pagan
+> p = 0.89) se cumplieron.*
+
+Fíjate que **se reporta el resultado nulo con todo y sus pruebas de supuestos**.
+Un resultado nulo bien hecho es un resultado.
+:::
+
+## Modelo de Poisson: ataques de asma
+
+Ahora un conteo: número de ataques de asma al año, según el puntaje de malestar
+psicológico `GHQ-12`, si hay infección respiratoria recurrente y el sexo.
+
+```{r}
+modelo_poisson <- glm(attack ~ ghq12 + res_inf + gender,
+  data = asma, family = poisson()
+)
+
+exp(cbind(IRR = coef(modelo_poisson), confint.default(modelo_poisson))) |>
+  round(3)
+```
+
+::: callout-tip
+## Cómo se lee una razón de tasas de incidencia (`IRR`)
+
+-   **`ghq12` = 1.051.** Por cada punto más en la escala GHQ-12, el número esperado
+    de ataques se multiplica por 1.051, es decir **aumenta 5.1%**. Como el
+    intervalo (1.035–1.067) **no incluye al 1**, es estadísticamente significativo.
+
+-   **`res_infyes` = 1.532.** Quienes tienen infección respiratoria recurrente
+    tienen **53% más ataques** que quienes no, ajustando por GHQ-12 y sexo.
+
+-   **`gendermale` = 0.959**, intervalo 0.754–1.219: **incluye al 1**, así que no
+    hay evidencia de diferencia por sexo.
+
+En Poisson **siempre** se exponencia. Los coeficientes crudos están en escala
+logarítmica y no se interpretan directamente.
+:::
+
+### Bondad de ajuste: ¿se cumple el supuesto de Poisson?
+
+La Poisson supone que **la varianza es igual a la media**. Hay que revisarlo
+siempre.
+
+```{r}
+# Los datos crudos: ¿varianza = media?
+c(media = mean(asma$attack), varianza = var(asma$attack)) |> round(3)
+```
+
+A primera vista hay problema: la varianza (4.05) es **1.65 veces** la media (2.46).
+Pero eso es la dispersión **cruda**. Lo que le importa al modelo es la dispersión
+**después de ajustar por las covariables**:
+
+```{r}
+# Tres formas de medir lo mismo
+c(
+  deviance_gl = modelo_poisson$deviance / modelo_poisson$df.residual,
+  pearson_gl = sum(residuals(modelo_poisson, "pearson")^2) /
+    modelo_poisson$df.residual
+) |> round(3)
+```
+
+```{r}
+# Prueba formal de sobredispersión
+dispersiontest(modelo_poisson)
+```
+
+::: callout-important
+## Sobredispersión cruda ≠ sobredispersión condicional
+
+Los datos crudos parecían sobredispersos (1.65) y el modelo **no lo está** (1.05,
+`p` = 0.33).
+
+¿Por qué? Porque **las covariables explicaron ese exceso de varianza**. La gente
+con GHQ-12 alto tiene muchos ataques y la de GHQ-12 bajo tiene pocos; visto todo
+junto eso se ve como "mucha variabilidad", pero una vez que el modelo sabe el
+GHQ-12 de cada quien, lo que sobra es justo lo que la Poisson espera.
+
+> Nunca decidas usar binomial negativa mirando la media y la varianza crudas.
+> **Se decide con los residuales del modelo ajustado.**
+:::
+
+### La prueba ji cuadrada de bondad de ajuste
+
+```{r}
+# ¿La devianza residual es compatible con una ji cuadrada?
+pchisq(modelo_poisson$deviance, modelo_poisson$df.residual,
+  lower.tail = FALSE
+) |> round(4)
+```
+
+::: callout-tip
+Ésta es la **prueba de bondad de ajuste por devianza**. La hipótesis nula es que
+*el modelo ajusta bien*, así que aquí un `p` **grande** es buena noticia (al revés
+de lo acostumbrado).
+
+Con `p` = 0.09 no se rechaza el ajuste, aunque está en la frontera. Se reporta así:
+*"no se encontró evidencia de falta de ajuste (prueba de devianza, p = 0.09)"*.
+:::
+
+### ¿Y si usáramos binomial negativa?
+
+```{r}
+#| warning: false
+modelo_nb <- glm.nb(attack ~ ghq12 + res_inf + gender, data = asma)
+
+c(
+  AIC_Poisson = AIC(modelo_poisson),
+  AIC_BinomialNegativa = AIC(modelo_nb)
+) |> round(1)
+```
+
+::: callout-note
+El `AIC` de la Poisson (417.7) es **menor** que el de la binomial negativa (419.7),
+así que la Poisson gana. Tiene sentido: la binomial negativa agrega un parámetro
+extra para la sobredispersión, y aquí no hay sobredispersión que modelar, así que
+sólo paga el costo del parámetro sin ganancia.
+
+**Regla del `AIC`: entre más chico, mejor**, y una diferencia menor a 2 se
+considera empate. Aquí la diferencia es exactamente 2, lo que refuerza quedarse
+con el modelo **más simple**.
+:::
+
+### Un *spline*: ¿el efecto del GHQ-12 es realmente lineal?
+
+El modelo supone que cada punto de GHQ-12 pesa igual, tanto del 2 al 3 como del 30
+al 31. **Eso es una suposición fuerte** y se puede probar. Un *spline natural*
+permite que la curva tome la forma que quiera:
+
+```{r}
+modelo_spline <- glm(attack ~ ns(ghq12, df = 4) + res_inf + gender,
+  data = asma, family = poisson()
+)
+
+anova(modelo_poisson, modelo_spline, test = "LRT")
+```
+
+```{r}
+c(
+  AIC_lineal = AIC(modelo_poisson),
+  AIC_spline = AIC(modelo_spline)
+) |> round(1)
+```
+
+::: callout-important
+## Sí hay no linealidad, y es fuerte
+
+La prueba de razón de verosimilitudes da `p` = 0.0001 y el `AIC` baja de **417.7 a
+402.9** (casi 15 puntos: una diferencia enorme).
+
+Conclusión: **el efecto del GHQ-12 no es una línea recta**. El modelo lineal estaba
+promediando formas distintas en un solo número.
+:::
+
+Veamos la forma que tiene:
+
+```{r}
+#| fig-cap: "Efecto del GHQ-12 sobre el número esperado de ataques, con spline natural."
+malla <- expand_grid(
+  ghq12 = seq(0, 33, by = 0.5),
+  res_inf = factor("no", levels = c("no", "yes")),
+  gender = factor("female", levels = c("female", "male"))
+)
+
+pred_spl <- predictions(modelo_spline, newdata = malla)
+
+ggplot(pred_spl, aes(x = ghq12, y = estimate)) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high),
+    fill = "#003f5c", alpha = 0.2
+  ) +
+  geom_line(color = "#003f5c", linewidth = 1) +
+  geom_rug(data = asma, aes(x = ghq12, y = NULL), alpha = 0.3) +
+  labs(
+    x = "Puntaje GHQ-12 (malestar psicológico)",
+    y = "Ataques de asma esperados al año",
+    title = "El efecto del malestar psicológico no es lineal",
+    caption = "Mujeres sin infección respiratoria recurrente. Las marcas de abajo son los datos observados."
+  ) +
+  theme_bw()
+```
+
+Y la **pendiente local** en distintos puntos de la escala:
+
+```{r}
+puntos <- data.frame(
+  ghq12 = c(3, 9, 15, 21, 27),
+  res_inf = factor("no", levels = c("no", "yes")),
+  gender = factor("female", levels = c("female", "male"))
+)
+
+slopes(modelo_spline, newdata = puntos, variables = "ghq12") |>
+  as.data.frame() |>
+  select(ghq12, estimate, conf.low, conf.high, p.value) |>
+  mutate(across(-1, ~ round(.x, 4)))
+```
+
+::: callout-important
+## Cómo se interpreta esto en un artículo
+
+La curva y las pendientes locales cuentan una historia **de umbral**:
+
+-   **Por debajo de GHQ-12 ≈ 6** la curva es plana: el malestar psicológico bajo no
+    se asocia a más ataques.
+-   **Entre 6 y 18** la curva sube con fuerza y las pendientes son significativas:
+    ahí es donde el malestar sí importa.
+-   **Arriba de 18** vuelve a aplanarse: ya no empeora más.
+
+Redactado como en un artículo:
+
+> *Se modeló el puntaje GHQ-12 mediante un spline natural con 4 grados de libertad.
+> El término no lineal resultó significativo frente al modelo lineal (prueba de
+> razón de verosimilitudes, p = 0.0001; ΔAIC = 14.8), lo que indica una relación
+> no lineal. La tasa de ataques permaneció estable en puntajes bajos, aumentó de
+> forma marcada entre 6 y 18 puntos y se estabilizó posteriormente, lo que sugiere
+> un efecto de umbral.*
+
+**El modelo lineal habría reportado "5.1% más ataques por punto" y eso es
+engañoso**: no aplica ni abajo ni arriba de la escala, sólo en medio.
+:::
+
+::: callout-warning
+## El spline también cambió otra conclusión
+
+Compara la `IRR` de infección recurrente en los dos modelos:
+
+```{r}
+#| echo: false
+rbind(
+  `Modelo lineal` = exp(c(
+    coef(modelo_poisson)["res_infyes"],
+    confint.default(modelo_poisson)["res_infyes", ]
+  )),
+  `Modelo con spline` = exp(c(
+    coef(modelo_spline)["res_infyes"],
+    confint.default(modelo_spline)["res_infyes", ]
+  ))
+) |> round(3)
+```
+
+Pasó de 1.53 (significativa) a 1.26 (**no** significativa). Lo que ocurría es que
+el modelo lineal, al no capturar bien el efecto del GHQ-12, **le estaba
+atribuyendo parte de ese efecto a la infección recurrente**.
+
+> Especificar mal una variable de ajuste **sesga los coeficientes de las demás**.
+> Es una forma de confusión residual, y es de las más comunes y menos revisadas.
+:::
+
+### Efectos marginales
+
+Los coeficientes de un modelo de Poisson están en escala multiplicativa. Los
+**efectos marginales** los traducen a la escala del desenlace: *"¿cuántos ataques
+más, en números?"*.
+
+```{r}
+avg_slopes(modelo_spline)
+```
+
+::: callout-important
+## Ojo con el efecto marginal promedio en modelos no lineales
+
+El efecto marginal promedio del GHQ-12 sale **no significativo** (`p` ≈ 0.37)
+aunque el spline **sí** lo es (`p` = 0.0001). No es contradicción:
+
+El efecto marginal *promedio* saca un promedio de la pendiente **a lo largo de toda
+la curva**. Como la curva sube fuerte en medio y es plana en los extremos, al
+promediarla los efectos **se cancelan** y queda un número chico y con mucha
+incertidumbre.
+
+> Cuando el efecto no es lineal, **el efecto marginal promedio esconde justo lo
+> interesante**. Reporta la curva y las pendientes locales, no un solo número.
+:::
+
+## Modelo logístico: mortalidad hospitalaria
+
+Ahora un desenlace binario: si el paciente falleció durante la hospitalización.
+
+```{r}
+modelo_logistico <- glm(muerte ~ gcs + age + sex + dm + stroke_type,
+  data = acv, family = binomial()
+)
+
+exp(cbind(OR = coef(modelo_logistico), confint.default(modelo_logistico))) |>
+  round(3)
+```
+
+::: callout-tip
+## Interpretación
+
+-   **`gcs` = 0.720.** Por cada punto más en la escala de coma de Glasgow, los
+    momios de morir se multiplican por 0.72, o sea **bajan 28%**. Es protector y su
+    intervalo (0.645–0.803) no toca el 1.
+
+-   **`stroke_typeHaemorrhagic` = 3.522.** Los eventos hemorrágicos tienen **3.5
+    veces los momios** de muerte que los isquémicos, ajustando por lo demás.
+    Intervalo 1.51–8.24: significativo pero **muy ancho**, porque son sólo 226
+    pacientes.
+
+-   **`age`, `sex`, `dm`**: todos con intervalos que incluyen el 1. Sin evidencia
+    de asociación.
+:::
+
+### Bondad de ajuste global
+
+```{r}
+# Pseudo R2 de McFadden y prueba de razón de verosimilitudes global
+c(
+  pseudo_R2_McFadden = 1 - modelo_logistico$deviance / modelo_logistico$null.deviance,
+  AIC = AIC(modelo_logistico)
+) |> round(4)
+
+anova(modelo_logistico, test = "LRT")
+```
+
+::: callout-note
+La **pseudo `R²` de McFadden** (0.365) **no se lee como la `R²` de siempre**. En
+regresión logística no existe una "proporción de varianza explicada". Valores de
+**0.2 a 0.4 ya se consideran un ajuste excelente**. Un 0.365 aquí es muy bueno.
+
+La tabla de `anova` con `test = "LRT"` agrega las variables una por una y prueba si
+cada una aporta. Es la forma correcta de evaluar **variables categóricas con varios
+niveles**, donde mirar los `p` uno por uno no sirve.
+:::
+
+### Calibración: la prueba de Hosmer-Lemeshow
+
+```{r}
+hoslem.test(modelo_logistico$y, fitted(modelo_logistico), g = 10)
+```
+
+::: callout-important
+## Qué mide y cómo se lee
+
+Hosmer-Lemeshow parte a los pacientes en 10 grupos según su riesgo predicho y
+compara, en cada grupo, **cuántas muertes predijo el modelo contra cuántas hubo**.
+
+La hipótesis nula es que **el modelo está bien calibrado**, así que —igual que con
+la devianza— **un `p` grande es buena noticia**.
+
+Aquí `χ²` = 5.55 con 8 grados de libertad y `p` = 0.70: **no hay evidencia de mala
+calibración**. Cuando el modelo dice "30% de riesgo", muere alrededor del 30%.
+
+> Calibración y discriminación son **cosas distintas**. Un modelo puede ordenar
+> perfectamente a los pacientes (buena discriminación) y aun así equivocarse en la
+> magnitud del riesgo (mala calibración). Hay que reportar las dos.
+:::
+
+### Discriminación: la curva ROC
+
+```{r}
+#| fig-cap: "Curva ROC del modelo de mortalidad."
+roc_obj <- roc(modelo_logistico$y, fitted(modelo_logistico), quiet = TRUE)
+
+ggroc(roc_obj, color = "#003f5c", linewidth = 1) +
+  geom_abline(intercept = 1, slope = 1, linetype = "dashed", color = "gray50") +
+  annotate("text",
+    x = 0.3, y = 0.2,
+    label = paste0("AUC = ", round(auc(roc_obj), 3)), size = 5
+  ) +
+  labs(
+    x = "Especificidad", y = "Sensibilidad",
+    title = "¿Qué tan bien distingue el modelo quién muere?"
+  ) +
+  theme_bw()
+```
+
+```{r}
+ci.auc(roc_obj) |> round(4)
+```
+
+::: callout-tip
+## El `AUC` y su intervalo
+
+`AUC` = 0.892 (IC 95%: 0.844–0.940). Se interpreta así: **si tomas al azar un
+paciente que murió y uno que sobrevivió, el modelo le asigna mayor riesgo al que
+murió el 89% de las veces**.
+
+| `AUC` | Lectura |
+|:------|:--------|
+| 0.5 | El modelo no discrimina (equivale a una moneda) |
+| 0.7–0.8 | Aceptable |
+| 0.8–0.9 | Bueno |
+| \> 0.9 | Excelente |
+
+**Siempre reporta el intervalo de confianza.** Un `AUC` de 0.89 con IC de
+0.84–0.94 es sólido; el mismo 0.89 con IC de 0.60–0.98 no dice nada.
+:::
+
+### Sensibilidad, especificidad y compañía
+
+```{r}
+prob <- fitted(modelo_logistico)
+pred_05 <- as.integer(prob >= 0.5)
+
+tabla <- table(Predicho = factor(pred_05, 0:1), Real = factor(modelo_logistico$y, 0:1))
+tabla
+```
+
+```{r}
+metricas <- function(tab) {
+  VP <- tab["1", "1"]
+  VN <- tab["0", "0"]
+  FP <- tab["1", "0"]
+  FN <- tab["0", "1"]
+  c(
+    Sensibilidad = VP / (VP + FN), # recall
+    Especificidad = VN / (VN + FP),
+    Precision_VPP = VP / (VP + FP),
+    VPN = VN / (VN + FN),
+    Exactitud = (VP + VN) / sum(tab),
+    F1 = 2 * VP / (2 * VP + FP + FN)
+  )
+}
+
+metricas(tabla) |> round(3)
+```
+
+::: callout-important
+## Aquí está la trampa más común en modelos de predicción clínica
+
+La **exactitud es 0.836**: el modelo acierta en el 84% de los pacientes. Suena
+excelente.
+
+Pero mira la **sensibilidad: 0.527**. De los 55 pacientes que murieron, el modelo
+sólo identificó a 29. **Se le escapó casi la mitad de las muertes.**
+
+¿Cómo puede tener 84% de exactitud entonces? Porque el **76% de los pacientes
+sobrevivió**, y el modelo es buenísimo detectando a los que sobreviven
+(especificidad 0.936). La exactitud está inflada por la clase mayoritaria.
+
+> **En desenlaces poco frecuentes, la exactitud es una métrica engañosa.** Si el
+> 95% de tus pacientes sobrevive, un modelo que diga "todos viven" tiene 95% de
+> exactitud y es completamente inútil. Reporta siempre sensibilidad y
+> especificidad por separado.
+
+Los nombres que vas a encontrar en la literatura:
+
+| En epidemiología | En ciencia de datos | Qué contesta |
+|:-----------------|:--------------------|:-------------|
+| Sensibilidad | *Recall* | De los que murieron, ¿a cuántos detecté? |
+| Especificidad | — | De los que vivieron, ¿a cuántos descarté bien? |
+| Valor predictivo positivo | *Precision* | De los que marqué, ¿cuántos sí murieron? |
+| Valor predictivo negativo | — | De los que descarté, ¿cuántos sí vivieron? |
+:::
+
+### El punto de corte no es 0.5
+
+El `0.5` que usamos es una convención, **no un resultado estadístico**. El índice
+de Youden busca el corte que maximiza sensibilidad + especificidad:
+
+```{r}
+corte <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"))
+corte |> mutate(across(everything(), ~ round(.x, 3)))
+```
+
+```{r}
+tabla_youden <- table(
+  Predicho = factor(as.integer(prob >= corte$threshold), 0:1),
+  Real = factor(modelo_logistico$y, 0:1)
+)
+metricas(tabla_youden) |> round(3)
+```
+
+::: callout-important
+## Compara las dos tablas
+
+| Corte | Sensibilidad | Especificidad | Exactitud |
+|:------|:-------------|:--------------|:----------|
+| 0.50 | 0.527 | 0.936 | 0.836 |
+| 0.195 (Youden) | 0.855 | 0.766 | 0.788 |
+
+Bajando el corte, la sensibilidad **sube de 53% a 86%** a costa de bajar la
+especificidad y la exactitud global.
+
+**¿Cuál está bien? Depende de qué cuesta cada error**, y ésa es una decisión
+clínica y de política, no estadística:
+
+-   Si el modelo sirve para **decidir a quién vigilar más de cerca**, no detectar
+    una muerte es gravísimo y una falsa alarma es barata → corte bajo.
+-   Si sirviera para **decidir a quién NO tratar**, sería al revés.
+
+> Es la misma idea del [capítulo de modelos](modelos.qmd): el punto de corte lo
+> pones tú, y hay que justificarlo en la sección de métodos.
+:::
+
+### El puntaje de Brier
+
+```{r}
+c(Brier = mean((prob - modelo_logistico$y)^2)) |> round(4)
+```
+
+::: callout-note
+El **puntaje de Brier** (0.110) es el error cuadrático medio de las probabilidades
+predichas. Va de 0 (perfecto) a 0.25 (inútil, cuando predices 0.5 siempre).
+
+Su virtud es que **combina calibración y discriminación en un solo número**. Su
+defecto es que, justo por eso, no te dice cuál de las dos falló.
+:::
+
+### Efectos marginales del modelo logístico
+
+```{r}
+avg_slopes(modelo_logistico)
+```
+
+::: callout-tip
+## De momios a puntos porcentuales
+
+Aquí está la razón por la que valen tanto la pena los efectos marginales. El `OR`
+del Glasgow era 0.72, que no le dice nada útil a un clínico. El efecto marginal
+promedio dice:
+
+> *Cada punto adicional en la escala de Glasgow se asocia con una reducción
+> absoluta de 3.5 puntos porcentuales en la probabilidad de morir
+> (IC 95%: 2.7 a 4.3).*
+
+Eso **sí** se entiende y **sí** se puede usar para decidir. Es la traducción de la
+escala del modelo a la escala del mundo.
+:::
+
+## Series de tiempo: dengue
+
+Para pronósticos las métricas son otras, porque hay que evaluar contra datos
+futuros que el modelo no vio.
+
+```{r}
+#| message: false
+H <- 52
+entrena <- head(dengue, nrow(dengue) - H)
+prueba <- tail(dengue, H)
+
+serie <- ts(entrena$casos, frequency = 52)
+fourier_dentro <- fourier(serie, K = 3)
+fourier_fuera <- fourier(serie, K = 3, h = H)
+
+modelo_arima <- auto.arima(serie, seasonal = FALSE, xreg = fourier_dentro)
+pron_arima <- forecast(modelo_arima, xreg = fourier_fuera, level = c(50, 80, 90, 95))
+
+# Modelo ingenuo: "va a pasar lo mismo que hace un año"
+ingenuo <- tail(entrena$casos, H)
+```
+
+### `MAE`, `MSE`, `RMSE` y `MAPE`
+
+```{r}
+metricas_punto <- function(pred, obs) {
+  c(
+    MAE = mean(abs(pred - obs)),
+    MSE = mean((pred - obs)^2),
+    RMSE = sqrt(mean((pred - obs)^2)),
+    MAPE = mean(abs((pred - obs) / obs)) * 100
+  )
+}
+
+rbind(
+  ARIMA = metricas_punto(as.numeric(pron_arima$mean), prueba$casos),
+  Ingenuo = metricas_punto(ingenuo, prueba$casos)
+) |> round(2)
+```
+
+::: callout-important
+## Las métricas pueden contradecirse, y hay que saber cuál creer
+
+Fíjate bien:
+
+-   Por `MAE` (98.5 contra 101.3), `MSE` y `RMSE`, **gana el ARIMA**.
+-   Por `MAPE` (64.0 contra 63.0), **gana el modelo ingenuo**.
+
+¿Quién tiene razón? El problema es del `MAPE`: divide el error entre el valor
+observado, así que **las semanas con pocos casos dominan el promedio**. Errarle por
+5 casos cuando hubo 10 cuenta como 50% de error; errarle por 50 cuando hubo 500
+cuenta como 10%. En vigilancia epidemiológica, donde hay semanas con muy pocos
+casos, el `MAPE` es casi siempre mala idea.
+
+> Escoge la métrica **antes** de ver los resultados y justifícala. Si eliges la
+> métrica después, siempre vas a encontrar una que favorezca a tu modelo.
+:::
+
+### El `WIS`: la métrica que sí toma en cuenta la incertidumbre
+
+Todas las anteriores comparan **un solo número** predicho contra el observado, e
+ignoran por completo si el modelo dijo estar seguro o no. El `WIS` (*Weighted
+Interval Score*) evalúa **el intervalo completo**.
+
+```{r}
+#| message: false
+#| warning: false
+data.table::setDTthreads(1)
+
+niveles <- c(0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.975)
+
+q_arima <- cbind(
+  pron_arima$lower[, 4], pron_arima$lower[, 3],
+  pron_arima$lower[, 2], pron_arima$lower[, 1],
+  pron_arima$mean,
+  pron_arima$upper[, 1], pron_arima$upper[, 2],
+  pron_arima$upper[, 3], pron_arima$upper[, 4]
+)
+sd_ingenuo <- sd(diff(entrena$casos, lag = 52), na.rm = TRUE)
+q_ingenuo <- sapply(niveles, function(q) ingenuo + qnorm(q) * sd_ingenuo)
+
+armar <- function(q, nombre) {
+  tibble(
+    modelo = nombre,
+    semana = rep(prueba$semana, times = length(niveles)),
+    observado = rep(prueba$casos, times = length(niveles)),
+    nivel = rep(niveles, each = H),
+    prediccion = as.vector(q)
+  )
+}
+
+evaluacion <- bind_rows(armar(q_arima, "ARIMA"), armar(q_ingenuo, "Ingenuo")) |>
+  as_forecast_quantile(
+    forecast_unit = c("modelo", "semana"),
+    observed = "observado", predicted = "prediccion",
+    quantile_level = "nivel"
+  ) |>
+  score() |>
+  summarise_scores(by = "modelo")
+
+evaluacion |>
+  select(
+    modelo, wis, dispersion, underprediction, overprediction,
+    interval_coverage_50, interval_coverage_90
+  ) |>
+  mutate(across(-1, ~ round(.x, 3)))
+```
+
+::: callout-important
+## Cómo se lee el `WIS` y por qué es la mejor métrica para vigilancia
+
+El `WIS` cobra tres cosas a la vez: **qué tan ancho** es el intervalo (para que no
+hagas trampa diciendo "entre 0 y un millón"), **qué tanto se quedó corto** y **qué
+tanto se pasó**. Entre más chico, mejor.
+
+-   `ARIMA` = 54.1 contra `Ingenuo` = 64.8: el ARIMA gana, y aquí **sin ambigüedad**
+    (a diferencia del `MAPE`).
+-   La descomposición dice **por qué**: casi todo el puntaje de ambos es
+    **subestimación** (42.2 y 53.4), y casi nada es sobreestimación. Los dos se
+    quedaron cortos, el ingenuo más.
+-   **La cobertura es lo más revelador**: los intervalos al 90% sólo contuvieron el
+    valor real el **67%** de las veces. Deberían ser 90%.
+
+Redactado como en un artículo:
+
+> *El modelo ARIMA con términos de Fourier superó al modelo estacional ingenuo
+> (WIS 54.1 frente a 64.8). La descomposición del WIS indicó que el error se debió
+> predominantemente a subestimación. La cobertura empírica de los intervalos de
+> predicción al 90% fue de 67%, por debajo del nivel nominal, lo que sugiere que
+> los intervalos son demasiado estrechos y que la incertidumbre está subestimada.*
+:::
+
+## Resumen: qué métrica para qué
+
+```{r}
+#| echo: false
+tibble(
+  `Qué quiero saber` = c(
+    "¿El modelo explica algo?", "¿Sobran variables?",
+    "¿Se cumplen los supuestos?", "¿Hay variables redundantes?",
+    "¿Qué tan lejos quedé?", "¿El conteo está sobredisperso?",
+    "¿El riesgo predicho es correcto?", "¿Ordena bien a los pacientes?",
+    "¿A cuántos enfermos detecto?", "¿Mi pronóstico es honesto?"
+  ),
+  `Herramienta` = c(
+    "R², prueba F global", "R² ajustada, AIC, BIC",
+    "Shapiro-Wilk, Breusch-Pagan, residuales", "VIF",
+    "MAE, RMSE (MSE si comparas)", "Devianza/gl, dispersiontest",
+    "Hosmer-Lemeshow, Brier", "AUC (curva ROC)",
+    "Sensibilidad (no exactitud)", "WIS y cobertura"
+  ),
+  `Modelo` = c(
+    "Lineal", "Todos", "Lineal", "Todos", "Lineal / series",
+    "Poisson", "Logística", "Logística", "Logística", "Series de tiempo"
+  )
+) |> knitr::kable()
+```
+
+::: callout-warning
+## Los cinco errores más comunes al reportar modelos
+
+1.  **Reportar `R²` sin la prueba `F`.** Una `R²` de 0.30 con `p` = 0.4 no es nada.
+2.  **Reportar exactitud en desenlaces poco frecuentes.** Siempre da bien y siempre
+    engaña. Usa sensibilidad y especificidad.
+3.  **Decidir binomial negativa por la varianza cruda.** Se decide con los
+    residuales del modelo.
+4.  **Interpretar el `OR` como riesgo.** Si el desenlace es común, exagera (ver el
+    [capítulo de encuestas](analisis-encuestas.qmd)).
+5.  **Suponer linealidad sin probarla.** Un spline cuesta dos líneas de código y
+    aquí cambió las conclusiones.
+:::
+
+## Ejercicios
+
+### Interpretación
+
+1.  El modelo lineal tuvo `R²` = 0.025 y todos sus supuestos se cumplieron. Escribe
+    dos o tres renglones explicándole a alguien que no sabe estadística por qué
+    "cumplir los supuestos" y "servir" no son lo mismo.
+
+2.  Un colega te dice: *"mi modelo tiene 92% de exactitud para predecir muerte
+    materna"*. La mortalidad materna ocurre en menos del 0.1% de los embarazos.
+    ¿Qué le preguntas antes de creerle?
+
+3.  Con la tabla de cortes (0.5 contra 0.195), ¿cuál usarías si el modelo fuera a
+    servir para decidir a qué pacientes se les asigna cama de terapia intensiva?
+    Justifica en términos de qué cuesta cada tipo de error.
+
+### Cálculo
+
+4.  Ajusta el modelo logístico **sin** `gcs` y compara el `AUC` con el que tiene.
+    ¿Cuánto de la capacidad predictiva venía de esa sola variable?
+
+5.  Corre `anova(modelo_logistico, test = "LRT")` y decide, con ese criterio, qué
+    variables quitarías. Ajusta el modelo reducido y compara los `AIC`.
+
+6.  Prueba splines con 3, 4 y 5 grados de libertad para el `ghq12`. ¿Cuál elige el
+    `AIC`? ¿Cambia la forma de la curva?
+
+7.  Calcula el `MAE` y el `RMSE` del modelo de Poisson (compara `attack` observado
+    contra `fitted(modelo_poisson)`). ¿Por qué el `RMSE` es mayor?
+
+### A mano
+
+8.  Con la matriz de confusión del corte 0.5, calcula **con calculadora** la
+    sensibilidad, la especificidad y el valor predictivo positivo. Verifica con la
+    función `metricas`.
+
+9.  Si un modelo tiene sensibilidad 0.90 y especificidad 0.90, y lo aplicas a una
+    población donde el desenlace ocurre en el 1%, ¿cuál es el valor predictivo
+    positivo? (Pista: usa el teorema de Bayes o arma una tabla con 10,000
+    personas.) ¿Te sorprende el resultado?
+
+### Con apoyo de una IA
+
+10. Pásale a una IA la tabla de métricas de clasificación del corte 0.5 y pregúntale
+    si el modelo es bueno. Si contesta que sí basándose en la exactitud, corrígela
+    y pídele que reconsidere. Anota qué le faltó ver.
+
+11. Pídele que te redacte la sección de métodos para el modelo de Poisson con
+    spline. Verifica que mencione: los grados de libertad del spline, cómo se
+    eligieron, la prueba contra el modelo lineal y el criterio de bondad de ajuste.
+    Casi siempre se le olvida alguno.

@@ -111,7 +111,7 @@ como sigue:
 #| echo: false
 #| message: false
 #| fig-cap:  "Opciones de proyecto incluyen nuevo directorio o existente así como control de versiones"
-knitr::include_graphics('images/proyecto_1.png')
+knitr::include_graphics("images/proyecto_1.png")
 ```
 
 Existen diferentes opciones: empezar a crear un proyecto desde cero
@@ -128,7 +128,7 @@ presentaciones y páginas web. Por ahora trabajaremos sólo con código normal.
 #| echo: false
 #| message: false
 #| fig-cap:  "Las opciones de tipo de proyecto incluyen blogs, páginas web y libros. Por ahora comenzamos con `New Proyect` para hacer un proyecto nuevo sin opciones específicas de los otros tipos."
-knitr::include_graphics('images/proyecto_2.png')
+knitr::include_graphics("images/proyecto_2.png")
 ```
 
 Finalmente en la tercer ventana elegimos el nombre del proyecto, el folder
@@ -151,7 +151,7 @@ dentro de nuestros documentos donde habrá de guardarse y activamos las opciones
 #| echo: false
 #| message: false
 #| fig-cap:  "Un nuevo proyecto con nombre `AnalisisDatos`, en mi carpeta de `Dropbox` con las opciones de `git` y `renv` habilitadas. Se solicitó a `R` además abrir en una sesión nueva."
-knitr::include_graphics('images/proyecto_3.png')
+knitr::include_graphics("images/proyecto_3.png")
 ```
 
 Una vez iniciado el proyecto nos aparecerá un mensaje similar a este en una
@@ -281,12 +281,12 @@ las ñ aparecen como el símbolo `?`:
 ```{r}
 #| echo: false
 #| output: asis
-#Este archivo está en WINDOWS-1252 y aquí lo leemos A PROPÓSITO sin declararlo,
-#para mostrar cómo se ven los acentos cuando la codificación no coincide. El
-#iconv con sub = "?" reproduce ese efecto de forma idéntica en cualquier
-#computadora (si no, el resultado dependería del idioma del sistema de quien lea).
-#El archivo está en WINDOWS-1252; al interpretarlo como UTF-8 sus bytes de
-#acentos son inválidos, y sub = "?" los sustituye por el signo de interrogación.
+# Este archivo está en WINDOWS-1252 y aquí lo leemos A PROPÓSITO sin declararlo,
+# para mostrar cómo se ven los acentos cuando la codificación no coincide. El
+# iconv con sub = "?" reproduce ese efecto de forma idéntica en cualquier
+# computadora (si no, el resultado dependería del idioma del sistema de quien lea).
+# El archivo está en WINDOWS-1252; al interpretarlo como UTF-8 sus bytes de
+# acentos son inválidos, y sub = "?" los sustituye por el signo de interrogación.
 zapopan_crudo <- read_lines("datasets/zapopan.csv", n_max = 5)
 cat(iconv(zapopan_crudo, from = "UTF-8", to = "UTF-8", sub = "?"), sep = "\n")
 ```
@@ -301,16 +301,18 @@ pena probar ambos para hallar el correcto:
 ```{r}
 #| echo: false
 #| message: false
-zapopan <- read_csv("datasets/zapopan.csv", 
-                    locale = locale(encoding = "WINDOWS-1252"), 
-                    skip = 1)
+zapopan <- read_csv("datasets/zapopan.csv",
+  locale = locale(encoding = "WINDOWS-1252"),
+  skip = 1
+)
 ```
 
 ```{r}
 #| eval: false
-zapopan <- read_csv("zapopan.csv", 
-                    locale = locale(encoding = "WINDOWS-1252"), 
-                    skip = 1)
+zapopan <- read_csv("zapopan.csv",
+  locale = locale(encoding = "WINDOWS-1252"),
+  skip = 1
+)
 ```
 
 ### Lectura de datos desde un `Excel`
@@ -349,7 +351,7 @@ debemos ignorar estas partes:
 #| echo: false
 #| message: false
 #| fig-cap:  "Opciones de proyecto incluyen nuevo directorio o existente así como control de versiones"
-knitr::include_graphics('images/excel_1.png')
+knitr::include_graphics("images/excel_1.png")
 ```
 
 Para ello en `read_excel` podemos especificar el rango de las celdas que nos
@@ -400,42 +402,42 @@ La función `glimpse` nos permite darnos una idea de la composición de nuestros
 datos:
 
 ```{r}
-mortalidad_2017 %>% glimpse() 
+mortalidad_2017 %>% glimpse()
 ```
 
 Hacer esto es lo mismo que hacerlo con el pipe nativo de `R`, `|>`:
 
 ```{r}
 #| eval: false
-mortalidad_2017 |> glimpse() 
+mortalidad_2017 |> glimpse()
 ```
 
 o bien ponerlo dentro del `glimpse`:
 
 ```{r}
 #| eval: false
-glimpse(mortalidad_2017) 
+glimpse(mortalidad_2017)
 ```
 
 El comando `ncol` nos muestra el número de columnas en la base de datos y
 `tally` nos cuenta el número de filas en la base de datos.
 
 ```{r}
-mortalidad_2017 %>% ncol() #Columnas
-mortalidad_2017 %>% tally() #Filas
+mortalidad_2017 %>% ncol() # Columnas
+mortalidad_2017 %>% tally() # Filas
 ```
 
 El comando `nrow` hace lo mismo: conteo de filas. Pero no es tan recomendado
 como veremos más adelante.
 
 ```{r}
-mortalidad_2017 %>% nrow() #Filas
+mortalidad_2017 %>% nrow() # Filas
 ```
 
 Podemos ver los nombres de las columnas de la base de datos con `colnames`:
 
 ```{r}
-#Mostramos las columnas
+# Mostramos las columnas
 mortalidad_2017 %>% colnames()
 ```
 
@@ -455,30 +457,30 @@ de la base y corchetes. Por ejemplo:
 
 ```{r}
 #| eval: false
-#Obtengo todo el registro de la columna sexo
-mortalidad_2017[ ,"sexo"]
+# Obtengo todo el registro de la columna sexo
+mortalidad_2017[, "sexo"]
 ```
 
 ```{r}
 #| echo: false
-#Obtengo todo el registro de sexo
-head(mortalidad_2017[ ,"sexo"])
+# Obtengo todo el registro de sexo
+head(mortalidad_2017[, "sexo"])
 ```
 
 También podemos usar el número de columna:
 
 ```{r}
-#Me regresa las observaciones de la columna 2
-#dada por mun_regis
+# Me regresa las observaciones de la columna 2
+# dada por mun_regis
 #| eval: false
-mortalidad_2017[ ,2]
+mortalidad_2017[, 2]
 ```
 
 ```{r}
 #| eval: false
-#Me regresa las observaciones de la columna 2
-#dada por mun_regis
-head(mortalidad_2017[ , 2])
+# Me regresa las observaciones de la columna 2
+# dada por mun_regis
+head(mortalidad_2017[, 2])
 ```
 
 También podemos acceder a la base por renglones. Por ejemplo, así vemos el
@@ -536,7 +538,9 @@ mortalidad_2017 %>% select(edo_civil)
 
 ```{r}
 #| echo: false
-mortalidad_2017 %>% select(edo_civil) %>% head()
+mortalidad_2017 %>%
+  select(edo_civil) %>%
+  head()
 ```
 
 la cual nos regresa la columna de estado civil. El comando
@@ -546,8 +550,8 @@ si sólo recordamos que tiene la palabra `"civil"` pero no exactamente cómo se
 escribe podemos usar `contains`:
 
 ```{r}
-#Podemos usar contains si recordamos que dice civil 
-#pero no el nombre completo
+# Podemos usar contains si recordamos que dice civil
+# pero no el nombre completo
 mortalidad_2017 %>% select(contains("civil"))
 ```
 
@@ -567,7 +571,7 @@ En el caso del `tidyverse` el equivalente a `select`, para elegir fila, el
 equivalente se conoce como `slice`:
 
 ```{r}
-#Selecciona la fila 11
+# Selecciona la fila 11
 mortalidad_2017 %>% slice(11)
 ```
 
@@ -577,9 +581,9 @@ Podemos combinar múltiples argumentos con `%>%`[^1]:
     generar error
 
 ```{r}
-mortalidad_2017 %>% 
-  select(sexo, edo_civil) %>%  #Selecciona edo civil y sexo
-  slice(11:20) #Selecciona filas 11 a 20
+mortalidad_2017 %>%
+  select(sexo, edo_civil) %>% # Selecciona edo civil y sexo
+  slice(11:20) # Selecciona filas 11 a 20
 ```
 
 Esta forma de combinación con `pipes` (`%>%` ó `|>`) será bastante útil más
@@ -606,8 +610,8 @@ En ella todas las variables son del mismo tipo.
 Para acceder a las entradas de un vector es de la siguiente forma:
 
 ```{r}
-#Para un vector sólo pongo el número de entrada ¡no hay columna!
-mi_vector[2] #entrada 2
+# Para un vector sólo pongo el número de entrada ¡no hay columna!
+mi_vector[2] # entrada 2
 ```
 
 En general la notación es la siguiente:
@@ -621,7 +625,7 @@ ver el nombre de la cuarta columna de la base combinando lo que sabemos de
 vectores con el comando `colnames`:
 
 ```{r}
-#Regresa el nombre de la 5a columna
+# Regresa el nombre de la 5a columna
 colnames(mortalidad_2017)[5]
 ```
 
@@ -630,7 +634,7 @@ conteste cuál es el número de columna para una columna dada. Por ejemplo, ¿cu
 es el número de columna para `edad`?
 
 ```{r}
-#Preguntamos a R cuál de las columnas se llama edad
+# Preguntamos a R cuál de las columnas se llama edad
 which(colnames(mortalidad_2017) == "edad")
 ```
 
@@ -638,7 +642,7 @@ Nota que si preguntamos por una columna que no existe, `R` nos regresa lo
 siguiente:
 
 ```{r}
-#Preguntamos a R cuál de las columnas se llama edad
+# Preguntamos a R cuál de las columnas se llama edad
 which(colnames(mortalidad_2017) == "Paraguas")
 ```
 
@@ -648,10 +652,10 @@ ejemplo, el siguiente comando nos regresa las múltiples entradas del vector
 `nombres_de_amigos` donde hay un amigo que tiene el nombre de `Alejandro`:
 
 ```{r}
-#Creo un vector con nombres de mis amigos
+# Creo un vector con nombres de mis amigos
 nombres_de_amigos <- c("Alejandro", "Beatriz", "Alejandro", "Carla")
 
-#Pregunto por cuáles entradas contienen a Alejandro
+# Pregunto por cuáles entradas contienen a Alejandro
 which(nombres_de_amigos == "Alejandro")
 ```
 
@@ -660,40 +664,40 @@ por ejemplo si deseo seleccionar, de la base, las columnas de `sexo` y `edad`:
 
 ```{r}
 #| eval: false
-mortalidad_2017[ , c("sexo", "edad")]
+mortalidad_2017[, c("sexo", "edad")]
 ```
 
 ```{r}
 #| echo: false
-head(mortalidad_2017[ , c("sexo", "edad")])
+head(mortalidad_2017[, c("sexo", "edad")])
 ```
 
 Finalmente si quiero seleccionar sólo algunos renglones puedo ponerlos en un
 vector:
 
 ```{r}
-#Selecciona sólo el renglón 1 y el 7
+# Selecciona sólo el renglón 1 y el 7
 mortalidad_2017[c(1, 7), c("sexo", "edad")]
 ```
 
 Mientras que el `:` selecciona *del renglón 1 al renglón 7*
 
 ```{r}
-#Selecciona del 1 al 7
+# Selecciona del 1 al 7
 mortalidad_2017[1:7, c("sexo", "edad")]
 ```
 
 El equivalente usando `select` y `slice` es:
 
 ```{r}
-mortalidad_2017 %>% 
+mortalidad_2017 %>%
   select(sexo, edad) %>%
   slice(1:7)
 ```
 
 ```{r}
-#Selecciona renglones del 2 al 7
-#y las columnas 5 a 9
+# Selecciona renglones del 2 al 7
+# y las columnas 5 a 9
 mortalidad_2017[2:7, 5:9]
 ```
 
@@ -701,9 +705,9 @@ Los `:` también funcionan para seleccionar rangos de columnas a través del
 `select`:
 
 ```{r}
-#Selecciona todas las columnas desde loc_resid hasta tloc_ocurr
+# Selecciona todas las columnas desde loc_resid hasta tloc_ocurr
 mortalidad_2017 %>%
-  select(loc_resid:tloc_ocurr) 
+  select(loc_resid:tloc_ocurr)
 ```
 
 ## Ejercicios
@@ -728,8 +732,10 @@ g.  Obtén la entrada en la columna `5` y fila `14`.
 2.  Considera la base de datos creada por el siguiente código:
 
 ```{r}
-base_inventada <- tibble(Tiempo = rexp(100), 
-                             Enfermo = rbinom(100, 83, 1/3))
+base_inventada <- tibble(
+  Tiempo = rexp(100),
+  Enfermo = rbinom(100, 83, 1 / 3)
+)
 ```
 
 Determina qué ocasionó los resultados siguientes:
@@ -738,22 +744,22 @@ a.  ¿Por qué da error?
 
 ```{r}
 #| error: true
-#Primer error
-base_inventada[ , 200]
+# Primer error
+base_inventada[, 200]
 ```
 
 b.  ¿Por qué da `NA`?
 
 ```{r}
-#NA
+# NA
 base_inventada[1000, ]
 ```
 
 c.  ¿Por qué dice esto?
 
 ```{r}
-#Primer error
-base_inventada[0,0]
+# Primer error
+base_inventada[0, 0]
 ```
 
 d.  ¿Por qué da error\`?
@@ -787,8 +793,8 @@ porque nos evitamos el riesgo de perder información!
 :::
 
 ```{r}
-#Reescribimos la variable sólo con las columnas que nos
-#interesan
+# Reescribimos la variable sólo con las columnas que nos
+# interesan
 mortalidad_2017 <- mortalidad_2017 %>%
   select(ent_regis, mun_regis, sexo, edad, dia_ocurr, mes_ocurr, anio_ocur, causa_def)
 ```
@@ -799,8 +805,8 @@ guardándola en sí misma (para que se queden los cambios). También lo pude hab
 guardado en otra variable:
 
 ```{r}
-#Reescribimos la variable sólo con las columnas que nos
-#interesan
+# Reescribimos la variable sólo con las columnas que nos
+# interesan
 #| eval: false
 mortalidad_2017_pedazo <- mortalidad_2017 %>%
   select(ent_regis, mun_regis, sexo, edad, dia_ocurr, mes_ocurr, anio_ocur, causa_def)
@@ -811,8 +817,8 @@ permanentes. Por ejemplo el siguiente comando de seleccionar sólo `sexo` y
 `edad` no edita la base pues no se asigna a la base:
 
 ```{r}
-#Reescribimos la variable sólo con las columnas que nos
-#interesan
+# Reescribimos la variable sólo con las columnas que nos
+# interesan
 mortalidad_2017 %>%
   select(sexo, edad)
 ```
@@ -838,13 +844,15 @@ concatenados por el `%>%` o bien poniendo muchas igualdades dentro del `rename`:
 
 ```{r}
 mortalidad_2017 <- mortalidad_2017 %>%
-  rename(`Sexo`  = `sexo`) %>%
-  rename(`Edad`  = `edad`) %>% 
-  rename(`Día`      = `dia_ocurr`, 
-         `Mes`      = `mes_ocurr`,
-         `Año`      = `anio_ocur`,
-         `Causa`    = `causa_def`, 
-         `Municipio`= `mun_regis`)
+  rename(`Sexo` = `sexo`) %>%
+  rename(`Edad` = `edad`) %>%
+  rename(
+    `Día` = `dia_ocurr`,
+    `Mes` = `mes_ocurr`,
+    `Año` = `anio_ocur`,
+    `Causa` = `causa_def`,
+    `Municipio` = `mun_regis`
+  )
 ```
 
 ### Filtrar filas con `filter`
@@ -854,19 +862,19 @@ observaciones que ocurrieron en el Año `2017`. Nota que el número de filas
 cambia de:
 
 ```{r}
-#Antes de filtrar
+# Antes de filtrar
 mortalidad_2017 %>% tally()
 ```
 
 ```{r}
-#Filtro
+# Filtro
 mortalidad_2017 <- mortalidad_2017 %>%
   filter(Año == 2017)
 ```
 
 ```{r}
-#Después de filtrar
-mortalidad_2017 %>% 
+# Después de filtrar
+mortalidad_2017 %>%
   tally()
 ```
 
@@ -907,21 +915,21 @@ Aquellas defunciones cuyos días estén entre el día `7` y el `9`
 
 ```{r}
 mortalidad_2017 %>%
-  filter(Día %in% c(7,8,9)) #o bien 7:9 en lugar del c
+  filter(Día %in% c(7, 8, 9)) # o bien 7:9 en lugar del c
 ```
 
 Aquellas defunciones cuyo día **no** esté entre el día `7` y el `9`
 
 ```{r}
 mortalidad_2017 %>%
-  filter(!(Día %in% c(7,8,9))) #o bien 7:9 en lugar del c
+  filter(!(Día %in% c(7, 8, 9))) # o bien 7:9 en lugar del c
 ```
 
 Aquellas defunciones en enero el día `14`:
 
 ```{r}
 mortalidad_2017 %>%
-  filter(Día == 14 & Mes == 1) #o bien 7:9 en lugar del c
+  filter(Día == 14 & Mes == 1) # o bien 7:9 en lugar del c
 ```
 
 O bien:
@@ -929,7 +937,7 @@ O bien:
 ```{r}
 mortalidad_2017 %>%
   filter(Día == 14) %>%
-  filter(Mes == 1) 
+  filter(Mes == 1)
 ```
 
 Aquellas defunciones donde el mes sea enero o diciembre:
@@ -950,7 +958,7 @@ Aquellas defunciones cuya causa contenga el caracter `C5`:
 
 ```{r}
 mortalidad_2017 %>%
-  filter(str_detect(Causa,"C5"))
+  filter(str_detect(Causa, "C5"))
 ```
 
 #### Ejercicio
@@ -1011,7 +1019,7 @@ mortalidad_2017 %>%
 pues:
 
 ```{r}
-43216448/660152
+43216448 / 660152
 ```
 
 Podemos también obtener el máximo de edad con `max` (el mínimo sería con `min`)
@@ -1031,7 +1039,7 @@ mortalidad_2017 %>%
 ```
 
 ```{r}
-#Cuantil 0.25 = primer cuartil
+# Cuantil 0.25 = primer cuartil
 mortalidad_2017 %>%
   filter(Edad >= 4000 & Edad != 4998) %>%
   summarise(`Edad (25%)` = quantile(Edad - 4000, 0.25))
@@ -1040,12 +1048,14 @@ mortalidad_2017 %>%
 de hecho podemos aplicar el `summarise` de todos a la vez:
 
 ```{r}
-#Cuantil 0.25 = primer cuartil
+# Cuantil 0.25 = primer cuartil
 mortalidad_2017 %>%
   filter(Edad >= 4000 & Edad != 4998) %>%
-  summarise(`Edad promedio` = mean(Edad - 4000),
-            `Edad mediana`  = median(Edad - 4000),
-            `Edad máxima`   = max(Edad - 4000))
+  summarise(
+    `Edad promedio` = mean(Edad - 4000),
+    `Edad mediana` = median(Edad - 4000),
+    `Edad máxima` = max(Edad - 4000)
+  )
 ```
 
 ### Operaciones en grupos usando `group_by`
@@ -1158,7 +1168,7 @@ diga `Hombre`, `Mujer` en los casos de `1` y `2` respectivamente:
 
 ```{r}
 mortalidad_2017 %>%
-  filter(Sexo %in% c(1,2)) %>% #eliminamos los desconocidos
+  filter(Sexo %in% c(1, 2)) %>% # eliminamos los desconocidos
   mutate(`Sexo categoría` = if_else(Sexo == 1, "Hombre", "Mujer"))
 ```
 
@@ -1177,9 +1187,9 @@ contrario:
 
 ```{r}
 mortalidad_2017 %>%
-  mutate(TB = if_else(str_detect(Causa,"A15") | str_detect(Causa,"A16") |
-                       str_detect(Causa,"A17") | str_detect(Causa,"A18") |
-                       str_detect(Causa,"A19"), "Tuberculosis", "Otra"))
+  mutate(TB = if_else(str_detect(Causa, "A15") | str_detect(Causa, "A16") |
+    str_detect(Causa, "A17") | str_detect(Causa, "A18") |
+    str_detect(Causa, "A19"), "Tuberculosis", "Otra"))
 ```
 
 Además del `if_else` (que sirve para dos condiciones) existe el `case_when` que
@@ -1191,7 +1201,7 @@ case_when(
   CONDICION1 ~ VALOR1,
   CONDICION2 ~ VALOR2,
   CONDICION3 ~ VALOR3,
-  TRUE ~ VALOR_DEFAULT #Este se puede omitir y el default es NA
+  TRUE ~ VALOR_DEFAULT # Este se puede omitir y el default es NA
 )
 ```
 
@@ -1203,7 +1213,7 @@ mortalidad_2017 %>%
   mutate(`Sexo corregido` = case_when(
     `Sexo` == 1 ~ "Hombre",
     `Sexo` == 2 ~ "Mujer",
-    TRUE ~ NA_character_ 
+    TRUE ~ NA_character_
   ))
 ```
 
@@ -1216,7 +1226,7 @@ Como nota no hace falta poner la última condición para que `R` sepa que aquell
 que no son `"Hombre"` o `"Mujer"` son faltantes:
 
 ```{r}
-#Es lo mismo
+# Es lo mismo
 mortalidad_2017 %>%
   mutate(`Sexo corregido` = case_when(
     `Sexo` == 1 ~ "Hombre",
@@ -1229,7 +1239,7 @@ En un `mutate` podemos sobreescribir nombres de variables (es decir asignarle a
 original.
 
 ```{r}
-#Es lo mismo
+# Es lo mismo
 mortalidad_2017 %>%
   mutate(`Sexo` = case_when(
     `Sexo` == 1 ~ "Hombre",
@@ -1241,16 +1251,16 @@ Finalmente podemos combinar operaciones que ya hemos visto antes como `tally` y
 `group_by` por poner un ejemplo:
 
 ```{r}
-#Es lo mismo
+# Es lo mismo
 mortalidad_2017 <- mortalidad_2017 %>%
   mutate(`Sexo` = case_when(
     `Sexo` == 1 ~ "Hombre",
     `Sexo` == 2 ~ "Mujer",
-  )) 
+  ))
 
-#Tabla de sexo
-mortalidad_2017 %>% 
-  group_by(`Sexo`) %>% 
+# Tabla de sexo
+mortalidad_2017 %>%
+  group_by(`Sexo`) %>%
   tally()
 ```
 
@@ -1264,7 +1274,7 @@ mortalidad_2017 %>%
     str_detect(`Causa`, "A17") ~ "Tuberculosis del sistema nervioso",
     str_detect(`Causa`, "A18") ~ "Tuberculosis de otros órganos",
     str_detect(`Causa`, "A19") ~ "Tuberculosis miliar",
-    TRUE ~ "Sin tuberculosis" #Valor default
+    TRUE ~ "Sin tuberculosis" # Valor default
   )) %>%
   filter(`Tipo tuberculosis` != "Sin tuberculosis") %>%
   group_by(`Tipo tuberculosis`) %>%
@@ -1284,13 +1294,15 @@ una base de datos (`decateml.csv`). Leámosla
 #| echo: false
 #| message: false
 codigos_entidad <- read_csv("datasets/Catalogo_datos_inegi/decateml.csv",
-                            locale = locale(encoding = "WINDOWS-1252"))
+  locale = locale(encoding = "WINDOWS-1252")
+)
 ```
 
 ```{r}
 #| eval: false
-codigos_entidad <- read_csv("decateml.csv", 
-                            locale = locale(encoding = "WINDOWS-1252"))
+codigos_entidad <- read_csv("decateml.csv",
+  locale = locale(encoding = "WINDOWS-1252")
+)
 ```
 
 Nota que las entidades son todas aquellas que en `cve_mun` y `cve_loc` tienen
@@ -1344,9 +1356,12 @@ y pegamos a nuestros datos:
 
 ```{r}
 mortalidad_2017 <- mortalidad_2017 %>%
-  left_join(base_municipios, 
-            by = c("Entidad" = "cve_ent",
-                   "Municipio" = "cve_mun"))
+  left_join(base_municipios,
+    by = c(
+      "Entidad" = "cve_ent",
+      "Municipio" = "cve_mun"
+    )
+  )
 ```
 
 Podemos entonces mostrar las defunciones para los municipios de `Sinaloa`:
@@ -1366,7 +1381,7 @@ columna y mujeres otra. Éste no es el formato recomendado para análisis pero a
 veces sí para presentar. Para poder transformar la tabla podemos `pivot_wider`:
 
 ```{r}
-#Tabla en formato largo (long)
+# Tabla en formato largo (long)
 formato_largo <- mortalidad_2017 %>%
   group_by(`Entidad federativa`, Sexo) %>%
   tally()
@@ -1383,9 +1398,11 @@ este caso `Entidad federativa`) y las que van a cambiar a columna (`names_from`)
 
 ```{r}
 formato_ancho <- formato_largo %>%
-  pivot_wider(id_cols = `Entidad federativa`,
-              names_from  = `Sexo`,
-              values_from = `n`)
+  pivot_wider(
+    id_cols = `Entidad federativa`,
+    names_from = `Sexo`,
+    values_from = `n`
+  )
 ```
 
 ```{r}
@@ -1399,11 +1416,13 @@ seleccionando en `cols` las columnas a transformar, bajo qué nombre quedan en
 `names_to` y bajo qué valor en `values_to`:
 
 ```{r}
-#Y de regreso
+# Y de regreso
 formato_ancho %>%
-  pivot_longer(cols = c(`Mujer`, `Hombre`, `NA`),
-               names_to = "Sexo",
-               values_to = "n")
+  pivot_longer(
+    cols = c(`Mujer`, `Hombre`, `NA`),
+    names_to = "Sexo",
+    values_to = "n"
+  )
 ```
 
 ### Unión de columnas con `paste`

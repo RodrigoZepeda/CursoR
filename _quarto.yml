@@ -55,6 +55,8 @@ book:
       text: "La forma de una regresión"
     - regresiones-1.qmd
     - regresiones-2.qmd
+    - file: verificacion-modelos.qmd
+      text: "Verificación de modelos"
     - file: series-de-tiempo-dengue.qmd
       text: "Series de tiempo (dengue)"
     - cadenas-de-markov.qmd
