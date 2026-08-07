@@ -185,16 +185,55 @@ El patrón es clarísimo: los casos suben en la segunda mitad del año. Esto es
 `STL` descompone la serie en tres pedazos que **suman** la serie original:
 
 ```{r}
-#| fig-cap: "Descomposición STL: la serie es la suma de las tres partes de abajo."
-serie_ts <- ts(dengue$casos,
-  frequency = 52,
-  start = c(1990, 1)
-)
+descomposicion <- stl(ts(dengue$casos, frequency = 52), s.window = "periodic")
 
-descomp <- stl(serie_ts, s.window = "periodic")
-autoplot(descomp) +
-  labs(x = "Año", title = "Descomposición de la serie de dengue") +
+# Las tres partes regresan al data.frame como columnas nuevas
+dengue <- dengue |>
+  mutate(
+    tendencia = as.numeric(descomposicion$time.series[, "trend"]),
+    estacional = as.numeric(descomposicion$time.series[, "seasonal"]),
+    resto = as.numeric(descomposicion$time.series[, "remainder"])
+  )
+
+# Y como son columnas, se grafican como cualquier otra cosa
+glimpse(dengue)
+```
+
+::: callout-note
+## La única función de este capítulo que pide un `ts`
+
+`stl()` es de las pocas que exige un objeto `ts` (el formato viejo de series de
+tiempo en `R`). En vez de arrastrar ese objeto por todo el capítulo, lo creamos
+**dentro de la llamada** y de inmediato **guardamos los resultados como columnas**
+del data.frame.
+
+De aquí en adelante todo sale del data.frame, incluidos el `ARIMA` y el `bsts`.
+:::
+
+```{r}
+#| fig-cap: "Descomposición STL: la serie es la suma de las tres partes de abajo."
+dengue |>
+  select(semana, casos, tendencia, estacional, resto) |>
+  pivot_longer(-semana, names_to = "parte", values_to = "valor") |>
+  mutate(parte = factor(parte,
+    levels = c("casos", "tendencia", "estacional", "resto")
+  )) |>
+  ggplot(aes(x = semana, y = valor)) +
+  geom_line(color = "#003f5c", linewidth = 0.3) +
+  facet_wrap(~parte, ncol = 1, scales = "free_y") +
+  labs(x = "", y = "", title = "Descomposición de la serie de dengue") +
   theme_bw()
+```
+
+Y comprobamos que de verdad **suman** la serie original:
+
+```{r}
+dengue |>
+  summarise(
+    diferencia_maxima = max(abs(
+      (tendencia + estacional + resto) - casos
+    ))
+  )
 ```
 
 ::: callout-note
@@ -263,6 +302,49 @@ largos (de varios años), que son las epidemias grandes.
 Esto importa para modelar: un modelo que suponga que la estacionalidad es
 **siempre la misma** va a quedar corto. Guárdate esta idea, porque es justamente
 la diferencia entre el `ARIMA` que vamos a ajustar y el `bsts`.
+:::
+
+### Términos de Fourier: la estacionalidad como columnas
+
+Antes de partir la base agregamos las columnas que van a representar la
+estacionalidad. Suena mucho más complicado de lo que es: son **senos y cosenos con
+periodo de un año**, y se agregan como columnas normales.
+
+```{r}
+K <- 3 # cuántos pares de seno y coseno
+periodo <- 52 # una vuelta completa = 52 semanas
+
+dengue <- dengue |>
+  mutate(t = row_number()) |>
+  mutate(
+    sin1 = sin(2 * pi * 1 * t / periodo),
+    cos1 = cos(2 * pi * 1 * t / periodo),
+    sin2 = sin(2 * pi * 2 * t / periodo),
+    cos2 = cos(2 * pi * 2 * t / periodo),
+    sin3 = sin(2 * pi * 3 * t / periodo),
+    cos3 = cos(2 * pi * 3 * t / periodo)
+  )
+
+terminos_fourier <- c("sin1", "cos1", "sin2", "cos2", "sin3", "cos3")
+
+dengue |>
+  select(semana, casos, all_of(terminos_fourier)) |>
+  head()
+```
+
+::: callout-tip
+## Qué son esas columnas
+
+`sin1` y `cos1` completan **una vuelta al año**: capturan la temporada alta y la
+baja. `sin2` y `cos2` dan **dos vueltas** al año y `sin3` y `cos3` **tres**, así
+que van agregando detalle a la forma de la curva estacional.
+
+Entre más pares (más `K`), más flexible la estacionalidad; con `K` demasiado
+grande empiezas a ajustar ruido. Es exactamente el mismo compromiso que ya viste
+con el ancho de banda de un histograma.
+
+Lo importante: **son columnas comunes y corrientes**. No hace falta convertir nada
+a un formato especial de series de tiempo.
 :::
 
 ## Partir los datos
@@ -408,20 +490,18 @@ anteriores. Su nombre son sus tres piezas:
     tendencia.
 -   **MA** (*medias móviles*): el valor de hoy depende de los **errores** pasados.
 
-Para la estacionalidad usaremos **términos de Fourier**, que son senos y cosenos
-con periodo de un año. Es la forma recomendada cuando hay muchas estaciones (52
-semanas son demasiadas para un `ARIMA` estacional clásico):
+Para la estacionalidad usaremos los **términos de Fourier** que ya agregamos
+a la base. Es la forma recomendada cuando hay muchas estaciones (52 semanas son
+demasiadas para un `ARIMA` estacional clásico).
+
+Y ajustamos. `auto.arima` acepta el vector de casos directamente, y los términos
+de Fourier van en `xreg` como una matriz:
 
 ```{r}
-serie_entrena <- ts(entrena$casos, frequency = 52)
-
-# K = 3 pares de senos y cosenos para la estacionalidad anual
-fourier_dentro <- fourier(serie_entrena, K = 3)
-fourier_fuera <- fourier(serie_entrena, K = 3, h = H)
-
 modelo_arima <- auto.arima(
-  serie_entrena,
-  seasonal = FALSE, xreg = fourier_dentro
+  entrena$casos,
+  xreg = as.matrix(entrena[, terminos_fourier]),
+  seasonal = FALSE
 )
 modelo_arima
 ```
@@ -453,7 +533,8 @@ Y ahora el pronóstico:
 ```{r}
 pron_arima <- forecast(
   modelo_arima,
-  xreg = fourier_fuera, level = c(50, 80, 90, 95)
+  xreg = as.matrix(prueba[, terminos_fourier]),
+  level = c(50, 80, 90, 95)
 )
 
 # ancho del intervalo al 95% en la primera y la última semana
@@ -466,10 +547,23 @@ round(ancho_arima, 1)
 
 ```{r}
 #| fig-cap: "Pronóstico del ARIMA. El abanico se abre conforme se aleja en el tiempo."
-autoplot(pron_arima) +
+# El pronóstico también se guarda como data.frame, con sus fechas reales
+pronostico_df <- prueba |>
+  select(semana, observado = casos) |>
+  mutate(
+    ajuste = as.numeric(pron_arima$mean),
+    bajo = as.numeric(pron_arima$lower[, 4]),
+    alto = as.numeric(pron_arima$upper[, 4])
+  )
+
+ggplot(pronostico_df, aes(x = semana)) +
+  geom_ribbon(aes(ymin = bajo, ymax = alto), fill = "#003f5c", alpha = 0.2) +
+  geom_line(aes(y = ajuste), color = "#003f5c", linewidth = 1) +
+  geom_line(aes(y = observado), color = "#ff6361") +
   labs(
-    x = "Semanas (en años de 52)", y = "Casos",
-    title = "Pronóstico ARIMA a un año"
+    x = "", y = "Casos",
+    title = "Pronóstico ARIMA a un año",
+    subtitle = "En rojo lo observado; en azul el pronóstico con su intervalo al 95%"
   ) +
   theme_bw()
 ```
@@ -859,7 +953,7 @@ forecast(modelo_arima, h = 52)
 ```{r}
 #| eval: false
 # c) Queremos evaluar qué tan bueno fue el ajuste del ARIMA
-pron <- forecast(modelo_arima, xreg = fourier_fuera, h = 52)
+pron <- forecast(modelo_arima, h = 52)
 mean(abs(pron$mean - entrena$casos))
 ```
 
@@ -871,7 +965,8 @@ a.  `acf` necesita un **vector de números**, no el objeto del modelo. Correcto:
 
 b.  El modelo se ajustó **con** variables externas (`xreg`, los términos de
     Fourier), así que para pronosticar hay que darle los valores futuros de esas
-    variables. Correcto: `forecast(modelo_arima, xreg = fourier_fuera)`. Nota que
+    variables. Correcto:
+    `forecast(modelo_arima, xreg = as.matrix(prueba[, terminos_fourier]))`. Nota que
     entonces ya no hace falta la `h`: el horizonte lo define cuántos renglones
     tenga el `xreg`.
 
