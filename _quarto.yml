@@ -26,8 +26,12 @@ book:
   repo-branch: master
   repo-actions: [source, issue]
   search:
-    location: navbar
-    type: overlay
+    location: sidebar
+    type: textbox
+  sidebar:
+    style: floating
+    collapse-level: 1
+    border: false
   page-navigation: true
   back-to-top-navigation: true
   chapters:
@@ -85,9 +89,10 @@ format:
     reference-location: margin
     citation-location: margin
     grid:
-      sidebar-width: 0px
-      body-width: 900px
-      margin-width: 260px
-      gutter-width: 1.5rem
+      sidebar-width: 240px
+      body-width: 820px
+      margin-width: 200px
+      gutter-width: 1.4rem
+    include-after-body: barra-lateral.html
     # self-contained se omite a propósito: en un libro los recursos se
     # comparten entre capítulos y embeberlos multiplicaría el peso del sitio.

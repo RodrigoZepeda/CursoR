@@ -27,26 +27,69 @@ table td:empty {
 }
 
 /* --------------------------------------------------------------------------
-   Ocultar el índice general de la izquierda.
-   Se pidió expresamente no verlo: saturaba la página. La navegación entre
-   capítulos queda en los botones de "anterior / siguiente" de abajo, en el
-   buscador de la barra superior y en el índice de la portada.
-   Para volver a mostrarlo: borra este bloque y regresa sidebar-width a 250px
-   en _quarto.yml.
+   Índice de la izquierda: compacto y ocultable.
+   El botón flotante lo crea barra-lateral.html y su preferencia se guarda en
+   el navegador.
    -------------------------------------------------------------------------- */
-#quarto-sidebar,
-#quarto-sidebar-glass,
-.quarto-sidebar-toggle {
+
+/* Tipografía más chica y renglones apretados para que ocupe poco */
+#quarto-sidebar .sidebar-item-text {
+  font-size: 0.82rem;
+  line-height: 1.25;
+}
+
+#quarto-sidebar .sidebar-item {
+  margin-bottom: 0.1rem;
+}
+
+#quarto-sidebar .sidebar-item-container {
+  padding-top: 0.05rem;
+  padding-bottom: 0.05rem;
+}
+
+/* El capítulo en el que estás, resaltado */
+#quarto-sidebar .sidebar-item-text.active,
+#quarto-sidebar .sidebar-link.active {
+  font-weight: 600;
+}
+
+/* Botón para ocultar y mostrar */
+#alternar-indice {
+  position: fixed;
+  left: 0.5rem;
+  bottom: 0.75rem;
+  z-index: 1050;
+  width: 2rem;
+  height: 2rem;
+  line-height: 1;
+  border-radius: 50%;
+  border: 1px solid var(--bs-border-color, #ccc);
+  background: var(--bs-body-bg, #fff);
+  color: var(--bs-body-color, #333);
+  opacity: 0.45;
+  cursor: pointer;
+  transition: opacity 0.15s ease-in-out;
+}
+
+#alternar-indice:hover,
+#alternar-indice:focus-visible {
+  opacity: 1;
+}
+
+/* Estado oculto: se esconde el índice y el contenido se recorre */
+body.indice-oculto #quarto-sidebar {
   display: none !important;
 }
 
-/* Sin barra lateral, el botón de menú de pantallas chicas tampoco hace falta */
-.quarto-btn-toggle {
-  display: none !important;
-}
-
-/* El contenido queda centrado y con aire */
-#quarto-content {
+body.indice-oculto #quarto-content,
+body.indice-oculto .page-columns {
   margin-left: auto;
   margin-right: auto;
+}
+
+/* En pantallas chicas Quarto ya trae su propio menú, así que sobra el botón */
+@media (max-width: 991.98px) {
+  #alternar-indice {
+    display: none;
+  }
 }

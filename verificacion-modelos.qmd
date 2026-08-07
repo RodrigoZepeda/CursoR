@@ -22,12 +22,45 @@ library(MASS) # binomial negativa
 library(pROC) # curva ROC
 library(ResourceSelection) # Hosmer-Lemeshow
 library(marginaleffects) # efectos marginales
+library(yardstick) # métricas de clasificación
+library(performance) # batería de índices de ajuste
+library(nnet) # regresión multinomial
 library(scoringutils) # WIS
 library(forecast) # ARIMA
 
 # Evita que dplyr::select choque con MASS::select
 select <- dplyr::select
 ```
+
+::: callout-warning
+## El precio de usar muchos paquetes: los conflictos
+
+Este capítulo carga quince paquetes, y varios **exportan funciones con el mismo
+nombre**. La que gana es la del paquete que se cargó **al último**.
+
+El caso concreto que nos mordió aquí: `forecast` carga `generics`, que trae su
+propia función `accuracy()`. Como se carga después de `yardstick`, `accuracy` deja
+de ser la de `yardstick` y `metric_set()` truena con un mensaje que no ayuda nada.
+
+La solución es escribir **el paquete y dos puntos** en las funciones que se
+prestan a confusión:
+
+```{r}
+#| eval: false
+yardstick::accuracy(...) # así no hay duda de cuál estás usando
+```
+
+Para ver qué se está pisando en tu sesión:
+
+```{r}
+#| eval: false
+conflicted::conflict_scout()
+```
+
+> Usar muchos paquetes está bien y ahorra código, pero **el precio son los
+> conflictos de nombres**. Si una función deja de funcionar de la nada, revisa
+> primero si algo la está enmascarando.
+:::
 
 ::: callout-important
 ## Las dos preguntas que nunca hay que confundir
@@ -65,20 +98,24 @@ acv <- read_dta("datasets/stroke.dta") |>
   mutate(muerte = as.integer(status == "dead"))
 
 # Dengue semanal en Puerto Rico (serie de tiempo)
-dengue <- read_csv("datasets/dengue_puerto_rico_semanal.csv", show_col_types = FALSE)
+dengue <- read_csv(
+  "datasets/dengue_puerto_rico_semanal.csv",
+  show_col_types = FALSE
+)
 ```
 
 ```{r}
 #| echo: false
 tibble(
-  Base = c("`asma`", "`acv`", "`dengue`"),
-  n = c(nrow(asma), nrow(acv), nrow(dengue)),
+  Base = c("`asma`", "`acv`", "`coronaria`", "`dengue`"),
+  n = c(nrow(asma), nrow(acv), 200L, nrow(dengue)),
   Desenlace = c(
     "`attack`: ataques de asma al año (0 a 9)",
     "`status`: vivo o muerto al egreso",
+    "`pa_cat`: presión normal, elevada o hipertensión",
     "`casos`: casos semanales"
   ),
-  Modelo = c("Poisson", "Logística", "ARIMA")
+  Modelo = c("Poisson", "Logística", "Multinomial", "ARIMA")
 ) |> knitr::kable()
 ```
 
@@ -373,7 +410,10 @@ ggplot(pred_spl, aes(x = ghq12, y = estimate)) +
     x = "Puntaje GHQ-12 (malestar psicológico)",
     y = "Ataques de asma esperados al año",
     title = "El efecto del malestar psicológico no es lineal",
-    caption = "Mujeres sin infección respiratoria recurrente. Las marcas de abajo son los datos observados."
+    caption = paste(
+      "Mujeres sin infección respiratoria recurrente.",
+      "Las marcas de abajo son los datos observados."
+    )
   ) +
   theme_bw()
 ```
@@ -500,15 +540,33 @@ exp(cbind(OR = coef(modelo_logistico), confint.default(modelo_logistico))) |>
 
 ### Bondad de ajuste global
 
-```{r}
-# Pseudo R2 de McFadden y prueba de razón de verosimilitudes global
-c(
-  pseudo_R2_McFadden = 1 - modelo_logistico$deviance / modelo_logistico$null.deviance,
-  AIC = AIC(modelo_logistico)
-) |> round(4)
+El paquete `performance` saca de un solo golpe casi todos los índices de ajuste,
+así no hay que recordar la fórmula de cada uno:
 
+```{r}
+model_performance(modelo_logistico)
+```
+
+```{r}
+# Pseudo R2 de McFadden (no viene en la tabla de arriba)
+1 - modelo_logistico$deviance / modelo_logistico$null.deviance
+
+# ¿Qué variable aporta? Se agregan una por una
 anova(modelo_logistico, test = "LRT")
 ```
+
+::: callout-tip
+## Qué es cada índice de `model_performance`
+
+-   **`AIC` / `AICc` / `BIC`**: para comparar modelos. Entre más chico, mejor. El
+    `AICc` corrige por muestras chicas y el `BIC` castiga más los parámetros.
+-   **`Tjur's R2`** (0.410): el pseudo-`R²` más intuitivo para logística. Es la
+    diferencia entre la probabilidad promedio predicha a quienes murieron y a
+    quienes no. Entre más separadas, mejor discrimina.
+-   **`RMSE`** y **`Log_loss`**: error de las probabilidades predichas.
+-   **`PCP`** (0.783): *predicted correct probability*, qué tan bien clasifica en
+    promedio.
+:::
 
 ::: callout-note
 La **pseudo `R²` de McFadden** (0.365) **no se lee como la `R²` de siempre**. En
@@ -586,31 +644,49 @@ murió el 89% de las veces**.
 
 ### Sensibilidad, especificidad y compañía
 
-```{r}
-prob <- fitted(modelo_logistico)
-pred_05 <- as.integer(prob >= 0.5)
+Con `yardstick` no hace falta escribir ninguna fórmula a mano: se arma una tabla
+con la verdad, la probabilidad y la clase predicha, y el paquete calcula todo.
 
-tabla <- table(Predicho = factor(pred_05, 0:1), Real = factor(modelo_logistico$y, 0:1))
-tabla
+```{r}
+resultados <- tibble(
+  verdad = factor(
+    if_else(acv$muerte == 1, "muere", "vive"),
+    levels = c("muere", "vive")
+  ),
+  prob = fitted(modelo_logistico)
+) |>
+  mutate(
+    clase = factor(
+      if_else(prob >= 0.5, "muere", "vive"),
+      levels = c("muere", "vive")
+    )
+  )
+
+conf_mat(resultados, truth = verdad, estimate = clase)
 ```
 
-```{r}
-metricas <- function(tab) {
-  VP <- tab["1", "1"]
-  VN <- tab["0", "0"]
-  FP <- tab["1", "0"]
-  FN <- tab["0", "1"]
-  c(
-    Sensibilidad = VP / (VP + FN), # recall
-    Especificidad = VN / (VN + FP),
-    Precision_VPP = VP / (VP + FP),
-    VPN = VN / (VN + FN),
-    Exactitud = (VP + VN) / sum(tab),
-    F1 = 2 * VP / (2 * VP + FP + FN)
-  )
-}
+::: callout-warning
+## El error que le pasa a todo el mundo con `yardstick`
 
-metricas(tabla) |> round(3)
+`glm` modela la probabilidad del **segundo** nivel del factor, mientras que
+`yardstick` toma el **primero** como el evento de interés.
+
+Si no los alineas, la sensibilidad y la especificidad **salen intercambiadas** y
+el `AUC` sale por debajo de 0.5. Por eso arriba pusimos `"muere"` como primer
+nivel de forma explícita.
+
+> Si tu `AUC` sale menor a 0.5, casi nunca es que el modelo sea malísimo: es que
+> invertiste las etiquetas.
+:::
+
+```{r}
+metricas_clasificacion <- metric_set(
+  yardstick::sensitivity, yardstick::specificity,
+  yardstick::precision, yardstick::npv,
+  yardstick::accuracy, yardstick::f_meas
+)
+
+metricas_clasificacion(resultados, truth = verdad, estimate = clase)
 ```
 
 ::: callout-important
@@ -652,11 +728,14 @@ corte |> mutate(across(everything(), ~ round(.x, 3)))
 ```
 
 ```{r}
-tabla_youden <- table(
-  Predicho = factor(as.integer(prob >= corte$threshold), 0:1),
-  Real = factor(modelo_logistico$y, 0:1)
-)
-metricas(tabla_youden) |> round(3)
+resultados |>
+  mutate(
+    clase = factor(
+      if_else(prob >= corte$threshold, "muere", "vive"),
+      levels = c("muere", "vive")
+    )
+  ) |>
+  metricas_clasificacion(truth = verdad, estimate = clase)
 ```
 
 ::: callout-important
@@ -684,7 +763,7 @@ clínica y de política, no estadística:
 ### El puntaje de Brier
 
 ```{r}
-c(Brier = mean((prob - modelo_logistico$y)^2)) |> round(4)
+brier_class(resultados, truth = verdad, prob)
 ```
 
 ::: callout-note
@@ -714,6 +793,175 @@ promedio dice:
 
 Eso **sí** se entiende y **sí** se puede usar para decidir. Es la traducción de la
 escala del modelo a la escala del mundo.
+:::
+
+## Modelo multinomial: categorías de presión arterial
+
+Cuando el desenlace tiene **más de dos categorías sin orden obligado**, la
+logística se queda corta. La **logística multinomial** ajusta una ecuación por
+cada categoría contra una de **referencia**, tal como lo vimos en
+[la forma de una regresión](regresion-geometria.qmd).
+
+Usaremos la base `coronary` y clasificaremos la presión arterial en tres niveles:
+
+```{r}
+#| message: false
+coronaria <- read_dta("datasets/coronary.dta") |>
+  mutate(across(where(is.labelled), as_factor)) |>
+  mutate(
+    pa_cat = case_when(
+      sbp >= 140 | dbp >= 90 ~ "Hipertension",
+      sbp >= 120 | dbp >= 80 ~ "Elevada",
+      .default = "Normal"
+    ),
+    pa_cat = factor(
+      pa_cat,
+      levels = c("Normal", "Elevada", "Hipertension")
+    )
+  )
+
+count(coronaria, pa_cat)
+```
+
+::: callout-note
+El primer nivel del factor (`Normal`) será la **categoría de referencia**: todos
+los resultados se leen *contra* ella. Elegirla no es un detalle técnico, es una
+decisión de interpretación: se pone la categoría que sirve como comparación
+natural, casi siempre la sana o la más frecuente.
+:::
+
+```{r}
+#| results: hide
+modelo_multi <- multinom(
+  pa_cat ~ age + bmi + chol + gender + race,
+  data = coronaria
+)
+```
+
+```{r}
+tidy(modelo_multi, exponentiate = TRUE, conf.int = TRUE) |>
+  filter(term != "(Intercept)") |>
+  select(y.level, term, estimate, conf.low, conf.high, p.value) |>
+  mutate(across(where(is.numeric), \(x) round(x, 3)))
+```
+
+::: callout-important
+## Cómo se lee una tabla multinomial
+
+Hay **dos bloques**: uno para `Elevada` y otro para `Hipertension`, y **los dos se
+comparan contra `Normal`**. Cada `OR` contesta: *"¿cuánto cambian los momios de
+estar en esta categoría, en vez de estar en Normal?"*.
+
+Lo más informativo es leer **cada variable a lo largo de las dos categorías**:
+
+| Variable | `Elevada` vs Normal | `Hipertension` vs Normal |
+|:---------|:--------------------|:-------------------------|
+| `chol` | 1.31 | **1.81** |
+| `age` | 1.04 | **1.08** |
+| `genderman` | 0.63 | **0.42** |
+
+Fíjate en el **gradiente**: el colesterol pasa de 1.31 a 1.81 y la edad de 1.04 a
+1.08. Es decir, **el efecto es más fuerte para la categoría más severa**.
+
+> Ese patrón creciente es lo que en epidemiología se llama una **relación
+> dosis-respuesta a lo largo del desenlace**, y es uno de los argumentos clásicos a
+> favor de que una asociación sea causal (criterio de Bradford Hill). Es
+> justamente lo que un modelo multinomial deja ver y una logística binaria
+> esconde: si hubiéramos juntado "Elevada" e "Hipertensión" en una sola categoría,
+> habríamos reportado un solo número intermedio y perdido el gradiente.
+:::
+
+### Verificación: ¿clasifica bien?
+
+Con `yardstick` las métricas multiclase salen igual de fácil que las binarias:
+
+```{r}
+resultados_multi <- coronaria |>
+  select(verdad = pa_cat) |>
+  mutate(clase = predict(modelo_multi))
+
+conf_mat(resultados_multi, truth = verdad, estimate = clase)
+```
+
+```{r}
+metric_set(yardstick::accuracy, yardstick::kap)(
+  resultados_multi,
+  truth = verdad, estimate = clase
+)
+```
+
+::: callout-important
+## Exactitud y kappa
+
+-   **Exactitud = 0.570.** El modelo acierta la categoría en 57% de los pacientes.
+    Parece poco, pero **el punto de comparación no es 100%**: es lo que lograrías
+    adivinando. Como la categoría más grande (`Hipertension`) es el 37% de la
+    muestra, decir "todos hipertensos" daría 37%. El modelo mejora eso.
+
+-   **Kappa de Cohen = 0.345.** Ésta es la métrica correcta cuando hay varias
+    categorías, porque **descuenta los aciertos que se explican por azar**. Se lee
+    así:
+
+    | Kappa | Acuerdo |
+    |:------|:--------|
+    | \< 0.20 | Pobre |
+    | 0.21–0.40 | Aceptable |
+    | 0.41–0.60 | Moderado |
+    | 0.61–0.80 | Bueno |
+    | \> 0.80 | Muy bueno |
+
+    Un 0.345 es **aceptable**: el modelo aporta información real, pero no alcanza
+    para decidir tratamiento por sí solo.
+:::
+
+También se puede calcular un `AUC` multiclase:
+
+```{r}
+probabilidades <- predict(modelo_multi, type = "probs") |>
+  as_tibble() |>
+  rename_with(\(x) paste0(".pred_", x))
+
+bind_cols(resultados_multi, probabilidades) |>
+  roc_auc(truth = verdad, starts_with(".pred_"))
+```
+
+::: callout-tip
+El `AUC` multiclase (0.719) usa el método de **Hand y Till**: promedia el `AUC` de
+todas las parejas de categorías. Se interpreta igual que el binario, pero ojo:
+**0.719 con tres categorías es mejor de lo que suena**, porque el azar aquí
+también da 0.5 y separar tres grupos es más difícil que separar dos.
+:::
+
+### ¿Sobran variables?
+
+```{r}
+modelo_multi_reducido <- multinom(
+  pa_cat ~ age + chol,
+  data = coronaria,
+  trace = FALSE
+)
+
+tibble(
+  Modelo = c("Completo", "Sólo edad y colesterol"),
+  AIC = c(AIC(modelo_multi), AIC(modelo_multi_reducido)),
+  Parametros = c(modelo_multi$edf, modelo_multi_reducido$edf)
+) |>
+  mutate(AIC = round(AIC, 1))
+```
+
+::: callout-note
+Aquí el `AIC` decide. Si el modelo reducido tiene un `AIC` menor o casi igual con
+menos parámetros, **gana el reducido**: estabas pagando grados de libertad por
+variables que no aportaban.
+
+Redactado para un artículo:
+
+> *Se ajustó un modelo de regresión logística multinomial con la categoría normal
+> como referencia. El colesterol se asoció de forma creciente con las categorías
+> de presión arterial (OR 1.31 para presión elevada y 1.81 para hipertensión,
+> frente a presión normal), lo que sugiere una relación dosis-respuesta. La
+> capacidad discriminativa del modelo fue moderada (AUC multiclase de Hand-Till
+> 0.72; kappa de Cohen 0.35).*
 :::
 
 ## Series de tiempo: dengue

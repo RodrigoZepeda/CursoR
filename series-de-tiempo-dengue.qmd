@@ -419,7 +419,10 @@ serie_entrena <- ts(entrena$casos, frequency = 52)
 fourier_dentro <- fourier(serie_entrena, K = 3)
 fourier_fuera <- fourier(serie_entrena, K = 3, h = H)
 
-modelo_arima <- auto.arima(serie_entrena, seasonal = FALSE, xreg = fourier_dentro)
+modelo_arima <- auto.arima(
+  serie_entrena,
+  seasonal = FALSE, xreg = fourier_dentro
+)
 modelo_arima
 ```
 
@@ -448,7 +451,10 @@ parecen ruido, ya le exprimiste a los datos lo que se podía.
 Y ahora el pronóstico:
 
 ```{r}
-pron_arima <- forecast(modelo_arima, xreg = fourier_fuera, level = c(50, 80, 90, 95))
+pron_arima <- forecast(
+  modelo_arima,
+  xreg = fourier_fuera, level = c(50, 80, 90, 95)
+)
 
 # ancho del intervalo al 95% en la primera y la última semana
 ancho_arima <- c(

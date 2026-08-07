@@ -1,0 +1,42 @@
+<!-- Botón para ocultar y mostrar el índice de la izquierda.
+     La preferencia se guarda en el navegador, así que se respeta al cambiar
+     de capítulo. -->
+<script>
+(function () {
+  var CLAVE = "cursoR-indice-oculto";
+
+  function aplicar(oculto) {
+    document.body.classList.toggle("indice-oculto", oculto);
+    var b = document.getElementById("alternar-indice");
+    if (b) {
+      b.setAttribute("aria-pressed", String(oculto));
+      b.setAttribute("title", oculto ? "Mostrar el índice" : "Ocultar el índice");
+      b.textContent = oculto ? "☰" : "×";
+    }
+  }
+
+  function iniciar() {
+    var boton = document.createElement("button");
+    boton.id = "alternar-indice";
+    boton.type = "button";
+    boton.setAttribute("aria-label", "Mostrar u ocultar el índice del libro");
+    document.body.appendChild(boton);
+
+    boton.addEventListener("click", function () {
+      var oculto = !document.body.classList.contains("indice-oculto");
+      try { localStorage.setItem(CLAVE, oculto ? "1" : "0"); } catch (e) {}
+      aplicar(oculto);
+    });
+
+    var guardado = "0";
+    try { guardado = localStorage.getItem(CLAVE) || "0"; } catch (e) {}
+    aplicar(guardado === "1");
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", iniciar);
+  } else {
+    iniciar();
+  }
+})();
+</script>
